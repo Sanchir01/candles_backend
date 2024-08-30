@@ -1,0 +1,5 @@
+type CategoryMutation
+
+extend type Mutation {
+    category:CategoryMutation!
+}

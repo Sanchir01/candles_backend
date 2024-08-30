@@ -1,0 +1,10 @@
+interface ProblemInterface {
+    message: String!
+}
+
+type InternalErrorProblem implements ProblemInterface {
+    message: String!
+}
+type UnauthorizedProblem implements ProblemInterface{
+    message:String!
+}

@@ -1,0 +1,11 @@
+
+extend type  CategoryQuery {
+    getAllCategory:CategoryGetAllResult! @goField(forceResolver: true)
+}
+
+
+type CategoryGetAllOk {
+    category:[Category!]!
+}
+
+union CategoryGetAllResult = | CategoryGetAllOk |InternalErrorProblem |CategoryNotFoundProblem

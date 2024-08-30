@@ -1,0 +1,21 @@
+
+
+extend type CategoryMutation {
+    createCategory(input:CreateCategoryInput): CategoryCreateResult! @goField(forceResolver: true) @hasRole(role: ADMIN)
+}
+
+
+input CreateCategoryInput {
+    name: String!
+    description:String!
+}
+
+type CategoryNotFoundProblem implements ProblemInterface{
+    message: String!
+}
+
+type CategoryCreateOk {
+    id:Uuid!
+}
+
+union CategoryCreateResult = |CategoryCreateOk |CategoryNotFoundProblem |  InternalErrorProblem | UnauthorizedProblem

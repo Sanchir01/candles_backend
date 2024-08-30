@@ -1,0 +1,5 @@
+type CategoryQuery
+
+extend type Query {
+    category:CategoryQuery
+}

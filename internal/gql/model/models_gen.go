@@ -2,25 +2,166 @@
 
 package model
 
-type Mutation struct {
+import (
+	"fmt"
+	"io"
+	"strconv"
+	"time"
+
+	"github.com/google/uuid"
+)
+
+type CategoryCreateResult interface {
+	IsCategoryCreateResult()
 }
 
-type NewTodo struct {
-	Text   string `json:"text"`
-	UserID string `json:"userId"`
+type CategoryGetAllResult interface {
+	IsCategoryGetAllResult()
+}
+
+type ProblemInterface interface {
+	IsProblemInterface()
+	GetMessage() string
+}
+
+type VersionInterface interface {
+	IsVersionInterface()
+	GetVersion() uint
+}
+
+type Category struct {
+	ID          uuid.UUID `json:"id"`
+	Name        string    `json:"name"`
+	Slug        string    `json:"slug"`
+	CreatedAt   time.Time `json:"created_at"`
+	UpdatedAt   time.Time `json:"updated_at"`
+	Description string    `json:"description"`
+	Version     uint      `json:"version"`
+}
+
+func (Category) IsVersionInterface()   {}
+func (this Category) GetVersion() uint { return this.Version }
+
+type CategoryCreateOk struct {
+	ID uuid.UUID `json:"id"`
+}
+
+func (CategoryCreateOk) IsCategoryCreateResult() {}
+
+type CategoryGetAllOk struct {
+	Category []*Category `json:"category"`
+}
+
+func (CategoryGetAllOk) IsCategoryGetAllResult() {}
+
+type CategoryMutation struct {
+	CreateCategory CategoryCreateResult `json:"createCategory"`
+}
+
+type CategoryNotFoundProblem struct {
+	Message string `json:"message"`
+}
+
+func (CategoryNotFoundProblem) IsProblemInterface()     {}
+func (this CategoryNotFoundProblem) GetMessage() string { return this.Message }
+
+func (CategoryNotFoundProblem) IsCategoryCreateResult() {}
+
+func (CategoryNotFoundProblem) IsCategoryGetAllResult() {}
+
+type CategoryQuery struct {
+	GetAllCategory CategoryGetAllResult `json:"getAllCategory"`
+}
+
+type CreateCategoryInput struct {
+	Name        string `json:"name"`
+	Description string `json:"description"`
+}
+
+type InternalErrorProblem struct {
+	Message string `json:"message"`
+}
+
+func (InternalErrorProblem) IsCategoryCreateResult() {}
+
+func (InternalErrorProblem) IsCategoryGetAllResult() {}
+
+func (InternalErrorProblem) IsProblemInterface()     {}
+func (this InternalErrorProblem) GetMessage() string { return this.Message }
+
+type InvalidSortRankProblem struct {
+	Message string `json:"message"`
+}
+
+func (InvalidSortRankProblem) IsProblemInterface()     {}
+func (this InvalidSortRankProblem) GetMessage() string { return this.Message }
+
+type Mutation struct {
 }
 
 type Query struct {
 }
 
-type Todo struct {
-	ID   string `json:"id"`
-	Text string `json:"text"`
-	Done bool   `json:"done"`
-	User *User  `json:"user"`
+type SortRankInput struct {
+	Prev string `json:"prev"`
+	Next string `json:"next"`
 }
 
-type User struct {
-	ID   string `json:"id"`
-	Name string `json:"name"`
+type UnauthorizedProblem struct {
+	Message string `json:"message"`
+}
+
+func (UnauthorizedProblem) IsCategoryCreateResult() {}
+
+func (UnauthorizedProblem) IsProblemInterface()     {}
+func (this UnauthorizedProblem) GetMessage() string { return this.Message }
+
+type VersionMismatchProblem struct {
+	Message string `json:"message"`
+}
+
+func (VersionMismatchProblem) IsProblemInterface()     {}
+func (this VersionMismatchProblem) GetMessage() string { return this.Message }
+
+type Role string
+
+const (
+	RoleAdmin Role = "ADMIN"
+	RoleUser  Role = "USER"
+	RoleGuest Role = "GUEST"
+)
+
+var AllRole = []Role{
+	RoleAdmin,
+	RoleUser,
+	RoleGuest,
+}
+
+func (e Role) IsValid() bool {
+	switch e {
+	case RoleAdmin, RoleUser, RoleGuest:
+		return true
+	}
+	return false
+}
+
+func (e Role) String() string {
+	return string(e)
+}
+
+func (e *Role) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = Role(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid Role", str)
+	}
+	return nil
+}
+
+func (e Role) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
 }

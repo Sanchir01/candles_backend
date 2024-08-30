@@ -21,7 +21,6 @@ type DataBase struct {
 	Port     string `yaml:"port"`
 	User     string `yaml:"user"`
 	Database string `yaml:"dbname"`
-	Password string `yaml:"password"`
 	SSL      string `yaml:"ssl"`
 }
 type HttpServer struct {

@@ -14,6 +14,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
+	"github.com/jmoiron/sqlx"
 	"github.com/vektah/gqlparser/v2/gqlerror"
 	"log"
 	"log/slog"
@@ -25,6 +26,7 @@ type HttpRouter struct {
 	chiRouter *chi.Mux
 	logger    *slog.Logger
 	config    *config.Config
+	db        *sqlx.DB
 }
 
 const (
@@ -34,20 +36,22 @@ const (
 	automaticPersistedQueryCacheLRUSize = 100
 )
 
-func New(r *chi.Mux, lg *slog.Logger, cfg *config.Config) *HttpRouter {
+func New(r *chi.Mux, lg *slog.Logger, cfg *config.Config, db *sqlx.DB) *HttpRouter {
 	return &HttpRouter{chiRouter: r, logger: lg, config: cfg}
 }
 
 func (r *HttpRouter) StartHttpServer() http.Handler {
 	r.newChiCors()
 	r.chiRouter.Use(middleware.RequestID)
-	r.chiRouter.Handle("/graphql", playground.ApolloSandboxHandler("Sandjma", "/"))
+	r.chiRouter.Handle("/graphql", playground.ApolloSandboxHandler("Candles", "/"))
 	r.chiRouter.Handle("/", r.NewGraphQLHandler())
+	r.chiRouter.Get("/hello", func(writer http.ResponseWriter, request *http.Request) {
+		writer.Write([]byte("Hello World"))
+	})
 	return r.chiRouter
 }
 
 func (r *HttpRouter) NewGraphQLHandler() *gqlhandler.Server {
-
 	srv := gqlhandler.New(
 		genGql.NewExecutableSchema(r.newSchemaConfig()),
 	)

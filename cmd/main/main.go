@@ -29,10 +29,9 @@ func main() {
 	defer db.Close()
 
 	serve := httpserver.NewHttpServer(cfg)
-
 	rout := chi.NewRouter()
 	var (
-		handlers = httphandlers.New(rout, lg, cfg)
+		handlers = httphandlers.New(rout, lg, cfg, db)
 	)
 	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGTERM, syscall.SIGINT, os.Interrupt)
 	defer cancel()
@@ -47,6 +46,8 @@ func main() {
 		}
 	}(ctx)
 
+	variables := <-ctx.Done()
+	lg.Error("Server stopped", variables)
 }
 func setupLogger(env string) *slog.Logger {
 	var lg *slog.Logger

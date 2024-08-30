@@ -1,9 +1,12 @@
+env: "development"
+
 database:
   host: "localhost"
   port: "5435"
   user: "postgres"
   ssl: "disable"
   dbname: "test"
+
 gql_server:
     port: "5000"
     host: "localhost"

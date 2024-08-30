@@ -13,6 +13,7 @@ require (
 	github.com/ilyakaznacheev/cleanenv v1.5.0
 	github.com/jmoiron/sqlx v1.4.0
 	github.com/joho/godotenv v1.5.1
+	github.com/lib/pq v1.10.9
 	github.com/vektah/gqlparser/v2 v2.5.16
 	golang.org/x/exp v0.0.0-20240823005443-9b4947da3948
 )

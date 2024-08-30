@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/Sanchir01/candles_backend/internal/config"
 	"github.com/jmoiron/sqlx"
+	_ "github.com/lib/pq"
 	"log/slog"
 	"os"
 )

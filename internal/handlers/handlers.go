@@ -17,6 +17,7 @@ import (
 	"github.com/vektah/gqlparser/v2/gqlerror"
 	"log"
 	"log/slog"
+	"net/http"
 	"runtime"
 )
 
@@ -37,11 +38,12 @@ func New(r *chi.Mux, lg *slog.Logger, cfg *config.Config) *HttpRouter {
 	return &HttpRouter{chiRouter: r, logger: lg, config: cfg}
 }
 
-func (r *HttpRouter) StartHttpServer() {
+func (r *HttpRouter) StartHttpServer() http.Handler {
 	r.newChiCors()
 	r.chiRouter.Use(middleware.RequestID)
 	r.chiRouter.Handle("/graphql", playground.ApolloSandboxHandler("Sandjma", "/"))
 	r.chiRouter.Handle("/", r.NewGraphQLHandler())
+	return r.chiRouter
 }
 
 func (r *HttpRouter) NewGraphQLHandler() *gqlhandler.Server {

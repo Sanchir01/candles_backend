@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"github.com/Sanchir01/candles_backend/internal/config"
+	httphandlers "github.com/Sanchir01/candles_backend/internal/handlers"
 	httpserver "github.com/Sanchir01/candles_backend/internal/server/http"
 	"github.com/Sanchir01/candles_backend/pkg/lib/db/connect"
 	"github.com/Sanchir01/candles_backend/pkg/lib/logger/handlers/slogpretty"
@@ -30,7 +31,9 @@ func main() {
 	serve := httpserver.NewHttpServer(cfg)
 
 	rout := chi.NewRouter()
-
+	var (
+		handlers = httphandlers.New(rout, lg, cfg)
+	)
 	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGTERM, syscall.SIGINT, os.Interrupt)
 	defer cancel()
 

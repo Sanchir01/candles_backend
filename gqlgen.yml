@@ -1,11 +1,11 @@
 # Where are all the schema files located? globs are supported eg  src/**/*.graphqls
 schema:
-  - graph/*.graphqls
+  - internal/gql/api/**/*.graphqls
 
 # Where should the generated server code go?
 exec:
-  filename: graph/generated.go
-  package: graph
+  filename:  internal/gql/generated/generated.go
+  package: runtime
 
 # Uncomment to enable federation
 # federation:
@@ -14,15 +14,15 @@ exec:
 
 # Where should any generated models go?
 model:
-  filename: graph/model/models_gen.go
+  filename: internal/gql/model/models_gen.go
   package: model
 
 # Where should the resolver implementations go?
 resolver:
   layout: follow-schema
-  dir: graph
-  package: graph
-  filename_template: "{name}.resolvers.go"
+  dir: internal/gql/resolvers
+  package: resolver
+  filename_template: "{name}.go"
   # Optional: turn on to not generate template comments above resolvers
   # omit_template_comment: false
 
@@ -66,7 +66,7 @@ resolver:
 # gqlgen will search for any type names in the schema in these go packages
 # if they match it will use them, otherwise it will generate them.
 autobind:
-#  - "github.com/Sanchir01/candles_backend/graph/model"
+#  - "github.com/Sanchir01/sandjma_graphql/graph/model"
 
 # This section declares type mapping between the GraphQL and go type systems
 #
@@ -85,3 +85,12 @@ models:
       - github.com/99designs/gqlgen/graphql.Int
       - github.com/99designs/gqlgen/graphql.Int64
       - github.com/99designs/gqlgen/graphql.Int32
+  DateTime:
+    model:
+      - github.com/Sanchir01/sandjma_graphql/internal/gql/model.Rfc3339Date
+  UInt:
+    model:
+      - github.com/Sanchir01/sandjma_graphql/internal/gql/model.UInt
+  Uuid:
+    model:
+      - github.com/Sanchir01/sandjma_graphql/internal/gql/model.Uuid

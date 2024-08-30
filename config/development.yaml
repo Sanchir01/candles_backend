@@ -1,0 +1,29 @@
+database:
+  host: "localhost"
+  port: "5435"
+  user: "postgres"
+  ssl: "disable"
+  dbname: "test"
+gql_server:
+    port: "5000"
+    host: "localhost"
+    timeout: 5s
+    debug: true
+    idle_timeout: 60s
+
+config_path: "config/development.yaml"
+errors:
+  bad_request:
+    message: "не правильный запрос"
+    code: 400
+  unauthorized:
+    message: "unauthorized"
+    code: 401
+  not_found:
+    message: "не правильно введены данные"
+    code: 404
+  not_implemented:
+    message: "not implemented"
+    code: 500
+
+

@@ -6,12 +6,25 @@ package resolver
 
 import (
 	"context"
-	"fmt"
+	"log/slog"
 
 	"github.com/Sanchir01/candles_backend/internal/gql/model"
+	responseErr "github.com/Sanchir01/candles_backend/pkg/lib/api/response"
+	"github.com/Sanchir01/candles_backend/pkg/lib/utils"
 )
 
 // CreateCategory is the resolver for the createCategory field.
 func (r *categoryMutationResolver) CreateCategory(ctx context.Context, obj *model.CategoryMutation, input *model.CreateCategoryInput) (model.CategoryCreateResult, error) {
-	panic(fmt.Errorf("not implemented: CreateCategory - createCategory"))
+	r.lg.Info("create category", slog.String("name", input.Name))
+	slug, err := utils.Slugify(input.Name)
+	if err != nil {
+		return responseErr.NewInternalErrorProblem("error for create slug for category"), err
+	}
+
+	id, err := r.CategoryStr.CreateCategory(ctx, input.Name, slug)
+	if err != nil {
+		return responseErr.NewInternalErrorProblem("error for creating category"), err
+	}
+
+	return model.CategoryCreateOk{ID: id}, nil
 }

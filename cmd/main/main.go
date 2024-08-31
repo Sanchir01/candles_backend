@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"github.com/Sanchir01/candles_backend/internal/config"
+	pgstoreCategory "github.com/Sanchir01/candles_backend/internal/database/postgres/category"
 	httphandlers "github.com/Sanchir01/candles_backend/internal/handlers"
 	httpserver "github.com/Sanchir01/candles_backend/internal/server/http"
 	"github.com/Sanchir01/candles_backend/pkg/lib/db/connect"
@@ -31,7 +32,8 @@ func main() {
 	serve := httpserver.NewHttpServer(cfg)
 	rout := chi.NewRouter()
 	var (
-		handlers = httphandlers.New(rout, lg, cfg, db)
+		categoryStr = pgstoreCategory.New(db)
+		handlers    = httphandlers.New(rout, lg, cfg, categoryStr)
 	)
 	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGTERM, syscall.SIGINT, os.Interrupt)
 	defer cancel()
@@ -46,8 +48,7 @@ func main() {
 		}
 	}(ctx)
 
-	variables := <-ctx.Done()
-	lg.Error("Server stopped", variables)
+	<-ctx.Done()
 }
 func setupLogger(env string) *slog.Logger {
 	var lg *slog.Logger

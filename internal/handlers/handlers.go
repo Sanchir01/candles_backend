@@ -8,6 +8,7 @@ import (
 	"github.com/99designs/gqlgen/graphql/handler/transport"
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/Sanchir01/candles_backend/internal/config"
+	pgstoreCategory "github.com/Sanchir01/candles_backend/internal/database/postgres/category"
 	"github.com/Sanchir01/candles_backend/internal/gql/directive"
 	genGql "github.com/Sanchir01/candles_backend/internal/gql/generated"
 	resolver "github.com/Sanchir01/candles_backend/internal/gql/resolvers"
@@ -27,6 +28,7 @@ type HttpRouter struct {
 	logger    *slog.Logger
 	config    *config.Config
 	db        *sqlx.DB
+	category  *pgstoreCategory.CategoryPostgresStore
 }
 
 const (
@@ -36,8 +38,10 @@ const (
 	automaticPersistedQueryCacheLRUSize = 100
 )
 
-func New(r *chi.Mux, lg *slog.Logger, cfg *config.Config, db *sqlx.DB) *HttpRouter {
-	return &HttpRouter{chiRouter: r, logger: lg, config: cfg}
+func New(r *chi.Mux, lg *slog.Logger, cfg *config.Config,
+	category *pgstoreCategory.CategoryPostgresStore,
+) *HttpRouter {
+	return &HttpRouter{chiRouter: r, logger: lg, config: cfg, category: category}
 }
 
 func (r *HttpRouter) StartHttpServer() http.Handler {
@@ -45,9 +49,6 @@ func (r *HttpRouter) StartHttpServer() http.Handler {
 	r.chiRouter.Use(middleware.RequestID)
 	r.chiRouter.Handle("/graphql", playground.ApolloSandboxHandler("Candles", "/"))
 	r.chiRouter.Handle("/", r.NewGraphQLHandler())
-	r.chiRouter.Get("/hello", func(writer http.ResponseWriter, request *http.Request) {
-		writer.Write([]byte("Hello World"))
-	})
 	return r.chiRouter
 }
 
@@ -79,7 +80,9 @@ func (r *HttpRouter) NewGraphQLHandler() *gqlhandler.Server {
 }
 
 func (r *HttpRouter) newSchemaConfig() genGql.Config {
-	cfg := genGql.Config{Resolvers: resolver.New()}
+	cfg := genGql.Config{Resolvers: resolver.New(
+		r.category, r.logger,
+	)}
 	cfg.Directives.InputUnion = directive.NewInputUnionDirective()
 	cfg.Directives.SortRankInput = directive.NewSortRankInputDirective()
 

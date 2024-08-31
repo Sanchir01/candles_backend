@@ -10,10 +10,10 @@ import (
 // It serves as dependency injection for your app, add any dependencies you require here.
 
 type Resolver struct {
-	lg          *slog.Logger
-	CategoryStr *pgstoreCategory.CategoryPostgresStore
+	lg       *slog.Logger
+	category *pgstoreCategory.CategoryPostgresStore
 }
 
 func New(category *pgstoreCategory.CategoryPostgresStore, lg *slog.Logger) *Resolver {
-	return &Resolver{CategoryStr: category, lg: lg}
+	return &Resolver{category: category, lg: lg}
 }

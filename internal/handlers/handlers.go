@@ -1,7 +1,6 @@
 package httphandlers
 
 import (
-	"context"
 	gqlhandler "github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/handler/extension"
 	"github.com/99designs/gqlgen/graphql/handler/lru"
@@ -16,11 +15,8 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
 	"github.com/jmoiron/sqlx"
-	"github.com/vektah/gqlparser/v2/gqlerror"
-	"log"
 	"log/slog"
 	"net/http"
-	"runtime"
 )
 
 type HttpRouter struct {
@@ -66,14 +62,14 @@ func (r *HttpRouter) NewGraphQLHandler() *gqlhandler.Server {
 	srv.Use(extension.Introspection{})
 	srv.Use(extension.AutomaticPersistedQuery{Cache: lru.New(automaticPersistedQueryCacheLRUSize)})
 
-	srv.SetRecoverFunc(
-		func(ctx context.Context, err interface{}) (userMessage error) {
-			buf := make([]byte, 1024)
-			n := runtime.Stack(buf, false)
-			log.Printf("Panic: %v\nStack: %s\n", err, buf[:n])
-
-			return gqlerror.Errorf("internal server error graphql обработка паники")
-		})
+	//srv.SetRecoverFunc(
+	//	func(ctx context.Context, err interface{}) error {
+	//		buf := make([]byte, 1024)
+	//		n := runtime.Stack(buf, false)
+	//		log.Printf("Panic: %v\nStack: %s\n", err, buf[:n])
+	//
+	//		return gqlerror.Errorf("internal server error graphql обработка паники")
+	//	})
 	srv.Use(extension.FixedComplexityLimit(complexityLimit))
 
 	return srv

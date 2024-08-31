@@ -11,4 +11,3 @@ type CategoryGetAllOk {
 union CategoryGetAllResult =
     | CategoryGetAllOk
     | InternalErrorProblem
-    | CategoryNotFoundProblem

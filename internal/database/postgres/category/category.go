@@ -64,7 +64,6 @@ func (db *CategoryPostgresStore) CreateCategory(ctx context.Context, name, slug 
 		name, slug,
 	)
 	if err := row.Err(); err != nil {
-		db.lg.Error("create category error", err.Error())
 		return uuid.New(), err
 	}
 	if err := row.Scan(&id); err != nil {

@@ -33,6 +33,20 @@ func (s *CandlesPostgresStore) AllCandles(ctx context.Context) ([]model.Candles,
 
 	return lo.Map(candles, func(candles dbCandles, _ int) model.Candles { return model.Candles(candles) }), nil
 }
+func (s *CandlesPostgresStore) CreateCandles(ctx context.Context, categoryID uuid.UUID, title string, slug string) (uuid.UUID, error) {
+	conn, err := s.db.Connx(ctx)
+	if err != nil {
+		return uuid.Nil, err
+	}
+	defer conn.Close()
+	var id uuid.UUID
+
+	if err := conn.GetContext(ctx, &id, "INSERT INTO candles (category_id, title, slug) VALUES ($1, $2, $3) RETURNING id", categoryID, title, slug); err != nil {
+		return uuid.Nil, err
+	}
+	return id, nil
+
+}
 
 type dbCandles struct {
 	ID         uuid.UUID `db:"id"`

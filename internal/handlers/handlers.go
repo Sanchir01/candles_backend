@@ -1,6 +1,7 @@
 package httphandlers
 
 import (
+	"context"
 	gqlhandler "github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/handler/extension"
 	"github.com/99designs/gqlgen/graphql/handler/lru"
@@ -11,12 +12,16 @@ import (
 	"github.com/Sanchir01/candles_backend/internal/gql/directive"
 	genGql "github.com/Sanchir01/candles_backend/internal/gql/generated"
 	resolver "github.com/Sanchir01/candles_backend/internal/gql/resolvers"
+	customMiddleware "github.com/Sanchir01/candles_backend/internal/handlers/middleware"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
 	"github.com/jmoiron/sqlx"
+	"github.com/vektah/gqlparser/v2/gqlerror"
+	"log"
 	"log/slog"
 	"net/http"
+	"runtime"
 )
 
 type HttpRouter struct {
@@ -43,6 +48,8 @@ func New(r *chi.Mux, lg *slog.Logger, cfg *config.Config,
 func (r *HttpRouter) StartHttpServer() http.Handler {
 	r.newChiCors()
 	r.chiRouter.Use(middleware.RequestID)
+	r.chiRouter.Use(customMiddleware.WithResponseWriter)
+	r.chiRouter.Use(customMiddleware.AuthMiddleware())
 	r.chiRouter.Handle("/graphql", playground.ApolloSandboxHandler("Candles", "/"))
 	r.chiRouter.Handle("/", r.NewGraphQLHandler())
 	return r.chiRouter
@@ -62,14 +69,14 @@ func (r *HttpRouter) NewGraphQLHandler() *gqlhandler.Server {
 	srv.Use(extension.Introspection{})
 	srv.Use(extension.AutomaticPersistedQuery{Cache: lru.New(automaticPersistedQueryCacheLRUSize)})
 
-	//srv.SetRecoverFunc(
-	//	func(ctx context.Context, err interface{}) error {
-	//		buf := make([]byte, 1024)
-	//		n := runtime.Stack(buf, false)
-	//		log.Printf("Panic: %v\nStack: %s\n", err, buf[:n])
-	//
-	//		return gqlerror.Errorf("internal server error graphql обработка паники")
-	//	})
+	srv.SetRecoverFunc(
+		func(ctx context.Context, err interface{}) error {
+			buf := make([]byte, 1024)
+			n := runtime.Stack(buf, false)
+			log.Printf("Panic: %v\nStack: %s\n", err, buf[:n])
+
+			return gqlerror.Errorf("internal server error graphql обработка паники")
+		})
 	srv.Use(extension.FixedComplexityLimit(complexityLimit))
 
 	return srv
@@ -81,7 +88,7 @@ func (r *HttpRouter) newSchemaConfig() genGql.Config {
 	)}
 	cfg.Directives.InputUnion = directive.NewInputUnionDirective()
 	cfg.Directives.SortRankInput = directive.NewSortRankInputDirective()
-
+	cfg.Directives.HasRole = directive.RoleDirective()
 	return cfg
 }
 func (r *HttpRouter) newChiCors() {

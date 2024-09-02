@@ -1,4 +1,4 @@
-package pgstoreCategory
+package pgstorecategory
 
 import (
 	"context"
@@ -6,13 +6,11 @@ import (
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
 	"github.com/samber/lo"
-	"log/slog"
 	"time"
 )
 
 type CategoryPostgresStore struct {
 	db *sqlx.DB
-	lg *slog.Logger
 }
 
 func New(db *sqlx.DB) *CategoryPostgresStore {

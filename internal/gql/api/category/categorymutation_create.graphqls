@@ -1,7 +1,7 @@
 
 
 extend type CategoryMutation {
-    createCategory(input:CreateCategoryInput): CategoryCreateResult! @goField(forceResolver: true)
+    createCategory(input:CreateCategoryInput): CategoryCreateResult! @goField(forceResolver: true) @hasRole(role: ADMIN)
 }
 
 

@@ -4,7 +4,8 @@ import (
 	"context"
 	"errors"
 	"github.com/Sanchir01/candles_backend/internal/config"
-	pgstoreCategory "github.com/Sanchir01/candles_backend/internal/database/postgres/category"
+	pgstorecandles "github.com/Sanchir01/candles_backend/internal/database/postgres/candles"
+	pgstorecategory "github.com/Sanchir01/candles_backend/internal/database/postgres/category"
 	httphandlers "github.com/Sanchir01/candles_backend/internal/handlers"
 	httpserver "github.com/Sanchir01/candles_backend/internal/server/http"
 	"github.com/Sanchir01/candles_backend/pkg/lib/db/connect"
@@ -32,8 +33,9 @@ func main() {
 	serve := httpserver.NewHttpServer(cfg)
 	rout := chi.NewRouter()
 	var (
-		categoryStr = pgstoreCategory.New(db)
-		handlers    = httphandlers.New(rout, lg, cfg, categoryStr)
+		categoryStr = pgstorecategory.New(db)
+		candlesStr  = pgstorecandles.New(db)
+		handlers    = httphandlers.New(rout, lg, cfg, categoryStr, candlesStr)
 	)
 	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGTERM, syscall.SIGINT, os.Interrupt)
 	defer cancel()

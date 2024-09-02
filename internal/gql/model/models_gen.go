@@ -11,6 +11,14 @@ import (
 	"github.com/google/uuid"
 )
 
+type AllCategoryResult interface {
+	IsAllCategoryResult()
+}
+
+type CandlesMutationResult interface {
+	IsCandlesMutationResult()
+}
+
 type CategoryCreateResult interface {
 	IsCategoryCreateResult()
 }
@@ -27,6 +35,36 @@ type ProblemInterface interface {
 type VersionInterface interface {
 	IsVersionInterface()
 	GetVersion() uint
+}
+
+type AllCandlesOk struct {
+	Candles []*Candles `json:"candles"`
+}
+
+func (AllCandlesOk) IsAllCategoryResult() {}
+
+type Candles struct {
+	ID         uuid.UUID `json:"id"`
+	Title      string    `json:"title"`
+	Slug       string    `json:"slug"`
+	CreatedAt  time.Time `json:"created_at"`
+	UpdatedAt  time.Time `json:"updated_at"`
+	Version    uint      `json:"version"`
+	CategoryID uuid.UUID `json:"category_id"`
+}
+
+type CandlesCreateOk struct {
+	Candles []*Candles `json:"candles"`
+}
+
+func (CandlesCreateOk) IsCandlesMutationResult() {}
+
+type CandlesMutation struct {
+	CreateCandle CandlesMutationResult `json:"createCandle"`
+}
+
+type CandlesQuery struct {
+	AllCandles []AllCategoryResult `json:"allCandles"`
 }
 
 type Category struct {
@@ -61,6 +99,11 @@ type CategoryQuery struct {
 	GetAllCategory CategoryGetAllResult `json:"getAllCategory"`
 }
 
+type CreateCandleInput struct {
+	Title      string    `json:"title"`
+	CategoryID uuid.UUID `json:"category_id"`
+}
+
 type CreateCategoryInput struct {
 	Name string `json:"name"`
 }
@@ -68,6 +111,10 @@ type CreateCategoryInput struct {
 type InternalErrorProblem struct {
 	Message string `json:"message"`
 }
+
+func (InternalErrorProblem) IsCandlesMutationResult() {}
+
+func (InternalErrorProblem) IsAllCategoryResult() {}
 
 func (InternalErrorProblem) IsCategoryCreateResult() {}
 
@@ -106,6 +153,10 @@ func (this UnauthorizedProblem) GetMessage() string { return this.Message }
 type VersionMismatchProblem struct {
 	Message string `json:"message"`
 }
+
+func (VersionMismatchProblem) IsCandlesMutationResult() {}
+
+func (VersionMismatchProblem) IsAllCategoryResult() {}
 
 func (VersionMismatchProblem) IsProblemInterface()     {}
 func (this VersionMismatchProblem) GetMessage() string { return this.Message }

@@ -1,0 +1,5 @@
+type CandlesQuery
+
+extend type Query {
+    candles:CandlesQuery
+}

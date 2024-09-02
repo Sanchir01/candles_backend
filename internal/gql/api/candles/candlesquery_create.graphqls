@@ -1,0 +1,13 @@
+extend type CandlesQuery {
+    allCandles: [AllCategoryResult!]! @goField(forceResolver: true)
+}
+
+
+union AllCategoryResult =
+| AllCandlesOk
+| VersionMismatchProblem
+| InternalErrorProblem
+
+type AllCandlesOk {
+    candles: [Candles!]!
+}

@@ -6,12 +6,27 @@ package resolver
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/Sanchir01/candles_backend/internal/gql/model"
+	responseErr "github.com/Sanchir01/candles_backend/pkg/lib/api/response"
+	"github.com/Sanchir01/candles_backend/pkg/lib/utils"
 )
 
 // CreateCandle is the resolver for the createCandle field.
 func (r *candlesMutationResolver) CreateCandle(ctx context.Context, obj *model.CandlesMutation, input model.CreateCandleInput) (model.CandlesMutationResult, error) {
-	panic(fmt.Errorf("not implemented: CreateCandle - createCandle"))
+	slug, err := utils.Slugify(input.Title)
+	if err != nil {
+		return responseErr.NewInternalErrorProblem("не удалось создат слаг"), err
+	}
+	_, err = r.candlesStr.CandlesBySlug(ctx, slug)
+	if err == nil {
+		return responseErr.NewInternalErrorProblem("такая категория уже есть"), err
+	}
+	id, err := r.candlesStr.CreateCandles(ctx, input.CategoryID, input.Title, slug)
+	if err != nil {
+		return responseErr.NewInternalErrorProblem("ошибка во время создания свечи"), err
+	}
+	return &model.CandlesCreateOk{
+		ID: id,
+	}, nil
 }

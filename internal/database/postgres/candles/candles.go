@@ -48,6 +48,20 @@ func (s *CandlesPostgresStore) CreateCandles(ctx context.Context, categoryID uui
 
 }
 
+func (s *CandlesPostgresStore) CandlesBySlug(ctx context.Context, slug string) (*model.Candles, error) {
+	conn, err := s.db.Connx(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer conn.Close()
+	var candle dbCandles
+
+	if err := conn.GetContext(ctx, &candle, "SELECT * FROM candles WHERE slug = $1", slug); err != nil {
+		return nil, err
+	}
+	return (*model.Candles)(&candle), nil
+}
+
 type dbCandles struct {
 	ID         uuid.UUID `db:"id"`
 	Title      string    `db:"name"`

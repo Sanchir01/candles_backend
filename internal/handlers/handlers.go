@@ -8,6 +8,7 @@ import (
 	"github.com/99designs/gqlgen/graphql/handler/transport"
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/Sanchir01/candles_backend/internal/config"
+	pgstorecandles "github.com/Sanchir01/candles_backend/internal/database/postgres/candles"
 	pgstoreCategory "github.com/Sanchir01/candles_backend/internal/database/postgres/category"
 	"github.com/Sanchir01/candles_backend/internal/gql/directive"
 	genGql "github.com/Sanchir01/candles_backend/internal/gql/generated"
@@ -30,6 +31,7 @@ type HttpRouter struct {
 	config    *config.Config
 	db        *sqlx.DB
 	category  *pgstoreCategory.CategoryPostgresStore
+	candles   *pgstorecandles.CandlesPostgresStore
 }
 
 const (
@@ -40,9 +42,12 @@ const (
 )
 
 func New(r *chi.Mux, lg *slog.Logger, cfg *config.Config,
-	category *pgstoreCategory.CategoryPostgresStore,
+	category *pgstoreCategory.CategoryPostgresStore, candlesStr *pgstorecandles.CandlesPostgresStore,
 ) *HttpRouter {
-	return &HttpRouter{chiRouter: r, logger: lg, config: cfg, category: category}
+	return &HttpRouter{
+		chiRouter: r, logger: lg, config: cfg, category: category,
+		candles: candlesStr,
+	}
 }
 
 func (r *HttpRouter) StartHttpServer() http.Handler {
@@ -84,7 +89,7 @@ func (r *HttpRouter) NewGraphQLHandler() *gqlhandler.Server {
 
 func (r *HttpRouter) newSchemaConfig() genGql.Config {
 	cfg := genGql.Config{Resolvers: resolver.New(
-		r.category, r.logger,
+		r.category, r.candles, r.logger,
 	)}
 	cfg.Directives.InputUnion = directive.NewInputUnionDirective()
 	cfg.Directives.SortRankInput = directive.NewSortRankInputDirective()

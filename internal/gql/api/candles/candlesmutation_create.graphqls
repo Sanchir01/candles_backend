@@ -15,5 +15,5 @@ union CandlesMutationResult =
     | VersionMismatchProblem
 
 type CandlesCreateOk{
-    candles: [Candles!]!
+    id: Uuid!
 }

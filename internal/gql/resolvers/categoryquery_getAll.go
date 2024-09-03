@@ -14,7 +14,7 @@ import (
 
 // GetAllCategory is the resolver for the getAllCategory field.
 func (r *categoryQueryResolver) GetAllCategory(ctx context.Context, obj *model.CategoryQuery) (model.CategoryGetAllResult, error) {
-	allCategory, err := r.category.AllCategories(ctx)
+	allCategory, err := r.categoryStr.AllCategories(ctx)
 	if err != nil {
 		return responseErr.NewInternalErrorProblem("sadad"), nil
 	}

@@ -6,7 +6,6 @@ package resolver
 
 import (
 	"context"
-	"fmt"
 
 	runtime "github.com/Sanchir01/candles_backend/internal/gql/generated"
 	"github.com/Sanchir01/candles_backend/internal/gql/model"
@@ -14,7 +13,7 @@ import (
 
 // Candles is the resolver for the candles field.
 func (r *mutationResolver) Candles(ctx context.Context) (*model.CandlesMutation, error) {
-	panic(fmt.Errorf("not implemented: Candles - candles"))
+	return &model.CandlesMutation{}, nil
 }
 
 // CandlesMutation returns runtime.CandlesMutationResolver implementation.

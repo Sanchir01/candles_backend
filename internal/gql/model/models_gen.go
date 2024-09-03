@@ -54,7 +54,7 @@ type Candles struct {
 }
 
 type CandlesCreateOk struct {
-	Candles []*Candles `json:"candles"`
+	ID uuid.UUID `json:"id"`
 }
 
 func (CandlesCreateOk) IsCandlesMutationResult() {}
@@ -64,7 +64,7 @@ type CandlesMutation struct {
 }
 
 type CandlesQuery struct {
-	AllCandles []AllCategoryResult `json:"allCandles"`
+	AllCandles AllCategoryResult `json:"allCandles"`
 }
 
 type Category struct {

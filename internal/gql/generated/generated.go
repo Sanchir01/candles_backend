@@ -70,7 +70,7 @@ type ComplexityRoot struct {
 	}
 
 	CandlesCreateOk struct {
-		Candles func(childComplexity int) int
+		ID func(childComplexity int) int
 	}
 
 	CandlesMutation struct {
@@ -137,7 +137,7 @@ type CandlesMutationResolver interface {
 	CreateCandle(ctx context.Context, obj *model.CandlesMutation, input model.CreateCandleInput) (model.CandlesMutationResult, error)
 }
 type CandlesQueryResolver interface {
-	AllCandles(ctx context.Context, obj *model.CandlesQuery) ([]model.AllCategoryResult, error)
+	AllCandles(ctx context.Context, obj *model.CandlesQuery) (model.AllCategoryResult, error)
 }
 type CategoryMutationResolver interface {
 	CreateCategory(ctx context.Context, obj *model.CategoryMutation, input *model.CreateCategoryInput) (model.CategoryCreateResult, error)
@@ -229,12 +229,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Candles.Version(childComplexity), true
 
-	case "CandlesCreateOk.candles":
-		if e.complexity.CandlesCreateOk.Candles == nil {
+	case "CandlesCreateOk.id":
+		if e.complexity.CandlesCreateOk.ID == nil {
 			break
 		}
 
-		return e.complexity.CandlesCreateOk.Candles(childComplexity), true
+		return e.complexity.CandlesCreateOk.ID(childComplexity), true
 
 	case "CandlesMutation.createCandle":
 		if e.complexity.CandlesMutation.CreateCandle == nil {
@@ -549,22 +549,22 @@ union CandlesMutationResult =
     | VersionMismatchProblem
 
 type CandlesCreateOk{
-    candles: [Candles!]!
+    id: Uuid!
 }`, BuiltIn: false},
 	{Name: "../api/candles/candlesquery.graphqls", Input: `type CandlesQuery
 
 extend type Query {
     candles:CandlesQuery
 }`, BuiltIn: false},
-	{Name: "../api/candles/candlesquery_create.graphqls", Input: `extend type CandlesQuery {
-    allCandles: [AllCategoryResult!]! @goField(forceResolver: true)
+	{Name: "../api/candles/candlesquery_getall.graphqls", Input: `extend type CandlesQuery {
+    allCandles: AllCategoryResult! @goField(forceResolver: true)
 }
 
 
 union AllCategoryResult =
-| AllCandlesOk
-| VersionMismatchProblem
-| InternalErrorProblem
+    | AllCandlesOk
+    | VersionMismatchProblem
+    | InternalErrorProblem
 
 type AllCandlesOk {
     candles: [Candles!]!
@@ -1128,8 +1128,8 @@ func (ec *executionContext) fieldContext_Candles_category_id(_ context.Context, 
 	return fc, nil
 }
 
-func (ec *executionContext) _CandlesCreateOk_candles(ctx context.Context, field graphql.CollectedField, obj *model.CandlesCreateOk) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_CandlesCreateOk_candles(ctx, field)
+func (ec *executionContext) _CandlesCreateOk_id(ctx context.Context, field graphql.CollectedField, obj *model.CandlesCreateOk) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_CandlesCreateOk_id(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -1142,7 +1142,7 @@ func (ec *executionContext) _CandlesCreateOk_candles(ctx context.Context, field 
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Candles, nil
+		return obj.ID, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1154,35 +1154,19 @@ func (ec *executionContext) _CandlesCreateOk_candles(ctx context.Context, field 
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]*model.Candles)
+	res := resTmp.(uuid.UUID)
 	fc.Result = res
-	return ec.marshalNCandles2ᚕᚖgithubᚗcomᚋSanchir01ᚋcandles_backendᚋinternalᚋgqlᚋmodelᚐCandlesᚄ(ctx, field.Selections, res)
+	return ec.marshalNUuid2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_CandlesCreateOk_candles(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_CandlesCreateOk_id(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "CandlesCreateOk",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "id":
-				return ec.fieldContext_Candles_id(ctx, field)
-			case "title":
-				return ec.fieldContext_Candles_title(ctx, field)
-			case "slug":
-				return ec.fieldContext_Candles_slug(ctx, field)
-			case "created_at":
-				return ec.fieldContext_Candles_created_at(ctx, field)
-			case "updated_at":
-				return ec.fieldContext_Candles_updated_at(ctx, field)
-			case "version":
-				return ec.fieldContext_Candles_version(ctx, field)
-			case "category_id":
-				return ec.fieldContext_Candles_category_id(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type Candles", field.Name)
+			return nil, errors.New("field of type Uuid does not have child fields")
 		},
 	}
 	return fc, nil
@@ -1269,9 +1253,9 @@ func (ec *executionContext) _CandlesQuery_allCandles(ctx context.Context, field 
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]model.AllCategoryResult)
+	res := resTmp.(model.AllCategoryResult)
 	fc.Result = res
-	return ec.marshalNAllCategoryResult2ᚕgithubᚗcomᚋSanchir01ᚋcandles_backendᚋinternalᚋgqlᚋmodelᚐAllCategoryResultᚄ(ctx, field.Selections, res)
+	return ec.marshalNAllCategoryResult2githubᚗcomᚋSanchir01ᚋcandles_backendᚋinternalᚋgqlᚋmodelᚐAllCategoryResult(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_CandlesQuery_allCandles(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -4435,8 +4419,8 @@ func (ec *executionContext) _CandlesCreateOk(ctx context.Context, sel ast.Select
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("CandlesCreateOk")
-		case "candles":
-			out.Values[i] = ec._CandlesCreateOk_candles(ctx, field, obj)
+		case "id":
+			out.Values[i] = ec._CandlesCreateOk_id(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
@@ -5519,50 +5503,6 @@ func (ec *executionContext) marshalNAllCategoryResult2githubᚗcomᚋSanchir01�
 		return graphql.Null
 	}
 	return ec._AllCategoryResult(ctx, sel, v)
-}
-
-func (ec *executionContext) marshalNAllCategoryResult2ᚕgithubᚗcomᚋSanchir01ᚋcandles_backendᚋinternalᚋgqlᚋmodelᚐAllCategoryResultᚄ(ctx context.Context, sel ast.SelectionSet, v []model.AllCategoryResult) graphql.Marshaler {
-	ret := make(graphql.Array, len(v))
-	var wg sync.WaitGroup
-	isLen1 := len(v) == 1
-	if !isLen1 {
-		wg.Add(len(v))
-	}
-	for i := range v {
-		i := i
-		fc := &graphql.FieldContext{
-			Index:  &i,
-			Result: &v[i],
-		}
-		ctx := graphql.WithFieldContext(ctx, fc)
-		f := func(i int) {
-			defer func() {
-				if r := recover(); r != nil {
-					ec.Error(ctx, ec.Recover(ctx, r))
-					ret = nil
-				}
-			}()
-			if !isLen1 {
-				defer wg.Done()
-			}
-			ret[i] = ec.marshalNAllCategoryResult2githubᚗcomᚋSanchir01ᚋcandles_backendᚋinternalᚋgqlᚋmodelᚐAllCategoryResult(ctx, sel, v[i])
-		}
-		if isLen1 {
-			f(i)
-		} else {
-			go f(i)
-		}
-
-	}
-	wg.Wait()
-
-	for _, e := range ret {
-		if e == graphql.Null {
-			return graphql.Null
-		}
-	}
-
-	return ret
 }
 
 func (ec *executionContext) unmarshalNBoolean2bool(ctx context.Context, v interface{}) (bool, error) {

@@ -62,6 +62,20 @@ func (s *CandlesPostgresStore) CandlesBySlug(ctx context.Context, slug string) (
 	return (*model.Candles)(&candle), nil
 }
 
+func (s *CandlesPostgresStore) CandlesById(ctx context.Context, id uuid.UUID) (*model.Candles, error) {
+	conn, err := s.db.Connx(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer conn.Close()
+	var candle dbCandles
+
+	if err := conn.GetContext(ctx, &candle, "SELECT * FROM candles WHERE id = $1", id); err != nil {
+		return nil, err
+	}
+	return (*model.Candles)(&candle), nil
+}
+
 type dbCandles struct {
 	ID         uuid.UUID `db:"id"`
 	Title      string    `db:"name"`
@@ -69,5 +83,6 @@ type dbCandles struct {
 	CreatedAt  time.Time `db:"created_at"`
 	UpdatedAt  time.Time `db:"updated_at"`
 	Version    uint      `db:"version"`
+	Images     []string  `db:"images"`
 	CategoryID uuid.UUID `db:"category_id"`
 }

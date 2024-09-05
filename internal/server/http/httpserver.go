@@ -1,6 +1,7 @@
 package httpserver
 
 import (
+	"context"
 	"github.com/Sanchir01/candles_backend/internal/config"
 	"net/http"
 )
@@ -27,4 +28,8 @@ func NewHttpServer(cfg *config.Config) *Server {
 func (s *Server) Run(handler http.Handler) error {
 	s.httpServer.Handler = handler
 	return s.httpServer.ListenAndServe()
+}
+
+func (s *Server) Gracefull(ctx context.Context) error {
+	return s.httpServer.Shutdown(ctx)
 }

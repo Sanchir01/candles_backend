@@ -6,10 +6,10 @@ package resolver
 
 import (
 	"context"
-	featurecandles "github.com/Sanchir01/candles_backend/internal/feature/candles"
-	responseErr "github.com/Sanchir01/candles_backend/pkg/lib/api/response"
 
+	featurecandles "github.com/Sanchir01/candles_backend/internal/feature/candles"
 	"github.com/Sanchir01/candles_backend/internal/gql/model"
+	responseErr "github.com/Sanchir01/candles_backend/pkg/lib/api/response"
 )
 
 // AllCandles is the resolver for the allCandles field.

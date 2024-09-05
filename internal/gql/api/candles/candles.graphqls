@@ -5,5 +5,6 @@ type Candles {
     created_at: DateTime!
     updated_at: DateTime!
     version: UInt!
+    images:[String!]!
     category_id: Uuid!
 }

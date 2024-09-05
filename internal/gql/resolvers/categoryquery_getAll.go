@@ -16,6 +16,7 @@ import (
 func (r *categoryQueryResolver) GetAllCategory(ctx context.Context, obj *model.CategoryQuery) (model.CategoryGetAllResult, error) {
 	allCategory, err := r.categoryStr.AllCategories(ctx)
 	if err != nil {
+		r.lg.Warn("sdas", err.Error())
 		return responseErr.NewInternalErrorProblem("ошибка при получении всех категорий"), nil
 	}
 	categories, err := featurecategory.MapCategoryToGql(allCategory)

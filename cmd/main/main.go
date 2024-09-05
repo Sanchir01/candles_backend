@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"errors"
+	telegrambot "github.com/Sanchir01/candles_backend/internal/bot"
 	"github.com/Sanchir01/candles_backend/internal/config"
 	pgstorecandles "github.com/Sanchir01/candles_backend/internal/database/postgres/candles"
 	pgstorecategory "github.com/Sanchir01/candles_backend/internal/database/postgres/category"
@@ -11,6 +12,8 @@ import (
 	"github.com/Sanchir01/candles_backend/pkg/lib/db/connect"
 	"github.com/Sanchir01/candles_backend/pkg/lib/logger/handlers/slogpretty"
 	"github.com/go-chi/chi/v5"
+	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
+	"log"
 	"log/slog"
 	"os"
 	"os/signal"
@@ -37,6 +40,7 @@ func main() {
 		candlesStr  = pgstorecandles.New(db)
 		handlers    = httphandlers.New(rout, lg, cfg, categoryStr, candlesStr)
 	)
+
 	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGTERM, syscall.SIGINT, os.Interrupt)
 	defer cancel()
 
@@ -50,7 +54,18 @@ func main() {
 		}
 	}(ctx)
 
-	<-ctx.Done()
+	bot, err := tgbotapi.NewBotAPI(os.Getenv("TELEGRAM_BOT_TOKEN"))
+	if err != nil {
+		log.Panic(err)
+	}
+	tgbot := telegrambot.New(bot, lg)
+	if err := tgbot.Start(cfg); err != nil {
+		lg.Error("error for get updates bot")
+	}
+
+	if err := serve.Gracefull(ctx); err != nil {
+		log.Fatalf("Http gracefull")
+	}
 }
 func setupLogger(env string) *slog.Logger {
 	var lg *slog.Logger

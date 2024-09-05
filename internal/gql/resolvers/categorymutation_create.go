@@ -20,6 +20,7 @@ func (r *categoryMutationResolver) CreateCategory(ctx context.Context, obj *mode
 	}
 	_, err = r.categoryStr.CategoryBySlug(ctx, slug)
 	if err == nil {
+		r.lg.Error(err.Error())
 		return responseErr.NewInternalErrorProblem("this category already exists"), nil
 	}
 	id, err := r.categoryStr.CreateCategory(ctx, input.Name, slug)

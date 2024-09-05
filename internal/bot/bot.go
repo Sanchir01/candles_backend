@@ -31,16 +31,3 @@ func (b *Bot) initUpdatesChannel() (tgbotapi.UpdatesChannel, error) {
 
 	return b.bot.GetUpdatesChan(u), nil
 }
-
-func (b *Bot) handleUpdate(updates tgbotapi.UpdatesChannel) {
-	for update := range updates {
-		if update.Message != nil {
-			b.handleMessage(update.Message)
-		}
-	}
-}
-
-func (b *Bot) handleMessage(message *tgbotapi.Message) {
-	msg := tgbotapi.NewMessage(message.Chat.ID, message.Text)
-	b.bot.Send(msg)
-}

@@ -7,6 +7,7 @@ extend type CandlesMutation {
 input CreateCandleInput {
     title: String!
     category_id: Uuid!
+    images:[String!]!
 }
 
 union CandlesMutationResult =

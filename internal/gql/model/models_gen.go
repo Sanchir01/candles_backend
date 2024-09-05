@@ -103,6 +103,7 @@ type CategoryQuery struct {
 type CreateCandleInput struct {
 	Title      string    `json:"title"`
 	CategoryID uuid.UUID `json:"category_id"`
+	Images     []string  `json:"images"`
 }
 
 type CreateCategoryInput struct {

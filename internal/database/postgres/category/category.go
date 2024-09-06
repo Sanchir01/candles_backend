@@ -2,12 +2,10 @@ package pgstorecategory
 
 import (
 	"context"
-	"fmt"
 	"github.com/Sanchir01/candles_backend/internal/gql/model"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/jmoiron/sqlx"
-	"github.com/samber/lo"
 	"time"
 )
 
@@ -36,29 +34,27 @@ func (db *CategoryPostgresStore) CategoryBySlug(ctx context.Context, slug string
 
 }
 func (db *CategoryPostgresStore) AllCategories(ctx context.Context) ([]model.Category, error) {
-	conn, err := db.pgxdb.Acquire(ctx)
-	if err != nil {
-		return nil, err
-	}
-	defer conn.Release()
 
-	query := "SELECT id,title FROM category"
-	rows, err := conn.Query(ctx, query)
-	defer rows.Close()
+	query := "SELECT * FROM public.category"
+	rows, err := db.pgxdb.Query(ctx, query)
 
 	if rows.Err(); err != nil {
 		return nil, err
 	}
-	var categories []dbCategory
+	categories := make([]model.Category, 0)
+
 	for rows.Next() {
-		var category dbCategory
-		if err := rows.Scan(&category); err != nil {
-			return nil, fmt.Errorf("scan error: %v", err)
+		var category model.Category
+		if err := rows.Scan(&category.ID, &category.Name, &category.Slug, &category.CreatedAt, &category.UpdatedAt, &category.Version); err != nil {
+			return nil, err
 		}
 		categories = append(categories, category)
 	}
-
-	return lo.Map(categories, func(category dbCategory, _ int) model.Category { return model.Category(category) }), nil
+	err = rows.Err()
+	if err != nil {
+		return nil, err
+	}
+	return categories, nil
 }
 
 func (db *CategoryPostgresStore) CreateCategory(ctx context.Context, name, slug string) (uuid.UUID, error) {

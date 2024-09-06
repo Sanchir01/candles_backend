@@ -2,6 +2,7 @@ package pgstorecategory
 
 import (
 	"context"
+	"fmt"
 	"github.com/Sanchir01/candles_backend/internal/gql/model"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -35,17 +36,28 @@ func (db *CategoryPostgresStore) CategoryBySlug(ctx context.Context, slug string
 
 }
 func (db *CategoryPostgresStore) AllCategories(ctx context.Context) ([]model.Category, error) {
-	conn, err := db.db.Connx(ctx)
+	conn, err := db.pgxdb.Acquire(ctx)
 	if err != nil {
 		return nil, err
 	}
+	defer conn.Release()
 
-	defer conn.Close()
-	var categories []dbCategory
+	query := "SELECT id,title FROM category"
+	rows, err := conn.Query(ctx, query)
+	defer rows.Close()
 
-	if err := conn.SelectContext(ctx, &categories, "SELECT * FROM category"); err != nil {
+	if rows.Err(); err != nil {
 		return nil, err
 	}
+	var categories []dbCategory
+	for rows.Next() {
+		var category dbCategory
+		if err := rows.Scan(&category); err != nil {
+			return nil, fmt.Errorf("scan error: %v", err)
+		}
+		categories = append(categories, category)
+	}
+
 	return lo.Map(categories, func(category dbCategory, _ int) model.Category { return model.Category(category) }), nil
 }
 

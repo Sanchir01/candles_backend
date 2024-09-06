@@ -5,8 +5,8 @@ import (
 	"github.com/Sanchir01/candles_backend/internal/gql/model"
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
-	"github.com/lib/pq"
 	"github.com/samber/lo"
+	"log/slog"
 	"time"
 )
 
@@ -34,17 +34,21 @@ func (s *CandlesPostgresStore) AllCandles(ctx context.Context) ([]model.Candles,
 
 	return lo.Map(candles, func(candles dbCandles, _ int) model.Candles { return model.Candles(candles) }), nil
 }
+
 func (s *CandlesPostgresStore) CreateCandles(
-	ctx context.Context, categoryID uuid.UUID, title string, slug string,
-	images []string) (uuid.UUID, error) {
+	ctx context.Context, categoryID uuid.UUID, title string, slug string, images []string,
+) (uuid.UUID, error) {
 	conn, err := s.db.Connx(ctx)
 	if err != nil {
 		return uuid.Nil, err
 	}
 	defer conn.Close()
 	var id uuid.UUID
-	pqImages := pq.Array(images)
-	if err := conn.GetContext(ctx, &id, "INSERT INTO candles (category_id, title, slug, images) VALUES ($1, $2, $3, $4) RETURNING id", categoryID, title, slug, pqImages); err != nil {
+	myImages := make([]string, len(images))
+	copy(myImages, images)
+
+	if err := conn.GetContext(ctx, &id,
+		"INSERT INTO candles (category_id, title, slug, images) VALUES ($1, $2, $3, $4) RETURNING id", categoryID, title, slug, myImages); err != nil {
 		return uuid.Nil, err
 	}
 	return id, nil
@@ -76,6 +80,7 @@ func (s *CandlesPostgresStore) CandlesById(ctx context.Context, id uuid.UUID) (*
 	if err := conn.GetContext(ctx, &candle, "SELECT * FROM candles WHERE id = $1", id); err != nil {
 		return nil, err
 	}
+	slog.Warn("candles", candle)
 	return (*model.Candles)(&candle), nil
 }
 
@@ -86,6 +91,7 @@ type dbCandles struct {
 	CreatedAt  time.Time `db:"created_at"`
 	UpdatedAt  time.Time `db:"updated_at"`
 	Version    uint      `db:"version"`
+	Price      int       `db:"price"`
 	Images     []string  `db:"images"`
 	CategoryID uuid.UUID `db:"category_id"`
 }

@@ -13,6 +13,7 @@ gql_server:
     timeout: 5s
     debug: true
     idle_timeout: 60s
+    max_attempts: 10
 
 errors:
   bad_request:

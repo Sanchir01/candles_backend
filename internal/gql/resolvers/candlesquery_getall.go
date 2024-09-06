@@ -16,9 +16,11 @@ import (
 func (r *candlesQueryResolver) AllCandles(ctx context.Context, obj *model.CandlesQuery) (model.AllCategoryResult, error) {
 	allCandles, err := r.candlesStr.AllCandles(ctx)
 	if err != nil {
+		r.lg.Error(err.Error())
 		return responseErr.NewInternalErrorProblem("такая категория уже есть"), err
 	}
 	gqlCandles, err := featurecandles.MapCandlesToGql(allCandles)
+
 	if err != nil {
 		return responseErr.NewInternalErrorProblem("не удалось выполнить операцию по превращению в gql model"), err
 	}

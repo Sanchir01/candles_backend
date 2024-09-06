@@ -17,11 +17,12 @@ type Config struct {
 	DB          DataBase `yaml:"database"`
 }
 type DataBase struct {
-	Host     string `yaml:"host"`
-	Port     string `yaml:"port"`
-	User     string `yaml:"user"`
-	Database string `yaml:"dbname"`
-	SSL      string `yaml:"ssl"`
+	Host        string `yaml:"host"`
+	Port        string `yaml:"port"`
+	User        string `yaml:"user"`
+	Database    string `yaml:"dbname"`
+	SSL         string `yaml:"ssl"`
+	MaxAttempts int    `yaml:"max_attempts"`
 }
 type HttpServer struct {
 	Timeout     time.Duration `yaml:"timeout"  env-default:"4s"`

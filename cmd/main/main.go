@@ -32,13 +32,17 @@ func main() {
 
 	db := connect.PostgresCon(cfg, lg)
 	defer db.Close()
+	pgxdb, err := connect.PGXNew(cfg, lg, context.Background())
+	if err != nil {
+		lg.Error("pgx error connect", err.Error())
+	}
 
 	serve := httpserver.NewHttpServer(cfg)
 	rout := chi.NewRouter()
 	var (
-		categoryStr = pgstorecategory.New(db)
+		categoryStr = pgstorecategory.New(db, pgxdb)
 		candlesStr  = pgstorecandles.New(db)
-		handlers    = httphandlers.New(rout, lg, cfg, categoryStr, candlesStr)
+		handlers    = httphandlers.New(rout, lg, cfg, categoryStr, candlesStr, pgxdb)
 	)
 
 	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGTERM, syscall.SIGINT, os.Interrupt)

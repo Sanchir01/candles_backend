@@ -17,6 +17,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/jmoiron/sqlx"
 	"github.com/vektah/gqlparser/v2/gqlerror"
 	"log"
@@ -32,6 +33,7 @@ type HttpRouter struct {
 	db        *sqlx.DB
 	category  *pgstoreCategory.CategoryPostgresStore
 	candles   *pgstorecandles.CandlesPostgresStore
+	pgxdb     *pgxpool.Pool
 }
 
 const (
@@ -43,10 +45,11 @@ const (
 
 func New(r *chi.Mux, lg *slog.Logger, cfg *config.Config,
 	category *pgstoreCategory.CategoryPostgresStore, candlesStr *pgstorecandles.CandlesPostgresStore,
+	pgxdb *pgxpool.Pool,
 ) *HttpRouter {
 	return &HttpRouter{
 		chiRouter: r, logger: lg, config: cfg, category: category,
-		candles: candlesStr,
+		candles: candlesStr, pgxdb: pgxdb,
 	}
 }
 
@@ -89,7 +92,7 @@ func (r *HttpRouter) NewGraphQLHandler() *gqlhandler.Server {
 
 func (r *HttpRouter) newSchemaConfig() genGql.Config {
 	cfg := genGql.Config{Resolvers: resolver.New(
-		r.category, r.candles, r.logger,
+		r.category, r.candles, r.logger, r.pgxdb,
 	)}
 	cfg.Directives.InputUnion = directive.NewInputUnionDirective()
 	cfg.Directives.SortRankInput = directive.NewSortRankInputDirective()

@@ -4,18 +4,20 @@ import (
 	"context"
 	"github.com/Sanchir01/candles_backend/internal/gql/model"
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/jmoiron/sqlx"
 	"github.com/samber/lo"
 	"time"
 )
 
 type CategoryPostgresStore struct {
-	db *sqlx.DB
+	db    *sqlx.DB
+	pgxdb *pgxpool.Pool
 }
 
-func New(db *sqlx.DB) *CategoryPostgresStore {
+func New(db *sqlx.DB, pgxdb *pgxpool.Pool) *CategoryPostgresStore {
 	return &CategoryPostgresStore{
-		db: db,
+		db: db, pgxdb: pgxdb,
 	}
 }
 func (db *CategoryPostgresStore) CategoryBySlug(ctx context.Context, slug string) (*model.Category, error) {

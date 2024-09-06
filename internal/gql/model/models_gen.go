@@ -50,6 +50,7 @@ type Candles struct {
 	CreatedAt  time.Time `json:"created_at"`
 	UpdatedAt  time.Time `json:"updated_at"`
 	Version    uint      `json:"version"`
+	Price      int       `json:"price"`
 	Images     []string  `json:"images"`
 	CategoryID uuid.UUID `json:"category_id"`
 }

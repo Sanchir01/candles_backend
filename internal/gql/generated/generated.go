@@ -86,8 +86,8 @@ type ComplexityRoot struct {
 	Category struct {
 		CreatedAt func(childComplexity int) int
 		ID        func(childComplexity int) int
-		Name      func(childComplexity int) int
 		Slug      func(childComplexity int) int
+		Title     func(childComplexity int) int
 		UpdatedAt func(childComplexity int) int
 		Version   func(childComplexity int) int
 	}
@@ -285,19 +285,19 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Category.ID(childComplexity), true
 
-	case "Category.name":
-		if e.complexity.Category.Name == nil {
-			break
-		}
-
-		return e.complexity.Category.Name(childComplexity), true
-
 	case "Category.slug":
 		if e.complexity.Category.Slug == nil {
 			break
 		}
 
 		return e.complexity.Category.Slug(childComplexity), true
+
+	case "Category.title":
+		if e.complexity.Category.Title == nil {
+			break
+		}
+
+		return e.complexity.Category.Title(childComplexity), true
 
 	case "Category.updated_at":
 		if e.complexity.Category.UpdatedAt == nil {
@@ -558,6 +558,7 @@ scalar Uuid`, BuiltIn: false},
 
 input CreateCandleInput {
     title: String!
+    price: Int!
     category_id: Uuid!
     images:[String!]!
 }
@@ -595,7 +596,7 @@ extend type Mutation {
 }`, BuiltIn: false},
 	{Name: "../api/category/category.graphqls", Input: `type Category implements VersionInterface{
     id:Uuid!
-    name:String!
+    title:String!
     slug:String!
     created_at: DateTime!
     updated_at: DateTime!
@@ -614,7 +615,7 @@ extend type CategoryMutation {
 
 
 input CreateCategoryInput {
-    name: String!
+    title: String!
 }
 
 
@@ -1426,8 +1427,8 @@ func (ec *executionContext) fieldContext_Category_id(_ context.Context, field gr
 	return fc, nil
 }
 
-func (ec *executionContext) _Category_name(ctx context.Context, field graphql.CollectedField, obj *model.Category) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Category_name(ctx, field)
+func (ec *executionContext) _Category_title(ctx context.Context, field graphql.CollectedField, obj *model.Category) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Category_title(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -1440,7 +1441,7 @@ func (ec *executionContext) _Category_name(ctx context.Context, field graphql.Co
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Name, nil
+		return obj.Title, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1457,7 +1458,7 @@ func (ec *executionContext) _Category_name(ctx context.Context, field graphql.Co
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Category_name(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Category_title(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Category",
 		Field:      field,
@@ -1731,8 +1732,8 @@ func (ec *executionContext) fieldContext_CategoryGetAllOk_category(_ context.Con
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_Category_id(ctx, field)
-			case "name":
-				return ec.fieldContext_Category_name(ctx, field)
+			case "title":
+				return ec.fieldContext_Category_title(ctx, field)
 			case "slug":
 				return ec.fieldContext_Category_slug(ctx, field)
 			case "created_at":
@@ -4142,7 +4143,7 @@ func (ec *executionContext) unmarshalInputCreateCandleInput(ctx context.Context,
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"title", "category_id", "images"}
+	fieldsInOrder := [...]string{"title", "price", "category_id", "images"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -4156,6 +4157,13 @@ func (ec *executionContext) unmarshalInputCreateCandleInput(ctx context.Context,
 				return it, err
 			}
 			it.Title = data
+		case "price":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("price"))
+			data, err := ec.unmarshalNInt2int(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Price = data
 		case "category_id":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("category_id"))
 			data, err := ec.unmarshalNUuid2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
@@ -4183,20 +4191,20 @@ func (ec *executionContext) unmarshalInputCreateCategoryInput(ctx context.Contex
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"name"}
+	fieldsInOrder := [...]string{"title"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
 			continue
 		}
 		switch k {
-		case "name":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
+		case "title":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("title"))
 			data, err := ec.unmarshalNString2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.Name = data
+			it.Title = data
 		}
 	}
 
@@ -4731,8 +4739,8 @@ func (ec *executionContext) _Category(ctx context.Context, sel ast.SelectionSet,
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
-		case "name":
-			out.Values[i] = ec._Category_name(ctx, field, obj)
+		case "title":
+			out.Values[i] = ec._Category_title(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}

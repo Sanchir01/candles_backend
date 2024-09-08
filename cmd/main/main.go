@@ -44,8 +44,8 @@ func main() {
 		candlesStr  = pgstorecandles.New(db)
 		handlers    = httphandlers.New(rout, lg, cfg, categoryStr, candlesStr, pgxdb)
 	)
-	testCate, err := categoryStr.AllCategories(context.Background())
-	lg.Warn("test category", testCate, err.Error())
+	//testCate, err := categoryStr.AllCategories(context.Background())
+	//lg.Warn("test category", testCate, err.Error())
 	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGTERM, syscall.SIGINT, os.Interrupt)
 	defer cancel()
 

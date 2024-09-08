@@ -35,7 +35,7 @@ func (db *CategoryPostgresStore) CategoryBySlug(ctx context.Context, slug string
 }
 func (db *CategoryPostgresStore) AllCategories(ctx context.Context) ([]model.Category, error) {
 
-	query := "SELECT * FROM public.category"
+	query := "SELECT id , title, slug, created_at, updated_at, version FROM public.category"
 	rows, err := db.pgxdb.Query(ctx, query)
 
 	if rows.Err(); err != nil {
@@ -45,7 +45,7 @@ func (db *CategoryPostgresStore) AllCategories(ctx context.Context) ([]model.Cat
 
 	for rows.Next() {
 		var category model.Category
-		if err := rows.Scan(&category.ID, &category.Name, &category.Slug, &category.CreatedAt, &category.UpdatedAt, &category.Version); err != nil {
+		if err := rows.Scan(&category); err != nil {
 			return nil, err
 		}
 		categories = append(categories, category)
@@ -68,7 +68,7 @@ func (db *CategoryPostgresStore) CreateCategory(ctx context.Context, name, slug 
 	var id uuid.UUID
 
 	row := conn.QueryRowContext(ctx,
-		"INSERT INTO category(name, slug) VALUES($1, $2) RETURNING id",
+		"INSERT INTO category(title, slug) VALUES($1, $2) RETURNING id",
 		name, slug,
 	)
 	if err := row.Err(); err != nil {
@@ -82,7 +82,7 @@ func (db *CategoryPostgresStore) CreateCategory(ctx context.Context, name, slug 
 
 type dbCategory struct {
 	ID        uuid.UUID `db:"id"`
-	Name      string    `db:"name"`
+	Title     string    `db:"name"`
 	Slug      string    `db:"slug"`
 	CreatedAt time.Time `db:"created_at"`
 	UpdatedAt time.Time `db:"updated_at"`

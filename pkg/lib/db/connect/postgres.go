@@ -39,8 +39,6 @@ func PGXNew(cfg *config.Config, lg *slog.Logger, ctx context.Context) (*pgxpool.
 	err = utils.DoWithTries(func() error {
 		ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 		defer cancel()
-
-		// Создаем пул соединений
 		var err error
 		pool, err = pgxpool.New(ctx, dsn)
 		if err != nil {

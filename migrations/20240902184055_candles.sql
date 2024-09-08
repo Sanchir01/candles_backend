@@ -7,7 +7,10 @@ CREATE TABLE IF NOT EXISTS candles(
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     version INT NOT NULL DEFAULT 1,
+    price NUMERIC NOT NULL ,
+    images TEXT[] NOT NULL,
     category_id UUID NOT NULL REFERENCES category(id)
+
 );
 -- +goose StatementEnd
 

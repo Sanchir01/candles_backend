@@ -14,7 +14,7 @@ import (
 
 // CreateCategory is the resolver for the createCategory field.
 func (r *categoryMutationResolver) CreateCategory(ctx context.Context, obj *model.CategoryMutation, input *model.CreateCategoryInput) (model.CategoryCreateResult, error) {
-	slug, err := utils.Slugify(input.Name)
+	slug, err := utils.Slugify(input.Title)
 	if err != nil {
 		return responseErr.NewInternalErrorProblem("error for craeteing slug"), nil
 	}
@@ -23,7 +23,7 @@ func (r *categoryMutationResolver) CreateCategory(ctx context.Context, obj *mode
 		r.lg.Error(err.Error())
 		return responseErr.NewInternalErrorProblem("this category already exists"), nil
 	}
-	id, err := r.categoryStr.CreateCategory(ctx, input.Name, slug)
+	id, err := r.categoryStr.CreateCategory(ctx, input.Title, slug)
 	if err != nil {
 		r.lg.Error(err.Error())
 		return responseErr.NewInternalErrorProblem("error for creating category"), nil

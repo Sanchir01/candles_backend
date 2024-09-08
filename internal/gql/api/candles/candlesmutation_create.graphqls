@@ -6,6 +6,7 @@ extend type CandlesMutation {
 
 input CreateCandleInput {
     title: String!
+    price: Int!
     category_id: Uuid!
     images:[String!]!
 }

@@ -71,7 +71,7 @@ type CandlesQuery struct {
 
 type Category struct {
 	ID        uuid.UUID `json:"id"`
-	Name      string    `json:"name"`
+	Title     string    `json:"title"`
 	Slug      string    `json:"slug"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
@@ -103,12 +103,13 @@ type CategoryQuery struct {
 
 type CreateCandleInput struct {
 	Title      string    `json:"title"`
+	Price      int       `json:"price"`
 	CategoryID uuid.UUID `json:"category_id"`
 	Images     []string  `json:"images"`
 }
 
 type CreateCategoryInput struct {
-	Name string `json:"name"`
+	Title string `json:"title"`
 }
 
 type InternalErrorProblem struct {

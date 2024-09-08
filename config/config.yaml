@@ -6,6 +6,7 @@ database:
   user: "postgres"
   ssl: "disable"
   dbname: "test"
+  max_attempts: 10
 
 gql_server:
     port: "5000"

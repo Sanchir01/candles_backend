@@ -41,11 +41,12 @@ func (db *CategoryPostgresStore) AllCategories(ctx context.Context) ([]model.Cat
 	if rows.Err(); err != nil {
 		return nil, err
 	}
+
 	categories := make([]model.Category, 0)
 
 	for rows.Next() {
 		var category model.Category
-		if err := rows.Scan(&category); err != nil {
+		if err := rows.Scan(&category.ID, &category.Title, &category.Slug, &category.CreatedAt, &category.UpdatedAt, &category.Version); err != nil {
 			return nil, err
 		}
 		categories = append(categories, category)

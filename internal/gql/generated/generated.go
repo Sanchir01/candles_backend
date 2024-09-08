@@ -610,7 +610,7 @@ extend type Mutation {
 	{Name: "../api/category/categorymutation_create.graphqls", Input: `
 
 extend type CategoryMutation {
-    createCategory(input:CreateCategoryInput): CategoryCreateResult! @goField(forceResolver: true) @hasRole(role: ADMIN)
+    createCategory(input:CreateCategoryInput): CategoryCreateResult! @goField(forceResolver: true)
 }
 
 
@@ -1762,32 +1762,8 @@ func (ec *executionContext) _CategoryMutation_createCategory(ctx context.Context
 		}
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		directive0 := func(rctx context.Context) (interface{}, error) {
-			ctx = rctx // use context from middleware stack in children
-			return ec.resolvers.CategoryMutation().CreateCategory(rctx, obj, fc.Args["input"].(*model.CreateCategoryInput))
-		}
-		directive1 := func(ctx context.Context) (interface{}, error) {
-			role, err := ec.unmarshalORole2ᚖgithubᚗcomᚋSanchir01ᚋcandles_backendᚋinternalᚋgqlᚋmodelᚐRole(ctx, "ADMIN")
-			if err != nil {
-				return nil, err
-			}
-			if ec.directives.HasRole == nil {
-				return nil, errors.New("directive hasRole is not implemented")
-			}
-			return ec.directives.HasRole(ctx, obj, directive0, role)
-		}
-
-		tmp, err := directive1(rctx)
-		if err != nil {
-			return nil, graphql.ErrorOnPath(ctx, err)
-		}
-		if tmp == nil {
-			return nil, nil
-		}
-		if data, ok := tmp.(model.CategoryCreateResult); ok {
-			return data, nil
-		}
-		return nil, fmt.Errorf(`unexpected type %T from directive, should be github.com/Sanchir01/candles_backend/internal/gql/model.CategoryCreateResult`, tmp)
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.CategoryMutation().CreateCategory(rctx, obj, fc.Args["input"].(*model.CreateCategoryInput))
 	})
 	if err != nil {
 		ec.Error(ctx, err)

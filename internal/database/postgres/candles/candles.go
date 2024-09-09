@@ -6,7 +6,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/jmoiron/sqlx"
-	"log/slog"
 	"time"
 )
 
@@ -49,17 +48,14 @@ func (s *CandlesPostgresStore) AllCandles(ctx context.Context) ([]model.Candles,
 func (s *CandlesPostgresStore) CreateCandles(
 	ctx context.Context, categoryID uuid.UUID, title string, slug string, images []string,
 ) (uuid.UUID, error) {
-	conn, err := s.db.Connx(ctx)
+	conn, err := s.pgxdb.Acquire(ctx)
 	if err != nil {
 		return uuid.Nil, err
 	}
-	defer conn.Close()
+	defer conn.Release()
 	var id uuid.UUID
-	myImages := make([]string, len(images))
-	copy(myImages, images)
-
-	if err := conn.GetContext(ctx, &id,
-		"INSERT INTO candles (category_id, title, slug, images) VALUES ($1, $2, $3, $4) RETURNING id", categoryID, title, slug, myImages); err != nil {
+	query := "INSERT INTO candles (category_id, title, slug, images) VALUES ($1, $2, $3, $4) RETURNING id"
+	if err := conn.QueryRow(ctx, query, categoryID, title, slug, images).Scan(&id); err != nil {
 		return uuid.Nil, err
 	}
 	return id, nil
@@ -67,31 +63,34 @@ func (s *CandlesPostgresStore) CreateCandles(
 }
 
 func (s *CandlesPostgresStore) CandlesBySlug(ctx context.Context, slug string) (*model.Candles, error) {
-	conn, err := s.db.Connx(ctx)
+	conn, err := s.pgxdb.Acquire(ctx)
 	if err != nil {
 		return nil, err
 	}
-	defer conn.Close()
-	var candle dbCandles
+	defer conn.Release()
 
-	if err := conn.GetContext(ctx, &candle, "SELECT * FROM candles WHERE slug = $1", slug); err != nil {
+	query := "SELECT id ,title,slug, price, images, version, category_id, created_at, updated_at FROM public.candles WHERE slug = $1"
+
+	var candle dbCandles
+	if err := conn.QueryRow(ctx, query, slug).Scan(&candle.ID, &candle.Title, candle.Slug, &candle.CreatedAt, &candle.UpdatedAt, &candle.Version); err != nil {
 		return nil, err
 	}
 	return (*model.Candles)(&candle), nil
 }
 
 func (s *CandlesPostgresStore) CandlesById(ctx context.Context, id uuid.UUID) (*model.Candles, error) {
-	conn, err := s.db.Connx(ctx)
+	conn, err := s.pgxdb.Acquire(ctx)
 	if err != nil {
 		return nil, err
 	}
-	defer conn.Close()
-	var candle dbCandles
+	defer conn.Release()
 
-	if err := conn.GetContext(ctx, &candle, "SELECT * FROM candles WHERE id = $1", id); err != nil {
+	query := "SELECT id ,title,slug, price, images, version, category_id, created_at, updated_at FROM public.candles WHERE id = $1"
+
+	var candle dbCandles
+	if err := conn.QueryRow(ctx, query, id).Scan(&candle.ID, &candle.Title, candle.Slug, &candle.CreatedAt, &candle.UpdatedAt, &candle.Version); err != nil {
 		return nil, err
 	}
-	slog.Warn("candles", candle)
 	return (*model.Candles)(&candle), nil
 }
 

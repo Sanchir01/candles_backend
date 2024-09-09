@@ -5,42 +5,48 @@ import (
 	"github.com/Sanchir01/candles_backend/internal/gql/model"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/jmoiron/sqlx"
-	"time"
 )
 
 type CategoryPostgresStore struct {
-	db    *sqlx.DB
 	pgxdb *pgxpool.Pool
 }
 
-func New(db *sqlx.DB, pgxdb *pgxpool.Pool) *CategoryPostgresStore {
+func New(pgxdb *pgxpool.Pool) *CategoryPostgresStore {
 	return &CategoryPostgresStore{
-		db: db, pgxdb: pgxdb,
+		pgxdb: pgxdb,
 	}
 }
-func (db *CategoryPostgresStore) CategoryBySlug(ctx context.Context, slug string) (*model.Category, error) {
-	conn, err := db.db.Connx(ctx)
+func (db *CategoryPostgresStore) CategoryBySlug(ctx context.Context, slug string) (model.Category, error) {
+	conn, err := db.pgxdb.Acquire(ctx)
 	if err != nil {
-		return nil, err
+		return model.Category{}, err
+	}
+	defer conn.Release()
+
+	query := "SELECT id , title, slug, created_at, updated_at, version FROM public.category WHERE slug = $1"
+
+	var category model.Category
+	err = conn.QueryRow(ctx, query, slug).Scan(&category.ID, &category.Title, category.Slug, &category.CreatedAt, &category.UpdatedAt, &category.Version)
+	if err != nil {
+		return model.Category{}, err
 	}
 
-	defer conn.Close()
-	var category dbCategory
-	if err := conn.GetContext(ctx, &category, "SELECT * FROM category WHERE slug = $1", slug); err != nil {
-		return nil, err
-	}
-	return (*model.Category)(&category), nil
+	return category, nil
 
 }
 func (db *CategoryPostgresStore) AllCategories(ctx context.Context) ([]model.Category, error) {
-
+	conn, err := db.pgxdb.Acquire(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer conn.Release()
 	query := "SELECT id , title, slug, created_at, updated_at, version FROM public.category"
-	rows, err := db.pgxdb.Query(ctx, query)
+	rows, err := conn.Query(ctx, query)
 
 	if rows.Err(); err != nil {
 		return nil, err
 	}
+	defer rows.Close()
 
 	categories := make([]model.Category, 0)
 
@@ -51,41 +57,26 @@ func (db *CategoryPostgresStore) AllCategories(ctx context.Context) ([]model.Cat
 		}
 		categories = append(categories, category)
 	}
-	err = rows.Err()
-	if err != nil {
+
+	if err = rows.Err(); err != nil {
 		return nil, err
 	}
 	return categories, nil
 }
 
 func (db *CategoryPostgresStore) CreateCategory(ctx context.Context, name, slug string) (uuid.UUID, error) {
-	conn, err := db.db.Connx(ctx)
+	conn, err := db.pgxdb.Acquire(ctx)
 	if err != nil {
 		return uuid.Nil, err
 	}
-
-	defer conn.Close()
-
+	defer conn.Release()
+	query := "INSERT INTO category(title, slug) VALUES($1, $2) RETURNING id"
 	var id uuid.UUID
 
-	row := conn.QueryRowContext(ctx,
-		"INSERT INTO category(title, slug) VALUES($1, $2) RETURNING id",
-		name, slug,
-	)
-	if err := row.Err(); err != nil {
-		return uuid.New(), err
-	}
+	row := conn.QueryRow(ctx, query, name, slug)
+
 	if err := row.Scan(&id); err != nil {
 		return uuid.Nil, err
 	}
 	return id, nil
-}
-
-type dbCategory struct {
-	ID        uuid.UUID `db:"id"`
-	Title     string    `db:"name"`
-	Slug      string    `db:"slug"`
-	CreatedAt time.Time `db:"created_at"`
-	UpdatedAt time.Time `db:"updated_at"`
-	Version   uint      `db:"version"`
 }

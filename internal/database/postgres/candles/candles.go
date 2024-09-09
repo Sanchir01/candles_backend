@@ -33,6 +33,7 @@ func (s *CandlesPostgresStore) AllCandles(ctx context.Context) ([]model.Candles,
 	}
 
 	return lo.Map(candles, func(candles dbCandles, _ int) model.Candles { return model.Candles(candles) }), nil
+
 }
 
 func (s *CandlesPostgresStore) CreateCandles(

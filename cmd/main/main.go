@@ -40,10 +40,12 @@ func main() {
 	serve := httpserver.NewHttpServer(cfg)
 	rout := chi.NewRouter()
 	var (
-		categoryStr = pgstorecategory.New(db, pgxdb)
+		categoryStr = pgstorecategory.New(pgxdb)
 		candlesStr  = pgstorecandles.New(db)
 		handlers    = httphandlers.New(rout, lg, cfg, categoryStr, candlesStr, pgxdb)
 	)
+	callcat, err := categoryStr.AllCategories(context.Background())
+	lg.Warn("categoru", callcat)
 	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGTERM, syscall.SIGINT, os.Interrupt)
 	defer cancel()
 
@@ -67,7 +69,7 @@ func main() {
 	}
 
 	if err := serve.Gracefull(ctx); err != nil {
-		log.Fatalf("Http gracefull")
+		log.Fatalf("Graphql serve gracefull")
 	}
 }
 func setupLogger(env string) *slog.Logger {

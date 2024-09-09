@@ -46,7 +46,7 @@ func (s *CandlesPostgresStore) AllCandles(ctx context.Context) ([]model.Candles,
 }
 
 func (s *CandlesPostgresStore) CreateCandles(
-	ctx context.Context, categoryID uuid.UUID, title string, slug string, images []string,
+	ctx context.Context, categoryID uuid.UUID, title string, slug string, images []string, price int,
 ) (uuid.UUID, error) {
 	conn, err := s.pgxdb.Acquire(ctx)
 	if err != nil {
@@ -54,8 +54,8 @@ func (s *CandlesPostgresStore) CreateCandles(
 	}
 	defer conn.Release()
 	var id uuid.UUID
-	query := "INSERT INTO candles (category_id, title, slug, images) VALUES ($1, $2, $3, $4) RETURNING id"
-	if err := conn.QueryRow(ctx, query, categoryID, title, slug, images).Scan(&id); err != nil {
+	query := "INSERT INTO candles (category_id, title, slug, images,price) VALUES ($1, $2, $3, $4, $5) RETURNING id"
+	if err := conn.QueryRow(ctx, query, categoryID, title, slug, images, price).Scan(&id); err != nil {
 		return uuid.Nil, err
 	}
 	return id, nil

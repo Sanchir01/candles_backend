@@ -20,8 +20,9 @@ func (r *candlesMutationResolver) CreateCandle(ctx context.Context, obj *model.C
 		return responseErr.NewInternalErrorProblem("не удалось создат слаг"), err
 	}
 	_, err = r.candlesStr.CandlesById(ctx, input.CategoryID)
+
 	if err == nil {
-		return responseErr.NewInternalErrorProblem("товар с таким айди уже е сть"), err
+		return responseErr.NewInternalErrorProblem("товар с таким айди уже есть"), err
 	}
 
 	_, err = r.candlesStr.CandlesBySlug(ctx, slug)
@@ -29,7 +30,7 @@ func (r *candlesMutationResolver) CreateCandle(ctx context.Context, obj *model.C
 		return responseErr.NewInternalErrorProblem("такая категория уже есть"), err
 	}
 
-	id, err := r.candlesStr.CreateCandles(ctx, input.CategoryID, input.Title, slug, input.Images)
+	id, err := r.candlesStr.CreateCandles(ctx, input.CategoryID, input.Title, slug, input.Images, input.Price)
 	if err != nil {
 		return responseErr.NewInternalErrorProblem("ошибка во время создания свечи"), err
 	}

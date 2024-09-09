@@ -4,35 +4,45 @@ import (
 	"context"
 	"github.com/Sanchir01/candles_backend/internal/gql/model"
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/jmoiron/sqlx"
-	"github.com/samber/lo"
 	"log/slog"
 	"time"
 )
 
 type CandlesPostgresStore struct {
-	db *sqlx.DB
+	db    *sqlx.DB
+	pgxdb *pgxpool.Pool
 }
 
-func New(db *sqlx.DB) *CandlesPostgresStore {
+func New(db *sqlx.DB, pgxdb *pgxpool.Pool) *CandlesPostgresStore {
 	return &CandlesPostgresStore{
-		db: db,
+		db: db, pgxdb: pgxdb,
 	}
 }
 
 func (s *CandlesPostgresStore) AllCandles(ctx context.Context) ([]model.Candles, error) {
-	conn, err := s.db.Connx(ctx)
+	conn, err := s.pgxdb.Acquire(ctx)
 	if err != nil {
 		return nil, err
 	}
-	defer conn.Close()
-	var candles []dbCandles
+	defer conn.Release()
+	query := "SELECT id ,title,slug, price, images, version, category_id, created_at, updated_at FROM public.candles"
 
-	if err := conn.SelectContext(ctx, &candles, "SELECT * FROM candles"); err != nil {
+	rows, err := conn.Query(ctx, query)
+	if rows.Err(); err != nil {
 		return nil, err
 	}
+	defer rows.Close()
 
-	return lo.Map(candles, func(candles dbCandles, _ int) model.Candles { return model.Candles(candles) }), nil
+	candles := make([]model.Candles, 0)
+	for {
+		var candle model.Candles
+		if err := rows.Scan(&candle.ID, &candle.Title, &candle.Slug, &candle.Price, &candle.Images, &candle.Version, &candle.CategoryID, &candle.CreatedAt, &candle.UpdatedAt); err != nil {
+			return nil, err
+		}
+	}
+	return candles, nil
 
 }
 

@@ -16,8 +16,8 @@ func New(pgxdb *pgxpool.Pool) *CategoryPostgresStore {
 		pgxdb: pgxdb,
 	}
 }
-func (db *CategoryPostgresStore) CategoryBySlug(ctx context.Context, slug string) (model.Category, error) {
-	conn, err := db.pgxdb.Acquire(ctx)
+func (s *CategoryPostgresStore) CategoryBySlug(ctx context.Context, slug string) (model.Category, error) {
+	conn, err := s.pgxdb.Acquire(ctx)
 	if err != nil {
 		return model.Category{}, err
 	}
@@ -34,8 +34,8 @@ func (db *CategoryPostgresStore) CategoryBySlug(ctx context.Context, slug string
 	return category, nil
 
 }
-func (db *CategoryPostgresStore) AllCategories(ctx context.Context) ([]model.Category, error) {
-	conn, err := db.pgxdb.Acquire(ctx)
+func (s *CategoryPostgresStore) AllCategories(ctx context.Context) ([]model.Category, error) {
+	conn, err := s.pgxdb.Acquire(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -64,8 +64,8 @@ func (db *CategoryPostgresStore) AllCategories(ctx context.Context) ([]model.Cat
 	return categories, nil
 }
 
-func (db *CategoryPostgresStore) CreateCategory(ctx context.Context, name, slug string) (uuid.UUID, error) {
-	conn, err := db.pgxdb.Acquire(ctx)
+func (s *CategoryPostgresStore) CreateCategory(ctx context.Context, name, slug string) (uuid.UUID, error) {
+	conn, err := s.pgxdb.Acquire(ctx)
 	if err != nil {
 		return uuid.Nil, err
 	}

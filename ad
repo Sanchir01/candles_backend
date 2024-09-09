@@ -1,0 +1,131 @@
+[33mcommit c876d6f8bc34e1016e65ed2fdd6c11ef9272d41a[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mfeature[m[33m, [m[1;31morigin/feature[m[33m)[m
+Author: AsukaTundra <c.vodopyanov@mail.ru>
+Date:   Mon Sep 9 16:42:18 2024 +0300
+
+    moved the categories to pgx
+
+[33mcommit edd042950e2bd49bb910d1b0316ba8bae0f63f8f[m
+Author: Sanchir01 <emgushovs@mail.ru>
+Date:   Sun Sep 8 14:20:36 2024 +0300
+
+    connect pgx in golang: all category
+
+[33mcommit 849afb8a2cc84c8a314f49a15baf45cde1362742[m
+Author: Sanchir01 <emgushovs@mail.ru>
+Date:   Sun Sep 8 14:11:44 2024 +0300
+
+    update gql schema and database
+
+[33mcommit 3aa24e706c4d6981f2eda163c734f45d8701b33f[m
+Author: Sanchir01 <emgushovs@mail.ru>
+Date:   Fri Sep 6 21:51:17 2024 +0300
+
+    dont fix error in pgx category
+
+[33mcommit ae085b890af1a6b71862639079527ec69300c397[m
+Author: AsukaTundra <c.vodopyanov@mail.ru>
+Date:   Fri Sep 6 16:44:13 2024 +0300
+
+    add pgx all category:many errors
+
+[33mcommit 050cb53e8eaa11f906ad0c849f698d0b5fd00884[m
+Author: AsukaTundra <c.vodopyanov@mail.ru>
+Date:   Fri Sep 6 16:16:15 2024 +0300
+
+    add pgx pool
+
+[33mcommit 1a85d68978e7d067d3020f30674629d1f9a9ec36[m
+Author: AsukaTundra <c.vodopyanov@mail.ru>
+Date:   Thu Sep 5 16:36:07 2024 +0300
+
+    fix bug for create canlde in to images error
+
+[33mcommit 816ace89dcd37447f4008140ed12465bd8496f51[m
+Author: AsukaTundra <c.vodopyanov@mail.ru>
+Date:   Thu Sep 5 15:24:56 2024 +0300
+
+    add tgbot-api
+
+[33mcommit 4e7ef3a43216a54455822ee5b8d8a13230a22cbb[m
+Author: AsukaTundra <c.vodopyanov@mail.ru>
+Date:   Wed Sep 4 14:37:23 2024 +0300
+
+    add README.dm
+
+[33mcommit f97b053a337afde18908498dc987d29deb4dcf53[m
+Author: Sanchir01 <emgushovs@mail.ru>
+Date:   Tue Sep 3 22:40:30 2024 +0300
+
+    create allCandles pg and get by slug, create getAll and  create candles
+
+[33mcommit 1330efcac6ed625c4c0b52f1890c5fa0f0370483[m
+Author: Sanchir01 <emgushovs@mail.ru>
+Date:   Mon Sep 2 22:12:19 2024 +0300
+
+    create pg method: createCandles
+
+[33mcommit a2da49473735f54f6daf1b9936f90cc37b60922a[m
+Author: Sanchir01 <emgushovs@mail.ru>
+Date:   Mon Sep 2 22:09:23 2024 +0300
+
+    create base candles gql schema and pg allCandles
+
+[33mcommit 98a17390d8c812e1b2d3c33aa0bffa405e10c277[m
+Author: Sanchir01 <emgushovs@mail.ru>
+Date:   Sun Sep 1 01:24:50 2024 +0300
+
+    add gql endpoint create category and get category by id ,pg
+
+[33mcommit 0c0472dfc839c43663deb1b75f08a3e2c0f772b0[m
+Author: Sanchir01 <emgushovs@mail.ru>
+Date:   Sat Aug 31 23:49:49 2024 +0300
+
+    create allCategory gql endpoint
+
+[33mcommit a9e044b87b9a86006946d9492d6392ca76cfff41[m
+Author: Sanchir01 <emgushovs@mail.ru>
+Date:   Sat Aug 31 00:38:58 2024 +0300
+
+    update categoyr table:id to uuid primaty key and autogenerate
+
+[33mcommit 28338baa50c728802436478ffc2bc544dd19355e[m
+Author: Sanchir01 <emgushovs@mail.ru>
+Date:   Sat Aug 31 00:31:31 2024 +0300
+
+    create base migrations category and base postres category
+
+[33mcommit c9183c3704f698dd21b8fa163e46dc927d63ff73[m
+Author: Sanchir01 <emgushovs@mail.ru>
+Date:   Fri Aug 30 19:28:33 2024 +0300
+
+    init
+
+[33mcommit 756af325235aaf63095f6fb2a1b11b574eed4eea[m[33m ([m[1;31morigin/main[m[33m, [m[1;32mmain[m[33m)[m
+Author: AsukaTundra <c.vodopyanov@mail.ru>
+Date:   Fri Aug 30 17:42:28 2024 +0300
+
+    fix config path error
+
+[33mcommit 8e83b4ef08a16d869bb1ba1d6f6d74dda623dd1d[m
+Author: AsukaTundra <c.vodopyanov@mail.ru>
+Date:   Fri Aug 30 17:37:33 2024 +0300
+
+    create category full schema and connect chi router and gqlgen
+
+[33mcommit f2a4202469b061cf16e723f14aee997fd6b6b1d3[m
+Author: AsukaTundra <c.vodopyanov@mail.ru>
+Date:   Fri Aug 30 17:15:09 2024 +0300
+
+    http base handlers gql
+
+[33mcommit 26069b2259aa76a346e2241a867f515e6d875b38[m[33m ([m[1;31morigin/release[m[33m, [m[1;31morigin/develop[m[33m, [m[1;32mrelease[m[33m, [m[1;32mdevelop[m[33m)[m
+Author: AsukaTundra <c.vodopyanov@mail.ru>
+Date:   Fri Aug 30 14:26:54 2024 +0300
+
+    base conf
+
+[33mcommit 3c4a93f92169f5130fd677641e1495be6287247d[m
+Author: AsukaTundra <c.vodopyanov@mail.ru>
+Date:   Fri Aug 30 12:40:52 2024 +0300
+
+    init

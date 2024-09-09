@@ -41,7 +41,7 @@ func main() {
 	rout := chi.NewRouter()
 	var (
 		categoryStr = pgstorecategory.New(pgxdb)
-		candlesStr  = pgstorecandles.New(db)
+		candlesStr  = pgstorecandles.New(db, pgxdb)
 		handlers    = httphandlers.New(rout, lg, cfg, categoryStr, candlesStr, pgxdb)
 	)
 	callcat, err := categoryStr.AllCategories(context.Background())

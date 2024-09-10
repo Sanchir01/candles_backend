@@ -697,12 +697,12 @@ scalar UInt
 scalar Upload
 scalar Url
 scalar Uuid`, BuiltIn: false},
-	{Name: "../api/auth/authmutations.graphqls", Input: `type AuthMutations
+	{Name: "../api/auth/authmutation.graphqls", Input: `type AuthMutations
 
 extend type Mutation {
     auth: AuthMutations!
 }`, BuiltIn: false},
-	{Name: "../api/auth/authmutations_login.graphqls", Input: `
+	{Name: "../api/auth/authmutation_login.graphqls", Input: `
 extend type AuthMutations {
     login(input:LoginInput!):LoginResult! @goField(forceResolver: true)
 }
@@ -721,7 +721,7 @@ type LoginOk {
     verify_code:String!
     phone:String!
 }`, BuiltIn: false},
-	{Name: "../api/auth/authmutations_register.graphqls", Input: `extend type AuthMutations {
+	{Name: "../api/auth/authmutation_register.graphqls", Input: `extend type AuthMutations {
     registrations(input:RegistrationsInput!): RegistrationsResult! @goField(forceResolver: true)
 }
 

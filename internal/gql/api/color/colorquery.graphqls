@@ -1,0 +1,5 @@
+type ColorQuery
+
+extend type Query {
+    color: ColorQuery!
+}

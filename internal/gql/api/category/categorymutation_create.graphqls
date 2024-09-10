@@ -18,3 +18,4 @@ union CategoryCreateResult =
     | CategoryCreateOk
     | InternalErrorProblem
     | UnauthorizedProblem
+    | VersionMismatchProblem

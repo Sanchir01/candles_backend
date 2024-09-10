@@ -1,0 +1,14 @@
+
+extend type ColorQuery {
+    allColor: AllColorResult! @goField(forceResolver: true)
+}
+
+
+union AllColorResult =
+    | AllColorOk
+    | VersionMismatchProblem
+    | InternalErrorProblem
+
+type AllColorOk {
+    colors: [Color!]!
+}

@@ -35,11 +35,16 @@ func (s *CandlesPostgresStore) AllCandles(ctx context.Context) ([]model.Candles,
 	defer rows.Close()
 
 	candles := make([]model.Candles, 0)
-	for {
+
+	for rows.Next() {
 		var candle model.Candles
 		if err := rows.Scan(&candle.ID, &candle.Title, &candle.Slug, &candle.Price, &candle.Images, &candle.Version, &candle.CategoryID, &candle.CreatedAt, &candle.UpdatedAt); err != nil {
 			return nil, err
 		}
+		candles = append(candles, candle)
+	}
+	if err = rows.Err(); err != nil {
+		return nil, err
 	}
 	return candles, nil
 
@@ -55,6 +60,7 @@ func (s *CandlesPostgresStore) CreateCandles(
 	defer conn.Release()
 	var id uuid.UUID
 	query := "INSERT INTO candles (category_id, title, slug, images,price) VALUES ($1, $2, $3, $4, $5) RETURNING id"
+
 	if err := conn.QueryRow(ctx, query, categoryID, title, slug, images, price).Scan(&id); err != nil {
 		return uuid.Nil, err
 	}

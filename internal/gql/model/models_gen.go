@@ -27,9 +27,17 @@ type CategoryGetAllResult interface {
 	IsCategoryGetAllResult()
 }
 
+type LoginResult interface {
+	IsLoginResult()
+}
+
 type ProblemInterface interface {
 	IsProblemInterface()
 	GetMessage() string
+}
+
+type RegistrationsResult interface {
+	IsRegistrationsResult()
 }
 
 type VersionInterface interface {
@@ -42,6 +50,11 @@ type AllCandlesOk struct {
 }
 
 func (AllCandlesOk) IsAllCategoryResult() {}
+
+type AuthMutations struct {
+	Login         LoginResult         `json:"login"`
+	Registrations RegistrationsResult `json:"registrations"`
+}
 
 type Candles struct {
 	ID         uuid.UUID `json:"id"`
@@ -116,6 +129,10 @@ type InternalErrorProblem struct {
 	Message string `json:"message"`
 }
 
+func (InternalErrorProblem) IsLoginResult() {}
+
+func (InternalErrorProblem) IsRegistrationsResult() {}
+
 func (InternalErrorProblem) IsCandlesMutationResult() {}
 
 func (InternalErrorProblem) IsAllCategoryResult() {}
@@ -134,10 +151,33 @@ type InvalidSortRankProblem struct {
 func (InvalidSortRankProblem) IsProblemInterface()     {}
 func (this InvalidSortRankProblem) GetMessage() string { return this.Message }
 
+type LoginInput struct {
+	Phone string `json:"phone"`
+}
+
+type LoginOk struct {
+	ID         uuid.UUID `json:"id"`
+	VerifyCode string    `json:"verify_code"`
+	Phone      string    `json:"phone"`
+}
+
+func (LoginOk) IsLoginResult() {}
+
 type Mutation struct {
 }
 
 type Query struct {
+}
+
+type RegistrationsInput struct {
+	Phone string `json:"phone"`
+	Title string `json:"title"`
+}
+
+type RegistrationsOk struct {
+	ID         uuid.UUID `json:"id"`
+	VerifyCode string    `json:"verify_code"`
+	Phone      string    `json:"phone"`
 }
 
 type SortRankInput struct {
@@ -154,9 +194,23 @@ func (UnauthorizedProblem) IsCategoryCreateResult() {}
 func (UnauthorizedProblem) IsProblemInterface()     {}
 func (this UnauthorizedProblem) GetMessage() string { return this.Message }
 
+type User struct {
+	ID        uuid.UUID `json:"id"`
+	Title     string    `json:"title"`
+	Slug      string    `json:"slug"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
+	Version   uint      `json:"version"`
+	Role      bool      `json:"role"`
+}
+
 type VersionMismatchProblem struct {
 	Message string `json:"message"`
 }
+
+func (VersionMismatchProblem) IsLoginResult() {}
+
+func (VersionMismatchProblem) IsRegistrationsResult() {}
 
 func (VersionMismatchProblem) IsCandlesMutationResult() {}
 

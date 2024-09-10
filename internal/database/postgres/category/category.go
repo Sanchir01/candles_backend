@@ -34,6 +34,7 @@ func (s *CategoryPostgresStore) CategoryBySlug(ctx context.Context, slug string)
 	return category, nil
 
 }
+
 func (s *CategoryPostgresStore) AllCategories(ctx context.Context) ([]model.Category, error) {
 	conn, err := s.pgxdb.Acquire(ctx)
 	if err != nil {

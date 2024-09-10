@@ -1,0 +1,8 @@
+type Color {
+    id:Uuid!
+    title:String!
+    slug:String!
+    created_at: DateTime!
+    updated_at: DateTime!
+    version:UInt!
+}

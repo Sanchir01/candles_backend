@@ -1,9 +1,8 @@
 type Category implements VersionInterface{
     id:Uuid!
-    name:String!
+    title:String!
     slug:String!
     created_at: DateTime!
     updated_at: DateTime!
-    description:String!
     version:UInt!
 }

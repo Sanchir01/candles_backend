@@ -1,0 +1,19 @@
+
+
+extend type ColorMutation {
+    createColor(input:CreateColorInput!): ColorCreateResult! @goField(forceResolver: true) 
+}
+
+input  CreateColorInput{
+    title: String!
+}
+
+type ColorCreateOk {
+    id:Uuid!
+}
+
+union ColorCreateResult =
+    | ColorCreateOk
+    | InternalErrorProblem
+    | UnauthorizedProblem
+    | VersionMismatchProblem

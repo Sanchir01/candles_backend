@@ -1,0 +1,5 @@
+type AuthMutations
+
+extend type Mutation {
+    auth: AuthMutations!
+}

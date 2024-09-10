@@ -1,0 +1,5 @@
+type ColorMutation
+
+extend type Mutation {
+    color: ColorMutation!
+}

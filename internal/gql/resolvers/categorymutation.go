@@ -6,7 +6,6 @@ package resolver
 
 import (
 	"context"
-	"fmt"
 
 	runtime "github.com/Sanchir01/candles_backend/internal/gql/generated"
 	"github.com/Sanchir01/candles_backend/internal/gql/model"
@@ -14,7 +13,7 @@ import (
 
 // Category is the resolver for the category field.
 func (r *mutationResolver) Category(ctx context.Context) (*model.CategoryMutation, error) {
-	panic(fmt.Errorf("not implemented: Category - category"))
+	return &model.CategoryMutation{}, nil
 }
 
 // CategoryMutation returns runtime.CategoryMutationResolver implementation.

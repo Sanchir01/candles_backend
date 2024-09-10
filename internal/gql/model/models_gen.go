@@ -11,6 +11,14 @@ import (
 	"github.com/google/uuid"
 )
 
+type AllCategoryResult interface {
+	IsAllCategoryResult()
+}
+
+type CandlesMutationResult interface {
+	IsCandlesMutationResult()
+}
+
 type CategoryCreateResult interface {
 	IsCategoryCreateResult()
 }
@@ -19,9 +27,17 @@ type CategoryGetAllResult interface {
 	IsCategoryGetAllResult()
 }
 
+type LoginResult interface {
+	IsLoginResult()
+}
+
 type ProblemInterface interface {
 	IsProblemInterface()
 	GetMessage() string
+}
+
+type RegistrationsResult interface {
+	IsRegistrationsResult()
 }
 
 type VersionInterface interface {
@@ -29,14 +45,50 @@ type VersionInterface interface {
 	GetVersion() uint
 }
 
+type AllCandlesOk struct {
+	Candles []*Candles `json:"candles"`
+}
+
+func (AllCandlesOk) IsAllCategoryResult() {}
+
+type AuthMutations struct {
+	Login         LoginResult         `json:"login"`
+	Registrations RegistrationsResult `json:"registrations"`
+}
+
+type Candles struct {
+	ID         uuid.UUID `json:"id"`
+	Title      string    `json:"title"`
+	Slug       string    `json:"slug"`
+	CreatedAt  time.Time `json:"created_at"`
+	UpdatedAt  time.Time `json:"updated_at"`
+	Version    uint      `json:"version"`
+	Price      int       `json:"price"`
+	Images     []string  `json:"images"`
+	CategoryID uuid.UUID `json:"category_id"`
+}
+
+type CandlesCreateOk struct {
+	ID uuid.UUID `json:"id"`
+}
+
+func (CandlesCreateOk) IsCandlesMutationResult() {}
+
+type CandlesMutation struct {
+	CreateCandle CandlesMutationResult `json:"createCandle"`
+}
+
+type CandlesQuery struct {
+	AllCandles AllCategoryResult `json:"allCandles"`
+}
+
 type Category struct {
-	ID          uuid.UUID `json:"id"`
-	Name        string    `json:"name"`
-	Slug        string    `json:"slug"`
-	CreatedAt   time.Time `json:"created_at"`
-	UpdatedAt   time.Time `json:"updated_at"`
-	Description string    `json:"description"`
-	Version     uint      `json:"version"`
+	ID        uuid.UUID `json:"id"`
+	Title     string    `json:"title"`
+	Slug      string    `json:"slug"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
+	Version   uint      `json:"version"`
 }
 
 func (Category) IsVersionInterface()   {}
@@ -58,29 +110,32 @@ type CategoryMutation struct {
 	CreateCategory CategoryCreateResult `json:"createCategory"`
 }
 
-type CategoryNotFoundProblem struct {
-	Message string `json:"message"`
-}
-
-func (CategoryNotFoundProblem) IsProblemInterface()     {}
-func (this CategoryNotFoundProblem) GetMessage() string { return this.Message }
-
-func (CategoryNotFoundProblem) IsCategoryCreateResult() {}
-
-func (CategoryNotFoundProblem) IsCategoryGetAllResult() {}
-
 type CategoryQuery struct {
 	GetAllCategory CategoryGetAllResult `json:"getAllCategory"`
 }
 
+type CreateCandleInput struct {
+	Title      string    `json:"title"`
+	Price      int       `json:"price"`
+	CategoryID uuid.UUID `json:"category_id"`
+	Images     []string  `json:"images"`
+}
+
 type CreateCategoryInput struct {
-	Name        string `json:"name"`
-	Description string `json:"description"`
+	Title string `json:"title"`
 }
 
 type InternalErrorProblem struct {
 	Message string `json:"message"`
 }
+
+func (InternalErrorProblem) IsLoginResult() {}
+
+func (InternalErrorProblem) IsRegistrationsResult() {}
+
+func (InternalErrorProblem) IsCandlesMutationResult() {}
+
+func (InternalErrorProblem) IsAllCategoryResult() {}
 
 func (InternalErrorProblem) IsCategoryCreateResult() {}
 
@@ -96,10 +151,33 @@ type InvalidSortRankProblem struct {
 func (InvalidSortRankProblem) IsProblemInterface()     {}
 func (this InvalidSortRankProblem) GetMessage() string { return this.Message }
 
+type LoginInput struct {
+	Phone string `json:"phone"`
+}
+
+type LoginOk struct {
+	ID         uuid.UUID `json:"id"`
+	VerifyCode string    `json:"verify_code"`
+	Phone      string    `json:"phone"`
+}
+
+func (LoginOk) IsLoginResult() {}
+
 type Mutation struct {
 }
 
 type Query struct {
+}
+
+type RegistrationsInput struct {
+	Phone string `json:"phone"`
+	Title string `json:"title"`
+}
+
+type RegistrationsOk struct {
+	ID         uuid.UUID `json:"id"`
+	VerifyCode string    `json:"verify_code"`
+	Phone      string    `json:"phone"`
 }
 
 type SortRankInput struct {
@@ -116,9 +194,27 @@ func (UnauthorizedProblem) IsCategoryCreateResult() {}
 func (UnauthorizedProblem) IsProblemInterface()     {}
 func (this UnauthorizedProblem) GetMessage() string { return this.Message }
 
+type User struct {
+	ID        uuid.UUID `json:"id"`
+	Title     string    `json:"title"`
+	Slug      string    `json:"slug"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
+	Version   uint      `json:"version"`
+	Role      bool      `json:"role"`
+}
+
 type VersionMismatchProblem struct {
 	Message string `json:"message"`
 }
+
+func (VersionMismatchProblem) IsLoginResult() {}
+
+func (VersionMismatchProblem) IsRegistrationsResult() {}
+
+func (VersionMismatchProblem) IsCandlesMutationResult() {}
+
+func (VersionMismatchProblem) IsAllCategoryResult() {}
 
 func (VersionMismatchProblem) IsProblemInterface()     {}
 func (this VersionMismatchProblem) GetMessage() string { return this.Message }

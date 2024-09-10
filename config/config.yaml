@@ -6,6 +6,7 @@ database:
   user: "postgres"
   ssl: "disable"
   dbname: "test"
+  max_attempts: 10
 
 gql_server:
     port: "5000"
@@ -13,6 +14,7 @@ gql_server:
     timeout: 5s
     debug: true
     idle_timeout: 60s
+    max_attempts: 10
 
 errors:
   bad_request:

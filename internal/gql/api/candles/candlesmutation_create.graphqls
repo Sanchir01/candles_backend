@@ -1,0 +1,22 @@
+extend type CandlesMutation {
+    createCandle(
+        input: CreateCandleInput!
+    ): CandlesMutationResult! @goField(forceResolver: true)
+}
+
+input CreateCandleInput {
+    title: String!
+    price: Int!
+    category_id: Uuid!
+    images:[String!]!
+}
+
+union CandlesMutationResult =
+    | CandlesCreateOk
+    | InternalErrorProblem
+    | UnauthorizedProblem
+    | VersionMismatchProblem
+
+type CandlesCreateOk{
+    id: Uuid!
+}

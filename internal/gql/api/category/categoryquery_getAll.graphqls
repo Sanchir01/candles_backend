@@ -8,4 +8,6 @@ type CategoryGetAllOk {
     category:[Category!]!
 }
 
-union CategoryGetAllResult = | CategoryGetAllOk |InternalErrorProblem |CategoryNotFoundProblem
+union CategoryGetAllResult =
+    | CategoryGetAllOk
+    | InternalErrorProblem

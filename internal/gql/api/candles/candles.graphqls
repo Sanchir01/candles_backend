@@ -1,0 +1,11 @@
+type Candles {
+    id: Uuid!
+    title: String!
+    slug: String!
+    created_at: DateTime!
+    updated_at: DateTime!
+    version: UInt!
+    price:Int!
+    images:[String!]!
+    category_id: Uuid!
+}

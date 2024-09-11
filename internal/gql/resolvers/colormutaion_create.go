@@ -6,12 +6,22 @@ package resolver
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/Sanchir01/candles_backend/internal/gql/model"
+	responseErr "github.com/Sanchir01/candles_backend/pkg/lib/api/response"
+	"github.com/Sanchir01/candles_backend/pkg/lib/utils"
 )
 
 // CreateColor is the resolver for the createColor field.
 func (r *colorMutationResolver) CreateColor(ctx context.Context, obj *model.ColorMutation, input model.CreateColorInput) (model.ColorCreateResult, error) {
-	panic(fmt.Errorf("not implemented: CreateColor - createColor"))
+	slug, err := utils.Slugify(input.Title)
+	if err != nil {
+		return responseErr.NewInternalErrorProblem("error for creating slug"), nil
+	}
+	id, err := r.colorStr.CreateColor(ctx, input.Title, slug)
+	if err != nil {
+		r.lg.Error(err.Error())
+		return responseErr.NewInternalErrorProblem("error for creating color"), nil
+	}
+	return model.ColorCreateOk{ID: id}, nil
 }

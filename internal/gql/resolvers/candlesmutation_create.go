@@ -30,7 +30,7 @@ func (r *candlesMutationResolver) CreateCandle(ctx context.Context, obj *model.C
 		return responseErr.NewInternalErrorProblem("такая категория уже есть"), err
 	}
 
-	id, err := r.candlesStr.CreateCandles(ctx, input.CategoryID, input.Title, slug, input.Images, input.Price)
+	id, err := r.candlesStr.CreateCandles(ctx, input.CategoryID, input.ColorID, input.Title, slug, input.Images, input.Price)
 	if err != nil {
 		return responseErr.NewInternalErrorProblem("ошибка во время создания свечи"), err
 	}

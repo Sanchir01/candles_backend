@@ -5,18 +5,16 @@ import (
 	"github.com/Sanchir01/candles_backend/internal/gql/model"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/jmoiron/sqlx"
 	"time"
 )
 
 type CandlesPostgresStore struct {
-	db    *sqlx.DB
 	pgxdb *pgxpool.Pool
 }
 
-func New(db *sqlx.DB, pgxdb *pgxpool.Pool) *CandlesPostgresStore {
+func New(pgxdb *pgxpool.Pool) *CandlesPostgresStore {
 	return &CandlesPostgresStore{
-		db: db, pgxdb: pgxdb,
+		pgxdb: pgxdb,
 	}
 }
 
@@ -51,7 +49,7 @@ func (s *CandlesPostgresStore) AllCandles(ctx context.Context) ([]model.Candles,
 }
 
 func (s *CandlesPostgresStore) CreateCandles(
-	ctx context.Context, categoryID uuid.UUID, title string, slug string, images []string, price int,
+	ctx context.Context, categoryID, colorID uuid.UUID, title string, slug string, images []string, price int,
 ) (uuid.UUID, error) {
 	conn, err := s.pgxdb.Acquire(ctx)
 	if err != nil {
@@ -59,9 +57,9 @@ func (s *CandlesPostgresStore) CreateCandles(
 	}
 	defer conn.Release()
 	var id uuid.UUID
-	query := "INSERT INTO candles (category_id, title, slug, images,price) VALUES ($1, $2, $3, $4, $5) RETURNING id"
+	query := "INSERT INTO candles (category_id, title, slug, images,price,color_id) VALUES ($1, $2, $3, $4, $5,$6) RETURNING id"
 
-	if err := conn.QueryRow(ctx, query, categoryID, title, slug, images, price).Scan(&id); err != nil {
+	if err := conn.QueryRow(ctx, query, categoryID, title, slug, images, price, colorID).Scan(&id); err != nil {
 		return uuid.Nil, err
 	}
 	return id, nil
@@ -75,10 +73,10 @@ func (s *CandlesPostgresStore) CandlesBySlug(ctx context.Context, slug string) (
 	}
 	defer conn.Release()
 
-	query := "SELECT id ,title,slug, price, images, version, category_id, created_at, updated_at FROM public.candles WHERE slug = $1"
+	query := "SELECT id ,title,slug, price, images, version, category_id, created_at, updated_at color_id FROM public.candles WHERE slug = $1"
 
 	var candle dbCandles
-	if err := conn.QueryRow(ctx, query, slug).Scan(&candle.ID, &candle.Title, candle.Slug, &candle.CreatedAt, &candle.UpdatedAt, &candle.Version); err != nil {
+	if err := conn.QueryRow(ctx, query, slug).Scan(&candle.ID, &candle.Title, candle.Slug, &candle.CreatedAt, &candle.UpdatedAt, &candle.Version, &candle.CategoryID); err != nil {
 		return nil, err
 	}
 	return (*model.Candles)(&candle), nil
@@ -109,5 +107,6 @@ type dbCandles struct {
 	Version    uint      `db:"version"`
 	Price      int       `db:"price"`
 	Images     []string  `db:"images"`
+	ColorID    uuid.UUID `db:"color_id"`
 	CategoryID uuid.UUID `db:"category_id"`
 }

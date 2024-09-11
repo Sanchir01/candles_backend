@@ -73,6 +73,7 @@ type ComplexityRoot struct {
 
 	Candles struct {
 		CategoryID func(childComplexity int) int
+		ColorID    func(childComplexity int) int
 		CreatedAt  func(childComplexity int) int
 		ID         func(childComplexity int) int
 		Images     func(childComplexity int) int
@@ -291,6 +292,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Candles.CategoryID(childComplexity), true
+
+	case "Candles.color_id":
+		if e.complexity.Candles.ColorID == nil {
+			break
+		}
+
+		return e.complexity.Candles.ColorID(childComplexity), true
 
 	case "Candles.created_at":
 		if e.complexity.Candles.CreatedAt == nil {
@@ -862,10 +870,12 @@ type LoginOk {
 
 input  RegistrationsInput {
     phone:String!
+    role:String!
     title:String!
 }
 
 union RegistrationsResult =
+    | RegistrationsOk
     | InternalErrorProblem
     | VersionMismatchProblem
 
@@ -882,7 +892,7 @@ type RegistrationsOk {
     created_at: DateTime!
     updated_at: DateTime!
     version: UInt!
-    role:String!
+    role: String!
 }`, BuiltIn: false},
 	{Name: "../api/candles/candles.graphqls", Input: `type Candles {
     id: Uuid!
@@ -893,6 +903,7 @@ type RegistrationsOk {
     version: UInt!
     price:Int!
     images:[String!]!
+    color_id: Uuid!
     category_id: Uuid!
 }`, BuiltIn: false},
 	{Name: "../api/candles/candlesmutation_create.graphqls", Input: `extend type CandlesMutation {
@@ -905,6 +916,7 @@ input CreateCandleInput {
     title: String!
     price: Int!
     category_id: Uuid!
+    color_id: Uuid!
     images:[String!]!
 }
 
@@ -1278,6 +1290,8 @@ func (ec *executionContext) fieldContext_AllCandlesOk_candles(_ context.Context,
 				return ec.fieldContext_Candles_price(ctx, field)
 			case "images":
 				return ec.fieldContext_Candles_images(ctx, field)
+			case "color_id":
+				return ec.fieldContext_Candles_color_id(ctx, field)
 			case "category_id":
 				return ec.fieldContext_Candles_category_id(ctx, field)
 			}
@@ -1802,6 +1816,50 @@ func (ec *executionContext) fieldContext_Candles_images(_ context.Context, field
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Candles_color_id(ctx context.Context, field graphql.CollectedField, obj *model.Candles) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Candles_color_id(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ColorID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(uuid.UUID)
+	fc.Result = res
+	return ec.marshalNUuid2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Candles_color_id(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Candles",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Uuid does not have child fields")
 		},
 	}
 	return fc, nil
@@ -5899,7 +5957,7 @@ func (ec *executionContext) unmarshalInputCreateCandleInput(ctx context.Context,
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"title", "price", "category_id", "images"}
+	fieldsInOrder := [...]string{"title", "price", "category_id", "color_id", "images"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -5927,6 +5985,13 @@ func (ec *executionContext) unmarshalInputCreateCandleInput(ctx context.Context,
 				return it, err
 			}
 			it.CategoryID = data
+		case "color_id":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("color_id"))
+			data, err := ec.unmarshalNUuid2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ColorID = data
 		case "images":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("images"))
 			data, err := ec.unmarshalNString2ᚕstringᚄ(ctx, v)
@@ -6028,7 +6093,7 @@ func (ec *executionContext) unmarshalInputRegistrationsInput(ctx context.Context
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"phone", "title"}
+	fieldsInOrder := [...]string{"phone", "role", "title"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -6042,6 +6107,13 @@ func (ec *executionContext) unmarshalInputRegistrationsInput(ctx context.Context
 				return it, err
 			}
 			it.Phone = data
+		case "role":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("role"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Role = data
 		case "title":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("title"))
 			data, err := ec.unmarshalNString2string(ctx, v)
@@ -6379,6 +6451,13 @@ func (ec *executionContext) _RegistrationsResult(ctx context.Context, sel ast.Se
 			return graphql.Null
 		}
 		return ec._VersionMismatchProblem(ctx, sel, obj)
+	case model.RegistrationsOk:
+		return ec._RegistrationsOk(ctx, sel, &obj)
+	case *model.RegistrationsOk:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._RegistrationsOk(ctx, sel, obj)
 	default:
 		panic(fmt.Errorf("unexpected type %T", obj))
 	}
@@ -6636,6 +6715,11 @@ func (ec *executionContext) _Candles(ctx context.Context, sel ast.SelectionSet, 
 			}
 		case "images":
 			out.Values[i] = ec._Candles_images(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "color_id":
+			out.Values[i] = ec._Candles_color_id(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
@@ -7678,7 +7762,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 	return out
 }
 
-var registrationsOkImplementors = []string{"RegistrationsOk"}
+var registrationsOkImplementors = []string{"RegistrationsOk", "RegistrationsResult"}
 
 func (ec *executionContext) _RegistrationsOk(ctx context.Context, sel ast.SelectionSet, obj *model.RegistrationsOk) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, registrationsOkImplementors)

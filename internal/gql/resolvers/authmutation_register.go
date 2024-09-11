@@ -6,12 +6,16 @@ package resolver
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/Sanchir01/candles_backend/internal/gql/model"
+	responseErr "github.com/Sanchir01/candles_backend/pkg/lib/api/response"
 )
 
 // Registrations is the resolver for the registrations field.
 func (r *authMutationsResolver) Registrations(ctx context.Context, obj *model.AuthMutations, input model.RegistrationsInput) (model.RegistrationsResult, error) {
-	panic(fmt.Errorf("not implemented: Registrations - registrations"))
+	user, err := r.authStr.Register(ctx, input.Title, input.Phone, input.Phone, input.Role)
+	if err != nil {
+		return responseErr.NewInternalErrorProblem("error for creating user"), err
+	}
+	return model.RegistrationsOk{ID: user.ID, Phone: user.Phone, VerifyCode: "sdad"}, nil
 }

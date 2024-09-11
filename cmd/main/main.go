@@ -5,8 +5,10 @@ import (
 	"errors"
 	telegrambot "github.com/Sanchir01/candles_backend/internal/bot"
 	"github.com/Sanchir01/candles_backend/internal/config"
+	pgstoreauth "github.com/Sanchir01/candles_backend/internal/database/postgres/auth"
 	pgstorecandles "github.com/Sanchir01/candles_backend/internal/database/postgres/candles"
 	pgstorecategory "github.com/Sanchir01/candles_backend/internal/database/postgres/category"
+	pgstorecolor "github.com/Sanchir01/candles_backend/internal/database/postgres/color"
 	httphandlers "github.com/Sanchir01/candles_backend/internal/handlers"
 	httpserver "github.com/Sanchir01/candles_backend/internal/server/http"
 	"github.com/Sanchir01/candles_backend/pkg/lib/db/connect"
@@ -41,8 +43,10 @@ func main() {
 	rout := chi.NewRouter()
 	var (
 		categoryStr = pgstorecategory.New(pgxdb)
-		candlesStr  = pgstorecandles.New(db, pgxdb)
-		handlers    = httphandlers.New(rout, lg, cfg, categoryStr, candlesStr, pgxdb)
+		candlesStr  = pgstorecandles.New(pgxdb)
+		colorStr    = pgstorecolor.New(pgxdb)
+		authStr     = pgstoreauth.New(pgxdb)
+		handlers    = httphandlers.New(rout, lg, cfg, categoryStr, candlesStr, colorStr, authStr, pgxdb)
 	)
 	callcat, err := categoryStr.AllCategories(context.Background())
 	lg.Warn("categoru", callcat)

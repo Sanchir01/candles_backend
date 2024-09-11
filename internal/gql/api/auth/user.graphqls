@@ -2,8 +2,9 @@ type User {
     id: Uuid!
     title: String!
     slug: String!
+    phone:String!
     created_at: DateTime!
     updated_at: DateTime!
     version: UInt!
-    role:Boolean!
+    role: String!
 }

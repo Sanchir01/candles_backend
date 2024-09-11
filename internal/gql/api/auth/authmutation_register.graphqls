@@ -4,6 +4,7 @@ extend type AuthMutations {
 
 input  RegistrationsInput {
     phone:String!
+    role:String!
     title:String!
 }
 

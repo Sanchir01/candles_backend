@@ -15,6 +15,10 @@ type AllCategoryResult interface {
 	IsAllCategoryResult()
 }
 
+type AllColorResult interface {
+	IsAllColorResult()
+}
+
 type CandlesMutationResult interface {
 	IsCandlesMutationResult()
 }
@@ -25,6 +29,10 @@ type CategoryCreateResult interface {
 
 type CategoryGetAllResult interface {
 	IsCategoryGetAllResult()
+}
+
+type ColorCreateResult interface {
+	IsColorCreateResult()
 }
 
 type LoginResult interface {
@@ -50,6 +58,12 @@ type AllCandlesOk struct {
 }
 
 func (AllCandlesOk) IsAllCategoryResult() {}
+
+type AllColorOk struct {
+	Colors []*Color `json:"colors"`
+}
+
+func (AllColorOk) IsAllColorResult() {}
 
 type AuthMutations struct {
 	Login         LoginResult         `json:"login"`
@@ -114,6 +128,29 @@ type CategoryQuery struct {
 	GetAllCategory CategoryGetAllResult `json:"getAllCategory"`
 }
 
+type Color struct {
+	ID        uuid.UUID `json:"id"`
+	Title     string    `json:"title"`
+	Slug      string    `json:"slug"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
+	Version   uint      `json:"version"`
+}
+
+type ColorCreateOk struct {
+	ID uuid.UUID `json:"id"`
+}
+
+func (ColorCreateOk) IsColorCreateResult() {}
+
+type ColorMutation struct {
+	CreateColor ColorCreateResult `json:"createColor"`
+}
+
+type ColorQuery struct {
+	AllColor AllColorResult `json:"allColor"`
+}
+
 type CreateCandleInput struct {
 	Title      string    `json:"title"`
 	Price      int       `json:"price"`
@@ -122,6 +159,10 @@ type CreateCandleInput struct {
 }
 
 type CreateCategoryInput struct {
+	Title string `json:"title"`
+}
+
+type CreateColorInput struct {
 	Title string `json:"title"`
 }
 
@@ -140,6 +181,10 @@ func (InternalErrorProblem) IsAllCategoryResult() {}
 func (InternalErrorProblem) IsCategoryCreateResult() {}
 
 func (InternalErrorProblem) IsCategoryGetAllResult() {}
+
+func (InternalErrorProblem) IsColorCreateResult() {}
+
+func (InternalErrorProblem) IsAllColorResult() {}
 
 func (InternalErrorProblem) IsProblemInterface()     {}
 func (this InternalErrorProblem) GetMessage() string { return this.Message }
@@ -189,7 +234,11 @@ type UnauthorizedProblem struct {
 	Message string `json:"message"`
 }
 
+func (UnauthorizedProblem) IsCandlesMutationResult() {}
+
 func (UnauthorizedProblem) IsCategoryCreateResult() {}
+
+func (UnauthorizedProblem) IsColorCreateResult() {}
 
 func (UnauthorizedProblem) IsProblemInterface()     {}
 func (this UnauthorizedProblem) GetMessage() string { return this.Message }
@@ -198,10 +247,11 @@ type User struct {
 	ID        uuid.UUID `json:"id"`
 	Title     string    `json:"title"`
 	Slug      string    `json:"slug"`
+	Phone     string    `json:"phone"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 	Version   uint      `json:"version"`
-	Role      bool      `json:"role"`
+	Role      string    `json:"role"`
 }
 
 type VersionMismatchProblem struct {
@@ -215,6 +265,12 @@ func (VersionMismatchProblem) IsRegistrationsResult() {}
 func (VersionMismatchProblem) IsCandlesMutationResult() {}
 
 func (VersionMismatchProblem) IsAllCategoryResult() {}
+
+func (VersionMismatchProblem) IsCategoryCreateResult() {}
+
+func (VersionMismatchProblem) IsColorCreateResult() {}
+
+func (VersionMismatchProblem) IsAllColorResult() {}
 
 func (VersionMismatchProblem) IsProblemInterface()     {}
 func (this VersionMismatchProblem) GetMessage() string { return this.Message }

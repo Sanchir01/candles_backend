@@ -32,7 +32,7 @@ func (s *ColorPostgresStore) AllColor(ctx context.Context) ([]model.Color, error
 
 	for rows.Next() {
 		var color model.Color
-		if err := rows.Scan(&color.ID, &color.Title, color.Slug, &color.CreatedAt, &color.UpdatedAt, &color.Version); err != nil {
+		if err := rows.Scan(&color.ID, &color.Title, &color.Slug, &color.CreatedAt, &color.UpdatedAt, &color.Version); err != nil {
 			return nil, err
 		}
 		colors = append(colors, color)
@@ -58,10 +58,10 @@ func (s *ColorPostgresStore) CreateColor(ctx context.Context, title, slug string
 }
 
 type dbColor struct {
-	ID        uuid.UUID
-	Title     string
-	Slug      string
-	CreatedAt time.Time
-	UpdatedAt time.Time
-	Version   int
+	ID        uuid.UUID `db:"id"`
+	Title     string    `db:"title"`
+	Slug      string    `db:"slug"`
+	CreatedAt time.Time `db:"created_at"`
+	UpdatedAt time.Time `db:"updated_at"`
+	Version   int       `db:"version"`
 }

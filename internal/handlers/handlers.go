@@ -98,8 +98,8 @@ func (r *HttpRouter) NewGraphQLHandler() *gqlhandler.Server {
 
 func (r *HttpRouter) newSchemaConfig() genGql.Config {
 	cfg := genGql.Config{Resolvers: resolver.New(
-		r.category, r.candles, r.color, r.logger,
-		r.auth, r.pgxdb,
+		r.category, r.candles, r.color, r.auth, r.logger,
+		r.pgxdb, r.config,
 	)}
 	cfg.Directives.InputUnion = directive.NewInputUnionDirective()
 	cfg.Directives.SortRankInput = directive.NewSortRankInputDirective()

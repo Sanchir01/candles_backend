@@ -31,17 +31,17 @@ func (s *AuthPostgresStore) Register(ctx context.Context, title, slug, phone, ro
 	if err := conn.QueryRow(ctx, query, title, slug, phone, role).Scan(&users.ID, &users.Phone, &users.Role); err != nil {
 		return nil, err
 	}
-	return (*model.User)(&users), nil
+	return (*model.User)(&users), nilair
 }
-
 
 func (s *AuthPostgresStore) Login(ctx context.Context) (*model.User, error) {
-  conn, err := s.db.Acquire(ctx) 
-  if err !=nil {
-    return nil, error
-  } 
-  defer c
+	conn, err := s.db.Acquire(ctx)
+	if err != nil {
+		return nil, error
+	}
+	defer c
 }
+
 type dbUser struct {
 	ID        uuid.UUID `db:"id"`
 	Title     string    `db:"title"`

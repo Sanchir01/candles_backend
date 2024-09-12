@@ -48,7 +48,23 @@ func main() {
 	lg.Warn("categoru", callcat)
 	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGTERM, syscall.SIGINT, os.Interrupt)
 	defer cancel()
-
+	//client := twilio.NewRestClientWithParams(twilio.ClientParams{
+	//	Username: "VA46ce9c81d341ed3ec846f892451621d4",
+	//	Password: os.Getenv("TWILLIO_TOKEN"),
+	//})
+	//
+	//params := &twilioApi.CreateMessageParams{}
+	//params.SetTo("+15558675309")
+	//params.SetFrom("+15017250604")
+	//params.SetBody("Hello from Go!")
+	//
+	//resp, err := client.Api.CreateMessage(params)
+	//if err != nil {
+	//	fmt.Println("Error sending SMS message: " + err.Error())
+	//} else {
+	//	response, _ := json.Marshal(*resp)
+	//	fmt.Println("Response: " + string(response))
+	//}
 	go func(ctx context.Context) {
 		if err := serve.Run(handlers.StartHttpServer()); err != nil {
 			if !errors.Is(err, context.Canceled) {

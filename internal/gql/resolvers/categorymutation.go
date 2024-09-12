@@ -11,7 +11,7 @@ import (
 	"github.com/Sanchir01/candles_backend/internal/gql/model"
 )
 
-// Category is the resolver for the category field.
+// Category is the resolver for the category.sql field.
 func (r *mutationResolver) Category(ctx context.Context) (*model.CategoryMutation, error) {
 	return &model.CategoryMutation{}, nil
 }

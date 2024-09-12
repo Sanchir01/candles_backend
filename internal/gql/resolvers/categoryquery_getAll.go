@@ -16,12 +16,12 @@ import (
 func (r *categoryQueryResolver) GetAllCategory(ctx context.Context, obj *model.CategoryQuery) (model.CategoryGetAllResult, error) {
 	allCategory, err := r.categoryStr.AllCategories(ctx)
 	if err != nil {
-		r.lg.Warn("error for get all category", err.Error())
+		r.lg.Warn("error for get all category.sql", err.Error())
 		return responseErr.NewInternalErrorProblem("ошибка при получении всех категорий"), nil
 	}
 	categories, err := featurecategory.MapCategoryToGql(allCategory)
 	if err != nil {
-		return responseErr.NewInternalErrorProblem("error for get all category db"), nil
+		return responseErr.NewInternalErrorProblem("error for get all category.sql db"), nil
 	}
 	return model.CategoryGetAllOk{Category: categories}, err
 }

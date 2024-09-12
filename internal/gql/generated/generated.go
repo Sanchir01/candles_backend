@@ -423,7 +423,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.CategoryCreateOk.ID(childComplexity), true
 
-	case "CategoryGetAllOk.category":
+	case "CategoryGetAllOk.category.sql":
 		if e.complexity.CategoryGetAllOk.Category == nil {
 			break
 		}
@@ -566,7 +566,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.Candles(childComplexity), true
 
-	case "Mutation.category":
+	case "Mutation.category.sql":
 		if e.complexity.Mutation.Category == nil {
 			break
 		}
@@ -587,7 +587,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.Candles(childComplexity), true
 
-	case "Query.category":
+	case "Query.category.sql":
 		if e.complexity.Query.Category == nil {
 			break
 		}
@@ -940,7 +940,7 @@ type AllCandlesOk {
 extend type Mutation {
     candles:CandlesMutation!
 }`, BuiltIn: false},
-	{Name: "../api/category/category.graphqls", Input: `type Category implements VersionInterface{
+	{Name: "../api/category.sql/category.sql.graphqls", Input: `type Category implements VersionInterface{
     id:Uuid!
     title:String!
     slug:String!
@@ -948,12 +948,12 @@ extend type Mutation {
     updated_at: DateTime!
     version:UInt!
 }`, BuiltIn: false},
-	{Name: "../api/category/categorymutation.graphqls", Input: `type CategoryMutation
+	{Name: "../api/category.sql/categorymutation.graphqls", Input: `type CategoryMutation
 
 extend type Mutation {
-    category:CategoryMutation!
+    category.sql:CategoryMutation!
 }`, BuiltIn: false},
-	{Name: "../api/category/categorymutation_create.graphqls", Input: `
+	{Name: "../api/category.sql/categorymutation_create.graphqls", Input: `
 
 extend type CategoryMutation {
     createCategory(input:CreateCategoryInput): CategoryCreateResult! @goField(forceResolver: true)
@@ -974,19 +974,19 @@ union CategoryCreateResult =
     | InternalErrorProblem
     | UnauthorizedProblem
     | VersionMismatchProblem`, BuiltIn: false},
-	{Name: "../api/category/categoryquery.graphqls", Input: `type CategoryQuery
+	{Name: "../api/category.sql/categoryquery.graphqls", Input: `type CategoryQuery
 
 extend type Query {
-    category:CategoryQuery
+    category.sql:CategoryQuery
 }`, BuiltIn: false},
-	{Name: "../api/category/categoryquery_getAll.graphqls", Input: `
+	{Name: "../api/category.sql/categoryquery_getAll.graphqls", Input: `
 extend type  CategoryQuery {
     getAllCategory:CategoryGetAllResult! @goField(forceResolver: true)
 }
 
 
 type CategoryGetAllOk {
-    category:[Category!]!
+    category.sql:[Category!]!
 }
 
 union CategoryGetAllResult =
@@ -6960,7 +6960,7 @@ func (ec *executionContext) _CategoryGetAllOk(ctx context.Context, sel ast.Selec
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("CategoryGetAllOk")
-		case "category":
+		case "category.sql":
 			out.Values[i] = ec._CategoryGetAllOk_category(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
@@ -7531,7 +7531,7 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
-		case "category":
+		case "category.sql":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_category(ctx, field)
 			})
@@ -7606,7 +7606,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
-		case "category":
+		case "category.sql":
 			field := field
 
 			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {

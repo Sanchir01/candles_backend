@@ -32,5 +32,5 @@ migrations-status:
 migrations-new:
 	goose -dir migrations create $(MIGRATION_NAME) sql
 
-compose-up:
+docker:
 	docker-compose  up -d

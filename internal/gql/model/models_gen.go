@@ -79,6 +79,7 @@ type Candles struct {
 	Version    uint      `json:"version"`
 	Price      int       `json:"price"`
 	Images     []string  `json:"images"`
+	ColorID    uuid.UUID `json:"color_id"`
 	CategoryID uuid.UUID `json:"category_id"`
 }
 
@@ -155,6 +156,7 @@ type CreateCandleInput struct {
 	Title      string    `json:"title"`
 	Price      int       `json:"price"`
 	CategoryID uuid.UUID `json:"category_id"`
+	ColorID    uuid.UUID `json:"color_id"`
 	Images     []string  `json:"images"`
 }
 
@@ -216,6 +218,7 @@ type Query struct {
 
 type RegistrationsInput struct {
 	Phone string `json:"phone"`
+	Role  string `json:"role"`
 	Title string `json:"title"`
 }
 
@@ -224,6 +227,8 @@ type RegistrationsOk struct {
 	VerifyCode string    `json:"verify_code"`
 	Phone      string    `json:"phone"`
 }
+
+func (RegistrationsOk) IsRegistrationsResult() {}
 
 type SortRankInput struct {
 	Prev string `json:"prev"`

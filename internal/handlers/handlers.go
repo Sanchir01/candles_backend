@@ -8,8 +8,10 @@ import (
 	"github.com/99designs/gqlgen/graphql/handler/transport"
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/Sanchir01/candles_backend/internal/config"
+	pgstoreauth "github.com/Sanchir01/candles_backend/internal/database/postgres/auth"
 	pgstorecandles "github.com/Sanchir01/candles_backend/internal/database/postgres/candles"
 	pgstoreCategory "github.com/Sanchir01/candles_backend/internal/database/postgres/category"
+	pgstorecolor "github.com/Sanchir01/candles_backend/internal/database/postgres/color"
 	"github.com/Sanchir01/candles_backend/internal/gql/directive"
 	genGql "github.com/Sanchir01/candles_backend/internal/gql/generated"
 	resolver "github.com/Sanchir01/candles_backend/internal/gql/resolvers"
@@ -33,6 +35,8 @@ type HttpRouter struct {
 	db        *sqlx.DB
 	category  *pgstoreCategory.CategoryPostgresStore
 	candles   *pgstorecandles.CandlesPostgresStore
+	color     *pgstorecolor.ColorPostgresStore
+	auth      *pgstoreauth.AuthPostgresStore
 	pgxdb     *pgxpool.Pool
 }
 
@@ -44,12 +48,14 @@ const (
 )
 
 func New(r *chi.Mux, lg *slog.Logger, cfg *config.Config,
-	category *pgstoreCategory.CategoryPostgresStore, candlesStr *pgstorecandles.CandlesPostgresStore,
+	category *pgstoreCategory.CategoryPostgresStore, candlesStr *pgstorecandles.CandlesPostgresStore, colorStr *pgstorecolor.ColorPostgresStore,
+	authStr *pgstoreauth.AuthPostgresStore,
 	pgxdb *pgxpool.Pool,
 ) *HttpRouter {
 	return &HttpRouter{
-		chiRouter: r, logger: lg, config: cfg, category: category,
+		chiRouter: r, logger: lg, config: cfg, category: category, color: colorStr,
 		candles: candlesStr, pgxdb: pgxdb,
+		auth: authStr,
 	}
 }
 
@@ -92,7 +98,8 @@ func (r *HttpRouter) NewGraphQLHandler() *gqlhandler.Server {
 
 func (r *HttpRouter) newSchemaConfig() genGql.Config {
 	cfg := genGql.Config{Resolvers: resolver.New(
-		r.category, r.candles, r.logger, r.pgxdb,
+		r.category, r.candles, r.color, r.auth, r.logger,
+		r.pgxdb, r.config,
 	)}
 	cfg.Directives.InputUnion = directive.NewInputUnionDirective()
 	cfg.Directives.SortRankInput = directive.NewSortRankInputDirective()

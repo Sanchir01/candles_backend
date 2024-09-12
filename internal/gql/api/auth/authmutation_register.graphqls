@@ -9,6 +9,7 @@ input  RegistrationsInput {
 }
 
 union RegistrationsResult =
+    | RegistrationsOk
     | InternalErrorProblem
     | VersionMismatchProblem
 

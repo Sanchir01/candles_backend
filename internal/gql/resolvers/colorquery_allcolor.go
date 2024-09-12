@@ -6,12 +6,21 @@ package resolver
 
 import (
 	"context"
-	"fmt"
-
+	featurecolor "github.com/Sanchir01/candles_backend/internal/feature/color"
 	"github.com/Sanchir01/candles_backend/internal/gql/model"
+	responseErr "github.com/Sanchir01/candles_backend/pkg/lib/api/response"
 )
 
 // AllColor is the resolver for the allColor field.
 func (r *colorQueryResolver) AllColor(ctx context.Context, obj *model.ColorQuery) (model.AllColorResult, error) {
-	panic(fmt.Errorf("not implemented: AllColor - allColor"))
+	colors, err := r.colorStr.AllColor(ctx)
+	if err != nil {
+		return responseErr.NewInternalErrorProblem(err.Error()), err
+	}
+	r.lg.Info("colors", colors)
+	gqlcolors, err := featurecolor.MapColorToGql(colors)
+	if err != nil {
+		return responseErr.NewInternalErrorProblem("error for mapping gql model"), err
+	}
+	return model.AllColorOk{Colors: gqlcolors}, nil
 }

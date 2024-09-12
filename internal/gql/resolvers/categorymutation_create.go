@@ -16,7 +16,7 @@ import (
 func (r *categoryMutationResolver) CreateCategory(ctx context.Context, obj *model.CategoryMutation, input *model.CreateCategoryInput) (model.CategoryCreateResult, error) {
 	slug, err := utils.Slugify(input.Title)
 	if err != nil {
-		return responseErr.NewInternalErrorProblem("error for craeteing slug"), nil
+		return responseErr.NewInternalErrorProblem("error for creating slug"), nil
 	}
 	_, err = r.categoryStr.CategoryBySlug(ctx, slug)
 	if err == nil {

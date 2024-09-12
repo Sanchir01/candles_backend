@@ -8,6 +8,7 @@ input CreateCandleInput {
     title: String!
     price: Int!
     category_id: Uuid!
+    color_id: Uuid!
     images:[String!]!
 }
 

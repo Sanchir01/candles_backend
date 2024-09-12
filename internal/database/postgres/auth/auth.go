@@ -31,15 +31,22 @@ func (s *AuthPostgresStore) Register(ctx context.Context, title, slug, phone, ro
 	if err := conn.QueryRow(ctx, query, title, slug, phone, role).Scan(&users.ID, &users.Phone, &users.Role); err != nil {
 		return nil, err
 	}
-	return (*model.User)(&users), nilair
+	return (*model.User)(&users), nil
 }
 
-func (s *AuthPostgresStore) Login(ctx context.Context) (*model.User, error) {
+func (s *AuthPostgresStore) Login(ctx context.Context, phone string) (*model.User, error) {
 	conn, err := s.db.Acquire(ctx)
 	if err != nil {
-		return nil, error
+		return nil, err
 	}
-	defer c
+	defer conn.Release()
+	query := `SELECT id ,title,slug, phone, created_at, updated_at, version, role FROM public.users WHERE phone = $1`
+	var user dbUser
+	if err := conn.QueryRow(ctx, query, phone).Scan(
+		&user.ID, &user.Title, &user.Slug, &user.Phone, &user.CreatedAt, &user.UpdatedAt, &user.Version, &user.Role); err != nil {
+		return nil, err
+	}
+	return (*model.User)(&user), nil
 }
 
 type dbUser struct {
@@ -49,5 +56,6 @@ type dbUser struct {
 	Phone     string    `db:"phone"`
 	CreatedAt time.Time `db:"created_at"`
 	UpdatedAt time.Time `db:"updated_at"`
-	Version   uint      `db:"version"` Role      string    `db:"role"`
+	Version   uint      `db:"version"`
+	Role      string    `db:"role"`
 }

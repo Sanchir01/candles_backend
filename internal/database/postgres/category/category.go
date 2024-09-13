@@ -23,7 +23,7 @@ func (s *CategoryPostgresStore) CategoryBySlug(ctx context.Context, slug string)
 	}
 	defer conn.Release()
 
-	query := "SELECT id , title, slug, created_at, updated_at, version FROM public.category.sql WHERE slug = $1"
+	query := "SELECT id , title, slug, created_at, updated_at, version FROM public.category WHERE slug = $1"
 
 	var category model.Category
 	err = conn.QueryRow(ctx, query, slug).Scan(&category.ID, &category.Title, category.Slug, &category.CreatedAt, &category.UpdatedAt, &category.Version)
@@ -41,7 +41,7 @@ func (s *CategoryPostgresStore) AllCategories(ctx context.Context) ([]model.Cate
 		return nil, err
 	}
 	defer conn.Release()
-	query := "SELECT id , title, slug, created_at, updated_at, version FROM public.category.sql"
+	query := "SELECT id , title, slug, created_at, updated_at, version FROM public.category"
 	rows, err := conn.Query(ctx, query)
 
 	if rows.Err(); err != nil {

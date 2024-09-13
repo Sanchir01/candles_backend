@@ -24,13 +24,16 @@ func (s *AuthPostgresStore) Register(ctx context.Context, title, slug, phone, ro
 		return nil, err
 	}
 	defer conn.Release()
-	query := `INSERT INTO users(title,slug, phone,role) VALUES ($1,$2,$3,$4) RETURNING id phone role`
+	query := `INSERT INTO users (title, slug, phone, role) 
+          VALUES ($1, $2, $3, $4) 
+          RETURNING id, phone, role`
 
 	var users dbUser
 
 	if err := conn.QueryRow(ctx, query, title, slug, phone, role).Scan(&users.ID, &users.Phone, &users.Role); err != nil {
 		return nil, err
 	}
+
 	return (*model.User)(&users), nil
 }
 

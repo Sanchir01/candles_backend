@@ -1,0 +1,5 @@
+type UserQuery
+
+extend type Query {
+    user:UserQuery
+}

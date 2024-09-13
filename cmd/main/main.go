@@ -49,7 +49,7 @@ func main() {
 		handlers    = httphandlers.New(rout, lg, cfg, categoryStr, candlesStr, colorStr, authStr, pgxdb)
 	)
 	callcat, err := categoryStr.AllCategories(context.Background())
-	lg.Warn("categoru", callcat)
+	lg.Warn("category", callcat)
 	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGTERM, syscall.SIGINT, os.Interrupt)
 	defer cancel()
 	//client := twilio.NewRestClientWithParams(twilio.ClientParams{

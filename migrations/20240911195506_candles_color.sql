@@ -9,3 +9,5 @@ ALTER TABLE candles ADD COLUMN color_id UUID NOT NULL REFERENCES color(id);
 -- +goose StatementBegin
 SELECT 'down SQL query';
 -- +goose StatementEnd
+
+

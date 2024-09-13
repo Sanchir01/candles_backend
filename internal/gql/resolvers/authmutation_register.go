@@ -6,6 +6,7 @@ package resolver
 
 import (
 	"context"
+	"github.com/Sanchir01/candles_backend/pkg/lib/utils"
 
 	"github.com/Sanchir01/candles_backend/internal/gql/model"
 	responseErr "github.com/Sanchir01/candles_backend/pkg/lib/api/response"
@@ -13,8 +14,13 @@ import (
 
 // Registrations is the resolver for the registrations field.
 func (r *authMutationsResolver) Registrations(ctx context.Context, obj *model.AuthMutations, input model.RegistrationsInput) (model.RegistrationsResult, error) {
-	user, err := r.authStr.Register(ctx, input.Title, input.Phone, input.Phone, input.Role)
+	slug, err := utils.Slugify(input.Title)
 	if err != nil {
+		return responseErr.NewInternalErrorProblem("error for creating slug"), nil
+	}
+	user, err := r.authStr.Register(ctx, input.Title, input.Phone, slug, input.Role)
+	if err != nil {
+		r.lg.Error(err.Error())
 		return responseErr.NewInternalErrorProblem("error for creating user"), err
 	}
 	return model.RegistrationsOk{ID: user.ID, Phone: user.Phone, VerifyCode: "sdad"}, nil

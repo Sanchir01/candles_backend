@@ -5,6 +5,7 @@ import (
 	"github.com/Sanchir01/candles_backend/internal/gql/model"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"time"
 )
 
 type UserPostgresStore struct {
@@ -47,4 +48,15 @@ func (s *UserPostgresStore) GetById(ctx context.Context, userid uuid.UUID) (*mod
 		return nil, err
 	}
 	return (*model.User)(&user), nil
+}
+
+type dbUser struct {
+	ID        uuid.UUID `db:"id"`
+	Title     string    `db:"title"`
+	CreatedAt time.Time `db:"created_at"`
+	UpdatedAt time.Time `db:"updated_at"`
+	Slug      string    `db:"slug"`
+	Version   uint      `db:"version"`
+	Phone     string    `db:"phone"`
+	Role      string    `db:"role"`
 }

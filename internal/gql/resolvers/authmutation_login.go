@@ -6,17 +6,25 @@ package resolver
 
 import (
 	"context"
+
+	userFeature "github.com/Sanchir01/candles_backend/internal/feature/user"
 	"github.com/Sanchir01/candles_backend/internal/gql/model"
+	customMiddleware "github.com/Sanchir01/candles_backend/internal/handlers/middleware"
+	responseErr "github.com/Sanchir01/candles_backend/pkg/lib/api/response"
 )
 
 // Login is the resolver for the login field.
 func (r *authMutationsResolver) Login(ctx context.Context, obj *model.AuthMutations, input model.LoginInput) (model.LoginResult, error) {
-
 	user, err := r.authStr.Login(ctx, input.Phone)
 	if err != nil {
 		r.lg.Error("login errors", err)
 		return nil, err
 	}
 	r.lg.Warn("login", user)
+	w := customMiddleware.GetResponseWriter(ctx)
+	if err = userFeature.AddCookieTokens(user.ID, user.Role, w); err != nil {
+		r.lg.Error("login errors", err)
+		return responseErr.NewInternalErrorProblem("Error for generating jwt tokens"), nil
+	}
 	return model.LoginOk{ID: user.ID, Phone: user.Phone, VerifyCode: "sdaddw21", Role: user.Role}, nil
 }

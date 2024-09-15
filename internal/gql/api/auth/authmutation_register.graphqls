@@ -17,5 +17,5 @@ type RegistrationsOk {
     id:Uuid!
     verify_code:String!
     phone:String!
-    role:String!
+    role:Role!
 }

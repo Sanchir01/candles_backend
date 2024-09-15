@@ -6,6 +6,8 @@ package resolver
 
 import (
 	"context"
+	userFeature "github.com/Sanchir01/candles_backend/internal/feature/user"
+	customMiddleware "github.com/Sanchir01/candles_backend/internal/handlers/middleware"
 
 	"github.com/Sanchir01/candles_backend/internal/gql/model"
 	responseErr "github.com/Sanchir01/candles_backend/pkg/lib/api/response"
@@ -22,6 +24,11 @@ func (r *authMutationsResolver) Registrations(ctx context.Context, obj *model.Au
 	if err != nil {
 		r.lg.Error(err.Error())
 		return responseErr.NewInternalErrorProblem("error for creating user"), err
+	}
+	w := customMiddleware.GetResponseWriter(ctx)
+	if err = userFeature.AddCookieTokens(user.ID, user.Role, w); err != nil {
+		r.lg.Error("login errors", err)
+		return responseErr.NewInternalErrorProblem("Error for generating jwt tokens"), nil
 	}
 	return model.RegistrationsOk{ID: user.ID, Phone: user.Phone, VerifyCode: "sdad"}, nil
 }

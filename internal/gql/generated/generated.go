@@ -176,6 +176,7 @@ type ComplexityRoot struct {
 	RegistrationsOk struct {
 		ID         func(childComplexity int) int
 		Phone      func(childComplexity int) int
+		Role       func(childComplexity int) int
 		VerifyCode func(childComplexity int) int
 	}
 
@@ -670,6 +671,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.RegistrationsOk.Phone(childComplexity), true
 
+	case "RegistrationsOk.role":
+		if e.complexity.RegistrationsOk.Role == nil {
+			break
+		}
+
+		return e.complexity.RegistrationsOk.Role(childComplexity), true
+
 	case "RegistrationsOk.verify_code":
 		if e.complexity.RegistrationsOk.VerifyCode == nil {
 			break
@@ -937,7 +945,7 @@ type LoginOk {
     id:Uuid!
     verify_code:String!
     phone:String!
-    role:String!
+    role:Role!
 }`, BuiltIn: false},
 	{Name: "../api/auth/authmutation_register.graphqls", Input: `extend type AuthMutations {
     registrations(input:RegistrationsInput!): RegistrationsResult! @goField(forceResolver: true)
@@ -958,6 +966,7 @@ type RegistrationsOk {
     id:Uuid!
     verify_code:String!
     phone:String!
+    role:Role!
 }`, BuiltIn: false},
 	{Name: "../api/candles/candles.graphqls", Input: `type Candles {
     id: Uuid!
@@ -1167,7 +1176,7 @@ type InvalidSortRankProblem implements ProblemInterface {
   slug: String!
   version:UInt!
   phone:String!
-  role:String!
+  role:Role!
 }
 `, BuiltIn: false},
 	{Name: "../api/user/userquery.graphqls", Input: `type UserQuery
@@ -3551,9 +3560,9 @@ func (ec *executionContext) _LoginOk_role(ctx context.Context, field graphql.Col
 		}
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(model.Role)
 	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
+	return ec.marshalNRole2githubᚗcomᚋSanchir01ᚋcandles_backendᚋinternalᚋgqlᚋmodelᚐRole(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_LoginOk_role(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -3563,7 +3572,7 @@ func (ec *executionContext) fieldContext_LoginOk_role(_ context.Context, field g
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
+			return nil, errors.New("field of type Role does not have child fields")
 		},
 	}
 	return fc, nil
@@ -4209,6 +4218,50 @@ func (ec *executionContext) fieldContext_RegistrationsOk_phone(_ context.Context
 	return fc, nil
 }
 
+func (ec *executionContext) _RegistrationsOk_role(ctx context.Context, field graphql.CollectedField, obj *model.RegistrationsOk) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_RegistrationsOk_role(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Role, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(model.Role)
+	fc.Result = res
+	return ec.marshalNRole2githubᚗcomᚋSanchir01ᚋcandles_backendᚋinternalᚋgqlᚋmodelᚐRole(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_RegistrationsOk_role(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "RegistrationsOk",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Role does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _UnauthorizedProblem_message(ctx context.Context, field graphql.CollectedField, obj *model.UnauthorizedProblem) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_UnauthorizedProblem_message(ctx, field)
 	if err != nil {
@@ -4631,9 +4684,9 @@ func (ec *executionContext) _User_role(ctx context.Context, field graphql.Collec
 		}
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(model.Role)
 	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
+	return ec.marshalNRole2githubᚗcomᚋSanchir01ᚋcandles_backendᚋinternalᚋgqlᚋmodelᚐRole(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_User_role(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -4643,7 +4696,7 @@ func (ec *executionContext) fieldContext_User_role(_ context.Context, field grap
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
+			return nil, errors.New("field of type Role does not have child fields")
 		},
 	}
 	return fc, nil
@@ -9418,6 +9471,31 @@ func (ec *executionContext) _RegistrationsOk(ctx context.Context, sel ast.Select
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
+		case "role":
+			field := field
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return ec._RegistrationsOk_role(ctx, field, obj)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+			out.Values[i] = ec._RegistrationsOk_role(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -11371,6 +11449,16 @@ func (ec *executionContext) marshalNRegistrationsResult2githubᚗcomᚋSanchir01
 		return graphql.Null
 	}
 	return ec._RegistrationsResult(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNRole2githubᚗcomᚋSanchir01ᚋcandles_backendᚋinternalᚋgqlᚋmodelᚐRole(ctx context.Context, v interface{}) (model.Role, error) {
+	var res model.Role
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNRole2githubᚗcomᚋSanchir01ᚋcandles_backendᚋinternalᚋgqlᚋmodelᚐRole(ctx context.Context, sel ast.SelectionSet, v model.Role) graphql.Marshaler {
+	return v
 }
 
 func (ec *executionContext) unmarshalNString2string(ctx context.Context, v interface{}) (string, error) {

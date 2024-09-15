@@ -219,7 +219,7 @@ type LoginOk struct {
 	ID         uuid.UUID `json:"id"`
 	VerifyCode string    `json:"verify_code"`
 	Phone      string    `json:"phone"`
-	Role       string    `json:"role"`
+	Role       Role      `json:"role"`
 }
 
 func (LoginOk) IsLoginResult() {}
@@ -240,6 +240,7 @@ type RegistrationsOk struct {
 	ID         uuid.UUID `json:"id"`
 	VerifyCode string    `json:"verify_code"`
 	Phone      string    `json:"phone"`
+	Role       Role      `json:"role"`
 }
 
 func (RegistrationsOk) IsRegistrationsResult() {}
@@ -280,7 +281,7 @@ type User struct {
 	Slug      string    `json:"slug"`
 	Version   uint      `json:"version"`
 	Phone     string    `json:"phone"`
-	Role      string    `json:"role"`
+	Role      Role      `json:"role"`
 }
 
 type UserProfileOk struct {

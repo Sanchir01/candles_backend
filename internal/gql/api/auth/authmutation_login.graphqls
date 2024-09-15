@@ -16,4 +16,5 @@ type LoginOk {
     id:Uuid!
     verify_code:String!
     phone:String!
+    role:String!
 }

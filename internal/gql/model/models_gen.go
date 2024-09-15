@@ -219,6 +219,7 @@ type LoginOk struct {
 	ID         uuid.UUID `json:"id"`
 	VerifyCode string    `json:"verify_code"`
 	Phone      string    `json:"phone"`
+	Role       string    `json:"role"`
 }
 
 func (LoginOk) IsLoginResult() {}

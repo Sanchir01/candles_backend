@@ -6,12 +6,17 @@ package resolver
 
 import (
 	"context"
-	"fmt"
-
 	"github.com/Sanchir01/candles_backend/internal/gql/model"
 )
 
 // Login is the resolver for the login field.
 func (r *authMutationsResolver) Login(ctx context.Context, obj *model.AuthMutations, input model.LoginInput) (model.LoginResult, error) {
-	panic(fmt.Errorf("not implemented: Login - login"))
+
+	user, err := r.authStr.Login(ctx, input.Phone)
+	if err != nil {
+		r.lg.Error("login errors", err)
+		return nil, err
+	}
+	r.lg.Warn("login", user)
+	return model.LoginOk{ID: user.ID, Phone: user.Phone, VerifyCode: "sdaddw21", Role: user.Role}, nil
 }

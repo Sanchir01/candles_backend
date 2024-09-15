@@ -155,6 +155,7 @@ type ComplexityRoot struct {
 	LoginOk struct {
 		ID         func(childComplexity int) int
 		Phone      func(childComplexity int) int
+		Role       func(childComplexity int) int
 		VerifyCode func(childComplexity int) int
 	}
 
@@ -585,6 +586,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.LoginOk.Phone(childComplexity), true
 
+	case "LoginOk.role":
+		if e.complexity.LoginOk.Role == nil {
+			break
+		}
+
+		return e.complexity.LoginOk.Role(childComplexity), true
+
 	case "LoginOk.verify_code":
 		if e.complexity.LoginOk.VerifyCode == nil {
 			break
@@ -929,6 +937,7 @@ type LoginOk {
     id:Uuid!
     verify_code:String!
     phone:String!
+    role:String!
 }`, BuiltIn: false},
 	{Name: "../api/auth/authmutation_register.graphqls", Input: `extend type AuthMutations {
     registrations(input:RegistrationsInput!): RegistrationsResult! @goField(forceResolver: true)
@@ -3504,6 +3513,50 @@ func (ec *executionContext) _LoginOk_phone(ctx context.Context, field graphql.Co
 }
 
 func (ec *executionContext) fieldContext_LoginOk_phone(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "LoginOk",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _LoginOk_role(ctx context.Context, field graphql.CollectedField, obj *model.LoginOk) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_LoginOk_role(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Role, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_LoginOk_role(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "LoginOk",
 		Field:      field,
@@ -9069,6 +9122,31 @@ func (ec *executionContext) _LoginOk(ctx context.Context, sel ast.SelectionSet, 
 				continue
 			}
 			out.Values[i] = ec._LoginOk_phone(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "role":
+			field := field
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return ec._LoginOk_role(ctx, field, obj)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+			out.Values[i] = ec._LoginOk_role(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}

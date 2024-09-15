@@ -9,6 +9,7 @@ services:
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_USER=postgres
   localstack:
+    restart: always
     image: localstack/localstack
     environment:
       - SERVICES=s3

@@ -2,6 +2,7 @@ package pgstorecategory
 
 import (
 	"context"
+
 	"github.com/Sanchir01/candles_backend/internal/gql/model"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -80,4 +81,19 @@ func (s *CategoryPostgresStore) CreateCategory(ctx context.Context, name, slug s
 		return uuid.Nil, err
 	}
 	return id, nil
+}
+
+func (s *CategoryPostgresStore) UpdateCategory(ctx context.Context, id uuid.UUID, name, slug string) (uuid.UUID, error) {
+	conn, err := s.pgxdb.Acquire(ctx)
+	if err != nil {
+		return uuid.Nil, err
+	}
+	defer conn.Release()
+	var idReturning uuid.UUID
+	query := "PDATE category SET title = $1, slug = $2 WHERE id = $3"
+	row := conn.QueryRow(ctx, query, name, slug)
+	if err := row.Scan(&idReturning); err != nil {
+		return uuid.Nil, err
+	}
+	return idReturning, nil
 }

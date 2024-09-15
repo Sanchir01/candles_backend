@@ -9,6 +9,7 @@ import (
 	pgstorecandles "github.com/Sanchir01/candles_backend/internal/database/postgres/candles"
 	pgstorecategory "github.com/Sanchir01/candles_backend/internal/database/postgres/category"
 	pgstorecolor "github.com/Sanchir01/candles_backend/internal/database/postgres/color"
+	pgstoreuser "github.com/Sanchir01/candles_backend/internal/database/postgres/user"
 	httphandlers "github.com/Sanchir01/candles_backend/internal/handlers"
 	httpserver "github.com/Sanchir01/candles_backend/internal/server/http"
 	"github.com/Sanchir01/candles_backend/pkg/lib/db/connect"
@@ -46,12 +47,12 @@ func main() {
 		candlesStr  = pgstorecandles.New(pgxdb)
 		colorStr    = pgstorecolor.New(pgxdb)
 		authStr     = pgstoreauth.New(pgxdb)
-		handlers    = httphandlers.New(rout, lg, cfg, categoryStr, candlesStr, colorStr, authStr, pgxdb)
+		userStr     = pgstoreuser.New(pgxdb)
+		handlers    = httphandlers.New(rout, lg, cfg, categoryStr, candlesStr, colorStr, authStr, userStr)
 	)
-	callcat, err := categoryStr.AllCategories(context.Background())
-	lg.Warn("category", callcat)
 	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGTERM, syscall.SIGINT, os.Interrupt)
 	defer cancel()
+
 	//client := twilio.NewRestClientWithParams(twilio.ClientParams{
 	//	Username: "VA46ce9c81d341ed3ec846f892451621d4",
 	//	Password: os.Getenv("TWILLIO_TOKEN"),
@@ -69,6 +70,7 @@ func main() {
 	//	response, _ := json.Marshal(*resp)
 	//	fmt.Println("Response: " + string(response))
 	//}
+
 	go func(ctx context.Context) {
 		if err := serve.Run(handlers.StartHttpServer()); err != nil {
 			if !errors.Is(err, context.Canceled) {

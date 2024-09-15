@@ -55,10 +55,10 @@ func (s *AuthPostgresStore) Login(ctx context.Context, phone string) (*model.Use
 type dbUser struct {
 	ID        uuid.UUID `db:"id"`
 	Title     string    `db:"title"`
-	Slug      string    `db:"slug"`
-	Phone     string    `db:"phone"`
 	CreatedAt time.Time `db:"created_at"`
 	UpdatedAt time.Time `db:"updated_at"`
+	Slug      string    `db:"slug"`
 	Version   uint      `db:"version"`
+	Phone     string    `db:"phone"`
 	Role      string    `db:"role"`
 }

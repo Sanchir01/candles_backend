@@ -48,6 +48,14 @@ type RegistrationsResult interface {
 	IsRegistrationsResult()
 }
 
+type UpdateCategoryResult interface {
+	IsUpdateCategoryResult()
+}
+
+type UserProfileResult interface {
+	IsUserProfileResult()
+}
+
 type VersionInterface interface {
 	IsVersionInterface()
 	GetVersion() uint
@@ -123,6 +131,7 @@ func (CategoryGetAllOk) IsCategoryGetAllResult() {}
 
 type CategoryMutation struct {
 	CreateCategory CategoryCreateResult `json:"createCategory"`
+	UpdateCategory UpdateCategoryResult `json:"updateCategory"`
 }
 
 type CategoryQuery struct {
@@ -182,6 +191,8 @@ func (InternalErrorProblem) IsAllCategoryResult() {}
 
 func (InternalErrorProblem) IsCategoryCreateResult() {}
 
+func (InternalErrorProblem) IsUpdateCategoryResult() {}
+
 func (InternalErrorProblem) IsCategoryGetAllResult() {}
 
 func (InternalErrorProblem) IsColorCreateResult() {}
@@ -190,6 +201,8 @@ func (InternalErrorProblem) IsAllColorResult() {}
 
 func (InternalErrorProblem) IsProblemInterface()     {}
 func (this InternalErrorProblem) GetMessage() string { return this.Message }
+
+func (InternalErrorProblem) IsUserProfileResult() {}
 
 type InvalidSortRankProblem struct {
 	Message string `json:"message"`
@@ -248,15 +261,35 @@ func (UnauthorizedProblem) IsColorCreateResult() {}
 func (UnauthorizedProblem) IsProblemInterface()     {}
 func (this UnauthorizedProblem) GetMessage() string { return this.Message }
 
+type UpdateCategoryInput struct {
+	Title string `json:"title"`
+}
+
+type UpdateCategoryOk struct {
+	ID uuid.UUID `json:"id"`
+}
+
+func (UpdateCategoryOk) IsUpdateCategoryResult() {}
+
 type User struct {
 	ID        uuid.UUID `json:"id"`
 	Title     string    `json:"title"`
+	CreatedAt time.Time `json:"createdAt"`
+	UpdatedAt time.Time `json:"updatedAt"`
 	Slug      string    `json:"slug"`
-	Phone     string    `json:"phone"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
 	Version   uint      `json:"version"`
+	Phone     string    `json:"phone"`
 	Role      string    `json:"role"`
+}
+
+type UserProfileOk struct {
+	Profile *User `json:"profile"`
+}
+
+func (UserProfileOk) IsUserProfileResult() {}
+
+type UserQuery struct {
+	Profile UserProfileResult `json:"profile"`
 }
 
 type VersionMismatchProblem struct {
@@ -273,9 +306,13 @@ func (VersionMismatchProblem) IsAllCategoryResult() {}
 
 func (VersionMismatchProblem) IsCategoryCreateResult() {}
 
+func (VersionMismatchProblem) IsUpdateCategoryResult() {}
+
 func (VersionMismatchProblem) IsColorCreateResult() {}
 
 func (VersionMismatchProblem) IsAllColorResult() {}
+
+func (VersionMismatchProblem) IsUserProfileResult() {}
 
 func (VersionMismatchProblem) IsProblemInterface()     {}
 func (this VersionMismatchProblem) GetMessage() string { return this.Message }

@@ -12,6 +12,7 @@ import (
 	pgstorecandles "github.com/Sanchir01/candles_backend/internal/database/postgres/candles"
 	pgstoreCategory "github.com/Sanchir01/candles_backend/internal/database/postgres/category"
 	pgstorecolor "github.com/Sanchir01/candles_backend/internal/database/postgres/color"
+	pgstoreuser "github.com/Sanchir01/candles_backend/internal/database/postgres/user"
 	"github.com/Sanchir01/candles_backend/internal/gql/directive"
 	genGql "github.com/Sanchir01/candles_backend/internal/gql/generated"
 	resolver "github.com/Sanchir01/candles_backend/internal/gql/resolvers"
@@ -19,8 +20,8 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
-	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/jmoiron/sqlx"
+	"github.com/vektah/gqlparser/v2/ast"
 	"github.com/vektah/gqlparser/v2/gqlerror"
 	"log"
 	"log/slog"
@@ -37,7 +38,7 @@ type HttpRouter struct {
 	candles   *pgstorecandles.CandlesPostgresStore
 	color     *pgstorecolor.ColorPostgresStore
 	auth      *pgstoreauth.AuthPostgresStore
-	pgxdb     *pgxpool.Pool
+	userStr   *pgstoreuser.UserPostgresStore
 }
 
 const (
@@ -50,11 +51,11 @@ const (
 func New(r *chi.Mux, lg *slog.Logger, cfg *config.Config,
 	category *pgstoreCategory.CategoryPostgresStore, candlesStr *pgstorecandles.CandlesPostgresStore, colorStr *pgstorecolor.ColorPostgresStore,
 	authStr *pgstoreauth.AuthPostgresStore,
-	pgxdb *pgxpool.Pool,
+	userStr *pgstoreuser.UserPostgresStore,
 ) *HttpRouter {
 	return &HttpRouter{
 		chiRouter: r, logger: lg, config: cfg, category: category, color: colorStr,
-		candles: candlesStr, pgxdb: pgxdb,
+		candles: candlesStr, userStr: userStr,
 		auth: authStr,
 	}
 }
@@ -75,13 +76,13 @@ func (r *HttpRouter) NewGraphQLHandler() *gqlhandler.Server {
 	)
 	srv.AddTransport(transport.POST{})
 	srv.AddTransport(transport.Options{})
-	srv.SetQueryCache(lru.New(queryCacheLRUSize))
+	srv.SetQueryCache(lru.New[*ast.QueryDocument](queryCacheLRUSize))
 	srv.AddTransport(transport.MultipartForm{
 		MaxUploadSize: maxUploadSize,
 		MaxMemory:     maxUploadSize / 10,
 	})
 	srv.Use(extension.Introspection{})
-	srv.Use(extension.AutomaticPersistedQuery{Cache: lru.New(automaticPersistedQueryCacheLRUSize)})
+	srv.Use(extension.AutomaticPersistedQuery{Cache: lru.New[string](automaticPersistedQueryCacheLRUSize)})
 
 	srv.SetRecoverFunc(
 		func(ctx context.Context, err interface{}) error {
@@ -99,7 +100,7 @@ func (r *HttpRouter) NewGraphQLHandler() *gqlhandler.Server {
 func (r *HttpRouter) newSchemaConfig() genGql.Config {
 	cfg := genGql.Config{Resolvers: resolver.New(
 		r.category, r.candles, r.color, r.auth, r.logger,
-		r.pgxdb, r.config,
+		r.userStr, r.config,
 	)}
 	cfg.Directives.InputUnion = directive.NewInputUnionDirective()
 	cfg.Directives.SortRankInput = directive.NewSortRankInputDirective()

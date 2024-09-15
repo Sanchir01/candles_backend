@@ -6,7 +6,7 @@ import (
 	pgstorecandles "github.com/Sanchir01/candles_backend/internal/database/postgres/candles"
 	pgstorecategory "github.com/Sanchir01/candles_backend/internal/database/postgres/category"
 	pgstorecolor "github.com/Sanchir01/candles_backend/internal/database/postgres/color"
-	"github.com/jackc/pgx/v5/pgxpool"
+	pgstoreuser "github.com/Sanchir01/candles_backend/internal/database/postgres/user"
 	"log/slog"
 )
 
@@ -21,10 +21,10 @@ type Resolver struct {
 	colorStr    *pgstorecolor.ColorPostgresStore
 	authStr     *pgstoreauth.AuthPostgresStore
 	cfg         *config.Config
-	pgxdb       *pgxpool.Pool
+	userStr     *pgstoreuser.UserPostgresStore
 }
 
 func New(category *pgstorecategory.CategoryPostgresStore, candles *pgstorecandles.CandlesPostgresStore, color *pgstorecolor.ColorPostgresStore, auth *pgstoreauth.AuthPostgresStore,
-	lg *slog.Logger, pgxdb *pgxpool.Pool, config *config.Config) *Resolver {
-	return &Resolver{categoryStr: category, lg: lg, candlesStr: candles, pgxdb: pgxdb, colorStr: color, authStr: auth, cfg: config}
+	lg *slog.Logger, user *pgstoreuser.UserPostgresStore, config *config.Config) *Resolver {
+	return &Resolver{categoryStr: category, lg: lg, candlesStr: candles, userStr: user, colorStr: color, authStr: auth, cfg: config}
 }

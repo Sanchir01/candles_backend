@@ -1,11 +1,10 @@
 type User {
-    id: ID!
-    title: String!
-    email: String!
-    avatarUrl: String!
-    createdAt: String!
-    updatedAt: String!
-    version: UInt!
-    role: String!
-    phone: String!
+  id: Uuid!
+  title: String!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  slug: String!
+  version:UInt!
+  phone:String!
+  role:String!
 }

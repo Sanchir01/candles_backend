@@ -33,8 +33,6 @@ func main() {
 	lg := setupLogger(cfg.Env)
 	lg.Info("Graphql server starting up...", slog.String("port", cfg.HttpServer.Port))
 
-	db := connect.PostgresCon(cfg, lg)
-	defer db.Close()
 	pgxdb, err := connect.PGXNew(cfg, lg, context.Background())
 	if err != nil {
 		lg.Error("pgx error connect", err.Error())
@@ -94,6 +92,7 @@ func main() {
 		log.Fatalf("Graphql serve gracefull")
 	}
 }
+
 func setupLogger(env string) *slog.Logger {
 	var lg *slog.Logger
 	switch env {

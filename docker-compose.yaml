@@ -1,8 +1,7 @@
 services:
   app:
     restart: always
-    build: ./
-    command: ./.bin/main
+    image: candles
     container_name: golang-app
     ports:
       - 5000:5000

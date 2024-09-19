@@ -8,6 +8,11 @@ database:
   dbname: "test"
   max_attempts: 10
 
+s3store:
+  key: "44YEJC1KE8L28V73VF43" 
+  url: "https://s3.timeweb.cloud"
+  region: "ru-1"
+
 gql_server:
     port: "5000"
     host: "localhost"

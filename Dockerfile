@@ -1,11 +1,23 @@
-FROM golang:1.23.1-alpine3.20
+FROM golang:1.23.1-alpine3.20 AS builder
+
+WORKDIR /usr/local/src
+
+RUN apk --no-cache add bash git make gcc  gettext musl-dev
 
 RUN go version
 
-COPY ./ ./
+COPY . .
 
 RUN go mod download
 
-RUN go build -o ./cmd/main/main.go ./.bin/main
+RUN go build -o .bin/main cmd/main/main.go
 
-CMD ["./.bin/main"]
+FROM alpine:3.20
+
+
+COPY --from=builder /usr/local/src/.bin/main .
+
+COPY config/config.yaml config/config.yaml
+EXPOSE 5000
+
+CMD ["./main"]

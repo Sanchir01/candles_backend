@@ -15,6 +15,7 @@ type Config struct {
 	HttpServer  `yaml:"http_server"`
 	Errors      `yaml:"errors"`
 	DB          DataBase `yaml:"database"`
+	S3Store     S3Store  `yaml:"s3store"`
 }
 type DataBase struct {
 	Host        string `yaml:"host"`
@@ -23,6 +24,12 @@ type DataBase struct {
 	Database    string `yaml:"dbname"`
 	SSL         string `yaml:"ssl"`
 	MaxAttempts int    `yaml:"max_attempts"`
+}
+type S3Store struct {
+	Key    string `yaml:"key"`
+	Bucket string `yaml:"bucket"`
+	Region string `yaml:"region"`
+	URL    string `yaml:"url"`
 }
 type HttpServer struct {
 	Timeout     time.Duration `yaml:"timeout"  env-default:"4s"`

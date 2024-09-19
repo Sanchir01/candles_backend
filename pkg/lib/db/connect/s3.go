@@ -2,41 +2,46 @@ package connect
 
 import (
 	"context"
-	"fmt"
 	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/config"
+	awscfg "github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
-	"github.com/aws/aws-sdk-go-v2/service/s3/types"
-	"log"
+	"os"
+	"sync"
+
+	"github.com/Sanchir01/candles_backend/internal/config"
+
+	"golang.org/x/exp/slog"
 )
 
-func NewS3(ctx context.Context) {
-	cfg, err := config.LoadDefaultConfig(ctx,
-		config.WithRegion("us-east-1"),
-		config.WithEndpointResolverWithOptions(aws.EndpointResolverWithOptionsFunc(
-			func(service, region string, options ...interface{}) (aws.Endpoint, error) {
-				if service == s3.ServiceID {
-					return aws.Endpoint{
-						URL:           "http://localhost:4566",
-						SigningRegion: "us-east-1",
-					}, nil
-				}
-				return aws.Endpoint{}, fmt.Errorf("unknown endpoint requested for service %s in region %s", service, region)
-			}),
-		))
-	if err != nil {
-		log.Fatalf("ошибка загрузки конфигурации: %v", err)
+type S3Storage struct {
+	mu   sync.Mutex
+	file map[string][]byte
+}
+
+func NewStorage() *S3Storage {
+	return &S3Storage{
+		file: make(map[string][]byte),
 	}
-	client := s3.NewFromConfig(cfg)
-	bucketName := "test-bucket"
-	_, err = client.CreateBucket(ctx, &s3.CreateBucketInput{
-		Bucket: &bucketName,
-		CreateBucketConfiguration: &types.CreateBucketConfiguration{
-			LocationConstraint: "us-east-1",
-		},
-	})
+}
+
+func NewS3(ctx context.Context, lg *slog.Logger, cfg *config.Config) *s3.Client {
+	creds := credentials.NewStaticCredentialsProvider(cfg.S3Store.Key, os.Getenv("S3_SECRET"), "")
+
+	newawsconfig, err := awscfg.LoadDefaultConfig(ctx, awscfg.WithRegion(cfg.S3Store.Region),
+		awscfg.WithCredentialsProvider(creds),
+		awscfg.WithEndpointResolver(aws.EndpointResolverFunc(
+			func(service, region string) (aws.Endpoint, error) {
+				return aws.Endpoint{
+					URL: cfg.S3Store.URL,
+				}, nil
+			},
+		)),
+	)
 	if err != nil {
-		log.Fatalf("ошибка создания бакета: %v", err)
+		lg.Error("ошибка при инициализации переменных окружения", err.Error())
 	}
-	fmt.Printf("Бакет %s создан\n", bucketName)
+	awsS3Client := s3.NewFromConfig(newawsconfig)
+
+	return awsS3Client
 }

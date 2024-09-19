@@ -14,9 +14,11 @@ import (
 	httpserver "github.com/Sanchir01/candles_backend/internal/server/http"
 	"github.com/Sanchir01/candles_backend/pkg/lib/db/connect"
 	"github.com/Sanchir01/candles_backend/pkg/lib/logger/handlers/slogpretty"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/go-chi/chi/v5"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"log"
+
 	"log/slog"
 	"os"
 	"os/signal"
@@ -38,6 +40,14 @@ func main() {
 		lg.Error("pgx error connect", err.Error())
 	}
 
+	s3store := connect.NewS3(context.Background(), lg, cfg)
+	output, err := s3store.ListBuckets(context.TODO(), &s3.ListBucketsInput{})
+	if err != nil {
+		lg.Error("s3 error connect", err.Error())
+	}
+	for _, bucket := range output.Buckets {
+		lg.Warn("bucket", bucket.Name)
+	}
 	serve := httpserver.NewHttpServer(cfg)
 	rout := chi.NewRouter()
 	var (
@@ -89,7 +99,7 @@ func main() {
 	}
 
 	if err := serve.Gracefull(ctx); err != nil {
-		log.Fatalf("Graphql serve gracefull")
+		lg.Error("Graphql serve gracefull")
 	}
 }
 

@@ -2,27 +2,15 @@ package connect
 
 import (
 	"context"
+	"github.com/Sanchir01/candles_backend/internal/config"
+	"github.com/aws/aws-sdk-go-v2/aws"
 	awscfg "github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"os"
-	"sync"
 
-	"github.com/Sanchir01/candles_backend/internal/config"
-
-	"golang.org/x/exp/slog"
+	"log/slog"
 )
-
-type S3Storage struct {
-	mu   sync.Mutex
-	file map[string][]byte
-}
-
-func NewStorage() *S3Storage {
-	return &S3Storage{
-		file: make(map[string][]byte),
-	}
-}
 
 func NewS3(ctx context.Context, lg *slog.Logger, cfg *config.Config) *s3.Client {
 	creds := credentials.NewStaticCredentialsProvider(cfg.S3Store.Key, os.Getenv("S3_SECRET"), "")
@@ -31,8 +19,13 @@ func NewS3(ctx context.Context, lg *slog.Logger, cfg *config.Config) *s3.Client 
 		ctx,
 		awscfg.WithRegion(cfg.S3Store.Region),
 		awscfg.WithCredentialsProvider(creds),
-		awscfg.WithRegion(cfg.S3Store.Region),
-	)
+		awscfg.WithEndpointResolver(aws.EndpointResolverFunc(
+			func(service, region string) (aws.Endpoint, error) {
+				return aws.Endpoint{
+					URL: cfg.S3Store.URL, // URL для MinIO или LocalStack
+				}, nil
+			}),
+		))
 
 	if err != nil {
 		lg.Error("ошибка при инициализации s3 хранилища", err.Error())

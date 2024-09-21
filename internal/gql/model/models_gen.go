@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/99designs/gqlgen/graphql"
 	"github.com/google/uuid"
 )
 
@@ -162,11 +163,11 @@ type ColorQuery struct {
 }
 
 type CreateCandleInput struct {
-	Title      string    `json:"title"`
-	Price      int       `json:"price"`
-	CategoryID uuid.UUID `json:"category_id"`
-	ColorID    uuid.UUID `json:"color_id"`
-	Images     []string  `json:"images"`
+	Title      string            `json:"title"`
+	Price      int               `json:"price"`
+	CategoryID uuid.UUID         `json:"category_id"`
+	ColorID    uuid.UUID         `json:"color_id"`
+	Images     []*graphql.Upload `json:"images"`
 }
 
 type CreateCategoryInput struct {

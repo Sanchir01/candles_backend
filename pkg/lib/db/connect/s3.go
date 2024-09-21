@@ -14,7 +14,6 @@ import (
 
 func NewS3(ctx context.Context, lg *slog.Logger, cfg *config.Config) *s3.Client {
 	creds := credentials.NewStaticCredentialsProvider(cfg.S3Store.Key, os.Getenv("S3_SECRET"), "")
-
 	newawsconfig, err := awscfg.LoadDefaultConfig(
 		ctx,
 		awscfg.WithRegion(cfg.S3Store.Region),

@@ -72,7 +72,7 @@ func (s *CategoryPostgresStore) CreateCategory(ctx context.Context, name, slug s
 		return uuid.Nil, err
 	}
 	defer conn.Release()
-	query := "INSERT INTO category.sql(title, slug) VALUES($1, $2) RETURNING id"
+	query := "INSERT INTO category(title, slug) VALUES($1, $2) RETURNING id"
 	var id uuid.UUID
 
 	row := conn.QueryRow(ctx, query, name, slug)

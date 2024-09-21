@@ -26,10 +26,10 @@ type DataBase struct {
 	MaxAttempts int    `yaml:"max_attempts"`
 }
 type S3Store struct {
-	Key    string `yaml:"key"`
-	Bucket string `yaml:"bucket"`
-	Region string `yaml:"region"`
-	URL    string `yaml:"url"`
+	Key        string `yaml:"key"`
+	BucketName string `yaml:"bucketname"`
+	Region     string `yaml:"region"`
+	URL        string `yaml:"url"`
 }
 type HttpServer struct {
 	Timeout     time.Duration `yaml:"timeout"  env-default:"4s"`

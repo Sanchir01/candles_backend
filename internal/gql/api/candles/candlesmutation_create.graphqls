@@ -9,7 +9,7 @@ input CreateCandleInput {
     price: Int!
     category_id: Uuid!
     color_id: Uuid!
-    images:[String!]!
+    images:[Upload!]!
 }
 
 union CandlesMutationResult =

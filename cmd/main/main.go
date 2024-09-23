@@ -42,7 +42,17 @@ func main() {
 		lg.Error("pgx error connect", err.Error())
 	}
 
-	s3store := connect.NewS3(context.Background(), lg, cfg)
+	serve := httpserver.NewHttpServer(cfg)
+	rout := chi.NewRouter()
+	var (
+		categoryStr = pgstorecategory.New(pgxdb)
+		candlesStr  = pgstorecandles.New(pgxdb)
+		colorStr    = pgstorecolor.New(pgxdb)
+		authStr     = pgstoreauth.New(pgxdb)
+		userStr     = pgstoreuser.New(pgxdb)
+		s3store     = connect.NewS3(context.Background(), lg, cfg)
+		handlers    = httphandlers.New(rout, lg, cfg, s3store, categoryStr, candlesStr, colorStr, authStr, userStr)
+	)
 	output, err := s3store.ListBuckets(context.TODO(), &s3.ListBucketsInput{})
 	if err != nil {
 		lg.Error("s3 error connect", err.Error())
@@ -62,36 +72,9 @@ func main() {
 		Bucket: aws.String(cfg.S3Store.BucketName),
 		ACL:    types.ObjectCannedACLPublicRead,
 	})
-	serve := httpserver.NewHttpServer(cfg)
-	rout := chi.NewRouter()
-	var (
-		categoryStr = pgstorecategory.New(pgxdb)
-		candlesStr  = pgstorecandles.New(pgxdb)
-		colorStr    = pgstorecolor.New(pgxdb)
-		authStr     = pgstoreauth.New(pgxdb)
-		userStr     = pgstoreuser.New(pgxdb)
-		handlers    = httphandlers.New(rout, lg, cfg, categoryStr, candlesStr, colorStr, authStr, userStr)
-	)
+
 	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGTERM, syscall.SIGINT, os.Interrupt)
 	defer cancel()
-
-	//client := twilio.NewRestClientWithParams(twilio.ClientParams{
-	//	Username: "VA46ce9c81d341ed3ec846f892451621d4",
-	//	Password: os.Getenv("TWILLIO_TOKEN"),
-	//})
-	//
-	//params := &twilioApi.CreateMessageParams{}
-	//params.SetTo("+15558675309")
-	//params.SetFrom("+15017250604")
-	//params.SetBody("Hello from Go!")
-	//
-	//resp, err := client.Api.CreateMessage(params)
-	//if err != nil {
-	//	fmt.Println("Error sending SMS message: " + err.Error())
-	//} else {
-	//	response, _ := json.Marshal(*resp)
-	//	fmt.Println("Response: " + string(response))
-	//}
 
 	go func(ctx context.Context) {
 		if err := serve.Run(handlers.StartHttpServer()); err != nil {

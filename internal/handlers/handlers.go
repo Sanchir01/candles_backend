@@ -17,6 +17,7 @@ import (
 	genGql "github.com/Sanchir01/candles_backend/internal/gql/generated"
 	resolver "github.com/Sanchir01/candles_backend/internal/gql/resolvers"
 	customMiddleware "github.com/Sanchir01/candles_backend/internal/handlers/middleware"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
@@ -34,6 +35,7 @@ type HttpRouter struct {
 	logger    *slog.Logger
 	config    *config.Config
 	db        *sqlx.DB
+	s3store   *s3.Client
 	category  *pgstoreCategory.CategoryPostgresStore
 	candles   *pgstorecandles.CandlesPostgresStore
 	color     *pgstorecolor.ColorPostgresStore
@@ -49,6 +51,7 @@ const (
 )
 
 func New(r *chi.Mux, lg *slog.Logger, cfg *config.Config,
+	s3store *s3.Client,
 	category *pgstoreCategory.CategoryPostgresStore, candlesStr *pgstorecandles.CandlesPostgresStore, colorStr *pgstorecolor.ColorPostgresStore,
 	authStr *pgstoreauth.AuthPostgresStore,
 	userStr *pgstoreuser.UserPostgresStore,
@@ -56,7 +59,8 @@ func New(r *chi.Mux, lg *slog.Logger, cfg *config.Config,
 	return &HttpRouter{
 		chiRouter: r, logger: lg, config: cfg, category: category, color: colorStr,
 		candles: candlesStr, userStr: userStr,
-		auth: authStr,
+		auth:    authStr,
+		s3store: s3store,
 	}
 }
 
@@ -100,7 +104,7 @@ func (r *HttpRouter) NewGraphQLHandler() *gqlhandler.Server {
 func (r *HttpRouter) newSchemaConfig() genGql.Config {
 	cfg := genGql.Config{Resolvers: resolver.New(
 		r.category, r.candles, r.color, r.auth, r.logger,
-		r.userStr, r.config,
+		r.userStr, r.config, r.s3store,
 	)}
 	cfg.Directives.InputUnion = directive.NewInputUnionDirective()
 	cfg.Directives.SortRankInput = directive.NewSortRankInputDirective()

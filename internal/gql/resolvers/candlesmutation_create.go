@@ -6,7 +6,6 @@ package resolver
 
 import (
 	"context"
-
 	"github.com/Sanchir01/candles_backend/internal/gql/model"
 	responseErr "github.com/Sanchir01/candles_backend/pkg/lib/api/response"
 	"github.com/Sanchir01/candles_backend/pkg/lib/utils"
@@ -19,11 +18,9 @@ func (r *candlesMutationResolver) CreateCandle(ctx context.Context, obj *model.C
 		return responseErr.NewInternalErrorProblem("не удалось создат слаг"), err
 	}
 	_, err = r.candlesStr.CandlesById(ctx, input.CategoryID)
-
 	if err == nil {
 		return responseErr.NewInternalErrorProblem("товар с таким айди уже есть"), err
 	}
-
 	_, err = r.candlesStr.CandlesBySlug(ctx, slug)
 	if err == nil {
 		return responseErr.NewInternalErrorProblem("такая категория уже есть"), err
@@ -31,7 +28,8 @@ func (r *candlesMutationResolver) CreateCandle(ctx context.Context, obj *model.C
 	r.lg.Warn("upload images", input.Images)
 
 	testImages := make([]string, 0)
-	id, err := r.candlesStr.CreateCandles(ctx, input.CategoryID, input.ColorID, input.Title, slug, testImages, input.Price)
+	testing := append(testImages, "test", "sdadd")
+	id, err := r.candlesStr.CreateCandles(ctx, input.CategoryID, input.ColorID, input.Title, slug, testing, input.Price)
 	if err != nil {
 		return responseErr.NewInternalErrorProblem("ошибка во время создания свечи"), err
 	}

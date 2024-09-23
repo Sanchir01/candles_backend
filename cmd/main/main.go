@@ -10,13 +10,13 @@ import (
 	pgstorecategory "github.com/Sanchir01/candles_backend/internal/database/postgres/category"
 	pgstorecolor "github.com/Sanchir01/candles_backend/internal/database/postgres/color"
 	pgstoreuser "github.com/Sanchir01/candles_backend/internal/database/postgres/user"
+	s3store "github.com/Sanchir01/candles_backend/internal/database/s3"
 	httphandlers "github.com/Sanchir01/candles_backend/internal/handlers"
 	httpserver "github.com/Sanchir01/candles_backend/internal/server/http"
 	"github.com/Sanchir01/candles_backend/pkg/lib/db/connect"
 	"github.com/Sanchir01/candles_backend/pkg/lib/logger/handlers/slogpretty"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
-	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/go-chi/chi/v5"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"log"
@@ -50,28 +50,25 @@ func main() {
 		colorStr    = pgstorecolor.New(pgxdb)
 		authStr     = pgstoreauth.New(pgxdb)
 		userStr     = pgstoreuser.New(pgxdb)
-		s3store     = connect.NewS3(context.Background(), lg, cfg)
-		handlers    = httphandlers.New(rout, lg, cfg, s3store, categoryStr, candlesStr, colorStr, authStr, userStr)
+		s3client    = connect.NewS3(context.Background(), lg, cfg)
+		s3str       = s3store.New(s3client, context.Background(), cfg)
+		handlers    = httphandlers.New(rout, lg, cfg, s3str, categoryStr, candlesStr, colorStr, authStr, userStr)
 	)
-	output, err := s3store.ListBuckets(context.TODO(), &s3.ListBucketsInput{})
+	output, err := s3client.ListBuckets(context.TODO(), &s3.ListBucketsInput{})
 	if err != nil {
 		lg.Error("s3 error connect", err.Error())
 	}
 	for _, bucket := range output.Buckets {
 		lg.Warn("bucket", bucket.Name)
 	}
-	image, err := s3store.GetObject(context.Background(), &s3.GetObjectInput{
+	image, err := s3client.GetObject(context.Background(), &s3.GetObjectInput{
 		Bucket: aws.String(cfg.S3Store.BucketName),
 		Key:    aws.String("i.webp"),
 	})
 	if err != nil {
 		lg.Error("s3 error get object", err.Error())
 	}
-	lg.Warn("image", image.ContentRange)
-	_, err = s3store.PutObject(context.Background(), &s3.PutObjectInput{
-		Bucket: aws.String(cfg.S3Store.BucketName),
-		ACL:    types.ObjectCannedACLPublicRead,
-	})
+	lg.Warn("image", image.AcceptRanges)
 
 	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGTERM, syscall.SIGINT, os.Interrupt)
 	defer cancel()

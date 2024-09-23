@@ -13,11 +13,11 @@ import (
 	pgstoreCategory "github.com/Sanchir01/candles_backend/internal/database/postgres/category"
 	pgstorecolor "github.com/Sanchir01/candles_backend/internal/database/postgres/color"
 	pgstoreuser "github.com/Sanchir01/candles_backend/internal/database/postgres/user"
+	s3store "github.com/Sanchir01/candles_backend/internal/database/s3"
 	"github.com/Sanchir01/candles_backend/internal/gql/directive"
 	genGql "github.com/Sanchir01/candles_backend/internal/gql/generated"
 	resolver "github.com/Sanchir01/candles_backend/internal/gql/resolvers"
 	customMiddleware "github.com/Sanchir01/candles_backend/internal/handlers/middleware"
-	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
@@ -35,7 +35,7 @@ type HttpRouter struct {
 	logger    *slog.Logger
 	config    *config.Config
 	db        *sqlx.DB
-	s3store   *s3.Client
+	s3store   *s3store.S3Store
 	category  *pgstoreCategory.CategoryPostgresStore
 	candles   *pgstorecandles.CandlesPostgresStore
 	color     *pgstorecolor.ColorPostgresStore
@@ -51,7 +51,7 @@ const (
 )
 
 func New(r *chi.Mux, lg *slog.Logger, cfg *config.Config,
-	s3store *s3.Client,
+	s3store *s3store.S3Store,
 	category *pgstoreCategory.CategoryPostgresStore, candlesStr *pgstorecandles.CandlesPostgresStore, colorStr *pgstorecolor.ColorPostgresStore,
 	authStr *pgstoreauth.AuthPostgresStore,
 	userStr *pgstoreuser.UserPostgresStore,

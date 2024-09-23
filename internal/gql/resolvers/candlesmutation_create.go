@@ -26,7 +26,9 @@ func (r *candlesMutationResolver) CreateCandle(ctx context.Context, obj *model.C
 		return responseErr.NewInternalErrorProblem("такая категория уже есть"), err
 	}
 	r.lg.Warn("upload images", input.Images)
-
+	for _, image := range input.Images {
+		r.lg.Warn("image", image.File)
+	}
 	testImages := make([]string, 0)
 	testing := append(testImages, "test", "sdadd")
 	id, err := r.candlesStr.CreateCandles(ctx, input.CategoryID, input.ColorID, input.Title, slug, testing, input.Price)

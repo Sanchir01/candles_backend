@@ -28,7 +28,7 @@ func (s3str *S3Store) PutObjects(ctx context.Context, images []*graphql.Upload) 
 		if image.File == nil {
 			return nil, nil
 		}
-		image, err := s3str.s3Client.PutObject(ctx, &s3.PutObjectInput{
+		_, err := s3str.s3Client.PutObject(ctx, &s3.PutObjectInput{
 			Bucket:        aws.String(s3str.cfg.S3Store.BucketName),
 			Key:           aws.String(image.Filename),
 			ContentLength: &image.Size,
@@ -39,7 +39,7 @@ func (s3str *S3Store) PutObjects(ctx context.Context, images []*graphql.Upload) 
 		if err != nil {
 			return nil, err
 		}
-		imageURL := fmt.Sprintf("https://%s.s3.%s.amazonaws.com/%s", "your-bucket-name", "your-region", fileKey)
+		imageURL := fmt.Sprintf(s3str.cfg.S3Store.URL, s3str.cfg.S3Store.BucketName, image.Filename)
 		imageURLs = append(imageURLs, imageURL)
 	}
 	return imageURLs, nil

@@ -25,10 +25,14 @@ func (r *candlesMutationResolver) CreateCandle(ctx context.Context, obj *model.C
 	if err == nil {
 		return responseErr.NewInternalErrorProblem("такая категория уже есть"), err
 	}
-	r.lg.Warn("upload images", input.Images)
-	for _, image := range input.Images {
-		r.lg.Warn("image", image.File)
+
+	s3urliamge, err := r.s3store.PutObjects(ctx, input.Images)
+	if err != nil {
+		r.lg.Warn("error  s3", err.Error())
+		return responseErr.NewInternalErrorProblem("ошибка при загрузке s3"), nil
 	}
+	r.lg.Warn("image urls", s3urliamge)
+
 	testImages := make([]string, 0)
 	testing := append(testImages, "test", "sdadd")
 	id, err := r.candlesStr.CreateCandles(ctx, input.CategoryID, input.ColorID, input.Title, slug, testing, input.Price)

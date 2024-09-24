@@ -21,6 +21,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/jmoiron/sqlx"
 	"github.com/vektah/gqlparser/v2/ast"
 	"github.com/vektah/gqlparser/v2/gqlerror"
@@ -36,6 +37,7 @@ type HttpRouter struct {
 	config    *config.Config
 	db        *sqlx.DB
 	s3store   *s3store.S3Store
+	pgxdb     *pgxpool.Pool
 	category  *pgstoreCategory.CategoryPostgresStore
 	candles   *pgstorecandles.CandlesPostgresStore
 	color     *pgstorecolor.ColorPostgresStore
@@ -51,7 +53,7 @@ const (
 )
 
 func New(r *chi.Mux, lg *slog.Logger, cfg *config.Config,
-	s3store *s3store.S3Store,
+	s3store *s3store.S3Store, pgxdb *pgxpool.Pool,
 	category *pgstoreCategory.CategoryPostgresStore, candlesStr *pgstorecandles.CandlesPostgresStore, colorStr *pgstorecolor.ColorPostgresStore,
 	authStr *pgstoreauth.AuthPostgresStore,
 	userStr *pgstoreuser.UserPostgresStore,
@@ -60,7 +62,7 @@ func New(r *chi.Mux, lg *slog.Logger, cfg *config.Config,
 		chiRouter: r, logger: lg, config: cfg, category: category, color: colorStr,
 		candles: candlesStr, userStr: userStr,
 		auth:    authStr,
-		s3store: s3store,
+		s3store: s3store, pgxdb: pgxdb,
 	}
 }
 
@@ -104,7 +106,7 @@ func (r *HttpRouter) NewGraphQLHandler() *gqlhandler.Server {
 func (r *HttpRouter) newSchemaConfig() genGql.Config {
 	cfg := genGql.Config{Resolvers: resolver.New(
 		r.category, r.candles, r.color, r.auth, r.logger,
-		r.userStr, r.config, r.s3store,
+		r.userStr, r.config, r.s3store, r.pgxdb,
 	)}
 	cfg.Directives.InputUnion = directive.NewInputUnionDirective()
 	cfg.Directives.SortRankInput = directive.NewSortRankInputDirective()

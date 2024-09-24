@@ -22,15 +22,16 @@ func New(s3Client *s3.Client, ctx context.Context, cfg *config.Config) *S3Store 
 	}
 }
 
-func (s3str *S3Store) PutObjects(ctx context.Context, images []*graphql.Upload) ([]string, error) {
+func (s3str *S3Store) PutObjects(ctx context.Context, folderpath string, images []*graphql.Upload) ([]string, error) {
 	imageURLs := make([]string, 0)
 	for _, image := range images {
 		if image.File == nil {
 			return nil, nil
 		}
+		filekey := fmt.Sprintf("%s/%s", folderpath, image.Filename)
 		_, err := s3str.s3Client.PutObject(ctx, &s3.PutObjectInput{
 			Bucket:        aws.String(s3str.cfg.S3Store.BucketName),
-			Key:           aws.String(image.Filename),
+			Key:           aws.String(filekey),
 			ContentLength: &image.Size,
 			ContentType:   aws.String(image.ContentType),
 			ACL:           types.ObjectCannedACLPublicRead,
@@ -39,7 +40,7 @@ func (s3str *S3Store) PutObjects(ctx context.Context, images []*graphql.Upload) 
 		if err != nil {
 			return nil, err
 		}
-		imageURL := fmt.Sprintf(s3str.cfg.S3Store.URL, s3str.cfg.S3Store.BucketName, image.Filename)
+		imageURL := fmt.Sprintf("%s%s%s", s3str.cfg.S3Store.URL, s3str.cfg.S3Store.BucketName, "/"+filekey)
 		imageURLs = append(imageURLs, imageURL)
 	}
 	return imageURLs, nil

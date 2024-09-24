@@ -9,10 +9,25 @@ import (
 	"github.com/Sanchir01/candles_backend/internal/gql/model"
 	responseErr "github.com/Sanchir01/candles_backend/pkg/lib/api/response"
 	"github.com/Sanchir01/candles_backend/pkg/lib/utils"
+	"github.com/jackc/pgx/v5"
 )
 
 // CreateCandle is the resolver for the createCandle field.
 func (r *candlesMutationResolver) CreateCandle(ctx context.Context, obj *model.CandlesMutation, input model.CreateCandleInput) (model.CandlesMutationResult, error) {
+	conn, err := r.pgxdb.Acquire(ctx)
+	if err != nil {
+		r.lg.Error("error pgx transaction", err.Error())
+		return nil, err
+	}
+
+	defer conn.Release()
+
+	tr, err := conn.BeginTx(ctx, pgx.TxOptions{})
+	if err != nil {
+		r.lg.Error("error pgx transaction", err.Error())
+		return nil, err
+	}
+	r.lg.Error("error pgx transaction", tr)
 	slug, err := utils.Slugify(input.Title)
 	if err != nil {
 		return responseErr.NewInternalErrorProblem("не удалось создат слаг"), err
@@ -26,19 +41,19 @@ func (r *candlesMutationResolver) CreateCandle(ctx context.Context, obj *model.C
 		return responseErr.NewInternalErrorProblem("такая категория уже есть"), err
 	}
 
-	s3urliamge, err := r.s3store.PutObjects(ctx, input.Images)
+	s3urlimage, err := r.s3store.PutObjects(ctx, "candles", input.Images)
 	if err != nil {
 		r.lg.Warn("error  s3", err.Error())
 		return responseErr.NewInternalErrorProblem("ошибка при загрузке s3"), nil
 	}
-	r.lg.Warn("image urls", s3urliamge)
+	r.lg.Info("s3urlimage", s3urlimage)
 
-	testImages := make([]string, 0)
-	testing := append(testImages, "test", "sdadd")
-	id, err := r.candlesStr.CreateCandles(ctx, input.CategoryID, input.ColorID, input.Title, slug, testing, input.Price)
+	id, err := r.candlesStr.CreateCandles(ctx, input.CategoryID, input.ColorID, input.Title, slug, s3urlimage, input.Price)
+
 	if err != nil {
 		return responseErr.NewInternalErrorProblem("ошибка во время создания свечи"), err
 	}
+
 	return &model.CandlesCreateOk{
 		ID: id,
 	}, nil

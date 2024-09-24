@@ -15,7 +15,6 @@ import (
 	httpserver "github.com/Sanchir01/candles_backend/internal/server/http"
 	"github.com/Sanchir01/candles_backend/pkg/lib/db/connect"
 	"github.com/Sanchir01/candles_backend/pkg/lib/logger/handlers/slogpretty"
-	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/go-chi/chi/v5"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
@@ -52,7 +51,7 @@ func main() {
 		userStr     = pgstoreuser.New(pgxdb)
 		s3client    = connect.NewS3(context.Background(), lg, cfg)
 		s3str       = s3store.New(s3client, context.Background(), cfg)
-		handlers    = httphandlers.New(rout, lg, cfg, s3str, categoryStr, candlesStr, colorStr, authStr, userStr)
+		handlers    = httphandlers.New(rout, lg, cfg, s3str, pgxdb, categoryStr, candlesStr, colorStr, authStr, userStr)
 	)
 	output, err := s3client.ListBuckets(context.TODO(), &s3.ListBucketsInput{})
 	if err != nil {
@@ -61,15 +60,6 @@ func main() {
 	for _, bucket := range output.Buckets {
 		lg.Warn("bucket", bucket.Name)
 	}
-	image, err := s3client.GetObject(context.Background(), &s3.GetObjectInput{
-		Bucket: aws.String(cfg.S3Store.BucketName),
-		Key:    aws.String("i.webp"),
-	})
-	if err != nil {
-		lg.Error("s3 error get object", err.Error())
-	}
-	lg.Warn("image", image.AcceptRanges)
-
 	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGTERM, syscall.SIGINT, os.Interrupt)
 	defer cancel()
 

@@ -27,15 +27,17 @@ func (r *candlesMutationResolver) CreateCandle(ctx context.Context, obj *model.C
 		r.lg.Error("error pgx transaction", err.Error())
 		return nil, err
 	}
-	r.lg.Error("error pgx transaction", tr)
+
 	slug, err := utils.Slugify(input.Title)
 	if err != nil {
 		return responseErr.NewInternalErrorProblem("не удалось создат слаг"), err
 	}
+
 	_, err = r.candlesStr.CandlesById(ctx, input.CategoryID)
 	if err == nil {
 		return responseErr.NewInternalErrorProblem("товар с таким айди уже есть"), err
 	}
+
 	_, err = r.candlesStr.CandlesBySlug(ctx, slug)
 	if err == nil {
 		return responseErr.NewInternalErrorProblem("такая категория уже есть"), err
@@ -43,14 +45,17 @@ func (r *candlesMutationResolver) CreateCandle(ctx context.Context, obj *model.C
 
 	s3urlimage, err := r.s3store.PutObjects(ctx, "candles", input.Images)
 	if err != nil {
+		tr.Rollback(ctx)
 		r.lg.Warn("error  s3", err.Error())
 		return responseErr.NewInternalErrorProblem("ошибка при загрузке s3"), nil
 	}
+
 	r.lg.Info("s3urlimage", s3urlimage)
 
-	id, err := r.candlesStr.CreateCandles(ctx, input.CategoryID, input.ColorID, input.Title, slug, s3urlimage, input.Price)
-
+	id, err := r.candlesStr.CreateCandles(ctx, input.CategoryID, input.ColorID, input.Title, slug, s3urlimage, input.Price, tr)
 	if err != nil {
+		tr.Rollback(ctx)
+		r.s3store.DeleteObjects(ctx, "candles", input.Images)
 		return responseErr.NewInternalErrorProblem("ошибка во время создания свечи"), err
 	}
 

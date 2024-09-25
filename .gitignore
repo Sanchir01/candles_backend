@@ -1,6 +1,5 @@
-idea
 .idea
 .bin
-.development.env
+.*.env
 .vscode
 localstack

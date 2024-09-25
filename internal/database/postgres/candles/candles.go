@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/Sanchir01/candles_backend/internal/gql/model"
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"time"
 )
@@ -49,17 +50,12 @@ func (s *CandlesPostgresStore) AllCandles(ctx context.Context) ([]model.Candles,
 }
 
 func (s *CandlesPostgresStore) CreateCandles(
-	ctx context.Context, categoryID, colorID uuid.UUID, title string, slug string, images []string, price int,
+	ctx context.Context, categoryID, colorID uuid.UUID, title string, slug string, images []string, price int, tr pgx.Tx,
 ) (uuid.UUID, error) {
-	conn, err := s.pgxdb.Acquire(ctx)
-	if err != nil {
-		return uuid.Nil, err
-	}
-	defer conn.Release()
 	var id uuid.UUID
 	query := "INSERT INTO candles (category_id, title, slug, images,price,color_id) VALUES ($1, $2, $3, $4, $5,$6) RETURNING id"
 
-	if err := conn.QueryRow(ctx, query, categoryID, title, slug, images, price, colorID).Scan(&id); err != nil {
+	if err := tr.QueryRow(ctx, query, categoryID, title, slug, images, price, colorID).Scan(&id); err != nil {
 		return uuid.Nil, err
 	}
 	return id, nil

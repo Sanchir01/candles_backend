@@ -45,3 +45,20 @@ func (s3str *S3Store) PutObjects(ctx context.Context, folderpath string, images 
 	}
 	return imageURLs, nil
 }
+
+func (s3str *S3Store) DeleteObjects(ctx context.Context, folderpath string, images []*graphql.Upload) error {
+	for _, image := range images {
+		if folderpath == "" {
+			return fmt.Errorf("folderpath is empty")
+		}
+		filekey := fmt.Sprintf("%s/%s", folderpath, image.Filename)
+		_, err := s3str.s3Client.DeleteObject(ctx, &s3.DeleteObjectInput{
+			Bucket: aws.String(s3str.cfg.S3Store.BucketName),
+			Key:    aws.String(filekey),
+		})
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}

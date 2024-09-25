@@ -18,7 +18,6 @@ func (r *colorQueryResolver) AllColor(ctx context.Context, obj *model.ColorQuery
 	if err != nil {
 		return responseErr.NewInternalErrorProblem(err.Error()), err
 	}
-	r.lg.Info("colors", colors)
 	gqlcolors, err := featurecolor.MapColorToGql(colors)
 	if err != nil {
 		return responseErr.NewInternalErrorProblem("error for mapping gql model"), err

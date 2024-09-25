@@ -1,21 +1,20 @@
 services:
-  # app:
-  #   restart: always
-  #   image: candles
-  #   container_name: golang-app
-  #   ports:
-  #     - 5000:5000
-  #   volumes:
-  #     - .:/app
-  #   depends_on:
-  #     - db
-  #     - localstack
-  #   environment:
-  #     - TELEGRAM_BOT_TOKEN=7508240683:AAHAUrhIH9zTe_ogqEYA9HT8oUUDvLoAUps
-  #     - JWT_SECRET=sdw@#!@#Fxd
-  #     - CONFIG_PATH=./config/config.yaml
-  #     - STORAGE_PATH=postgresql://postgres:postgres@localhost:5432/postgres?ssl=disabled
-  #     - PASSWORD_POSTGRES=postgres
+  app:
+     restart: always
+     image: candles
+     ports:
+       - 5000:9999
+     volumes:
+       - .:/app
+     depends_on:
+       - db
+       - localstack
+     environment:
+       - TELEGRAM_BOT_TOKEN=7508240683:AAHAUrhIH9zTe_ogqEYA9HT8oUUDvLoAUps
+       - JWT_SECRET=sdw@#!@#Fxd
+       - CONFIG_PATH=./config/config.yaml
+       - STORAGE_PATH=postgresql://postgres:postgres@localhost:5432/postgres?ssl=disabled
+       - PASSWORD_POSTGRES=postgres
   db:
     restart: always
     image: postgres:latest
@@ -38,6 +37,6 @@ services:
     volumes:
       - "./localstack:/var/lib/localstack"
 volumes:
-  # db:
+  db:
   localstack:
   app:

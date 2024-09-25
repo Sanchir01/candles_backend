@@ -8,6 +8,14 @@ database:
   dbname: "test"
   max_attempts: 10
 
+
+http_server:
+  host: 0.0.0.0
+  port: 5000
+  timeout: 4s
+  debug: true
+  idle_timeout: 60s
+
 s3store:
   key: "44YEJC1KE8L28V73VF43" 
   url: "https://s3.timeweb.cloud"
@@ -16,7 +24,7 @@ s3store:
 
 gql_server:
     port: "5000"
-    host: "localhost"
+    host: 0.0.0.0
     timeout: 5s
     debug: true
     idle_timeout: 60s

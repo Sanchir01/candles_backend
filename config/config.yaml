@@ -1,11 +1,10 @@
 env: "development"
 
 database:
-  host: 0.0.0.0
-  port: "5435"
-  user: "postgres"
-  ssl: "disable"
-  dbname: "test"
+  host: 92.118.114.96
+  port: "5432"
+  user: "gen_user"
+  dbname: "default_db"
   max_attempts: 10
 
 

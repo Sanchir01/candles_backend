@@ -10,12 +10,12 @@ import (
 )
 
 type Config struct {
-	Env         string `yaml:"env"  env-default:"development"`
-	StoragePath string `yaml:"storage_path" env:"STORAGE_PATH" env-required:"internal/db"`
-	HttpServer  `yaml:"http_server"`
-	Errors      `yaml:"errors"`
-	DB          DataBase `yaml:"database"`
-	S3Store     S3Store  `yaml:"s3store"`
+	Env string `yaml:"env"  env-default:"development"`
+
+	HttpServer `yaml:"http_server"`
+	Errors     `yaml:"errors"`
+	DB         DataBase `yaml:"database"`
+	S3Store    S3Store  `yaml:"s3store"`
 }
 type DataBase struct {
 	Host        string `yaml:"host"`

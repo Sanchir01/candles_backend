@@ -1,32 +1,41 @@
 services:
   app:
-     restart: always
-     image: candles
-     ports:
-       - 5000:9999
-     volumes:
-       - .:/app
-     depends_on:
-       - db
-       - localstack
-     environment:
-       - TELEGRAM_BOT_TOKEN=7508240683:AAHAUrhIH9zTe_ogqEYA9HT8oUUDvLoAUps
-       - JWT_SECRET=sdw@#!@#Fxd
-       - CONFIG_PATH=./config/config.yaml
-       - STORAGE_PATH=postgresql://postgres:postgres@localhost:5432/postgres?ssl=disabled
-       - PASSWORD_POSTGRES=postgres
+    restart: always
+    image: candles
+    networks:
+      - mahakala
+    ports:
+      - "5000:5000"
+    volumes:
+      - .:/app
+    depends_on:
+      - db
+      - localstack
+    environment:
+      - TELEGRAM_BOT_TOKEN=7508240683:AAHAUrhIH9zTe_ogqEYA9HT8oUUDvLoAUps
+      - JWT_SECRET=sdw@#!@#Fxd
+      - CONFIG_PATH=./config/config.yaml
+      # Здесь используем имя сервиса db для подключения к PostgreSQL
+      - STORAGE_PATH=postgresql://postgres:postgres@db:5432/test?sslmode=disable
+      - PASSWORD_POSTGRES=postgres
+
   db:
     restart: always
     image: postgres:latest
+    networks:
+      - mahakala
     ports:
       - "5435:5432"
     environment:
       - POSTGRES_DB=test
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_USER=postgres
+
   localstack:
     restart: always
     image: localstack/localstack
+    networks:
+      - mahakala
     environment:
       - SERVICES=s3
       - AWS_DEFAULT_REGION=us-east-1
@@ -36,7 +45,7 @@ services:
       - "4566:4566"  # Основной порт для LocalStack
     volumes:
       - "./localstack:/var/lib/localstack"
-volumes:
-  db:
-  localstack:
-  app:
+
+networks:
+  mahakala:
+    driver: bridge

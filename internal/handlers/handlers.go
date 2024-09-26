@@ -8,6 +8,7 @@ import (
 	"github.com/99designs/gqlgen/graphql/handler/transport"
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/Sanchir01/candles_backend/internal/config"
+	pgstoreauth "github.com/Sanchir01/candles_backend/internal/database/postgres/auth"
 	pgstorecandles "github.com/Sanchir01/candles_backend/internal/database/postgres/candles"
 	pgstoreCategory "github.com/Sanchir01/candles_backend/internal/database/postgres/category"
 	pgstorecolor "github.com/Sanchir01/candles_backend/internal/database/postgres/color"
@@ -37,6 +38,7 @@ type HttpRouter struct {
 	db        *sqlx.DB
 	s3store   *s3store.S3Store
 	pgxdb     *pgxpool.Pool
+	authStr   *pgstoreauth.AuthStorePosrtgres
 	category  *pgstoreCategory.CategoryPostgresStore
 	candles   *pgstorecandles.CandlesPostgresStore
 	color     *pgstorecolor.ColorPostgresStore
@@ -53,12 +55,12 @@ const (
 func New(r *chi.Mux, lg *slog.Logger, cfg *config.Config,
 	s3store *s3store.S3Store, pgxdb *pgxpool.Pool,
 	category *pgstoreCategory.CategoryPostgresStore, candlesStr *pgstorecandles.CandlesPostgresStore, colorStr *pgstorecolor.ColorPostgresStore,
-	userStr *pgstoreuser.UserPostgresStore,
+	userStr *pgstoreuser.UserPostgresStore, authStr *pgstoreauth.AuthStorePosrtgres,
 ) *HttpRouter {
 	return &HttpRouter{
 		chiRouter: r, logger: lg, config: cfg, category: category, color: colorStr,
 		candles: candlesStr, userStr: userStr,
-		s3store: s3store, pgxdb: pgxdb,
+		s3store: s3store, pgxdb: pgxdb, authStr: authStr,
 	}
 }
 
@@ -103,6 +105,7 @@ func (r *HttpRouter) newSchemaConfig() genGql.Config {
 	cfg := genGql.Config{Resolvers: resolver.New(
 		r.category, r.candles, r.color, r.logger,
 		r.userStr, r.config, r.s3store, r.pgxdb,
+		r.authStr,
 	)}
 	cfg.Directives.InputUnion = directive.NewInputUnionDirective()
 	cfg.Directives.SortRankInput = directive.NewSortRankInputDirective()

@@ -5,6 +5,7 @@ import (
 	"errors"
 	telegrambot "github.com/Sanchir01/candles_backend/internal/bot"
 	"github.com/Sanchir01/candles_backend/internal/config"
+	pgstoreauth "github.com/Sanchir01/candles_backend/internal/database/postgres/auth"
 	pgstorecandles "github.com/Sanchir01/candles_backend/internal/database/postgres/candles"
 	pgstorecategory "github.com/Sanchir01/candles_backend/internal/database/postgres/category"
 	pgstorecolor "github.com/Sanchir01/candles_backend/internal/database/postgres/color"
@@ -46,9 +47,10 @@ func main() {
 		candlesStr  = pgstorecandles.New(pgxdb)
 		colorStr    = pgstorecolor.New(pgxdb)
 		userStr     = pgstoreuser.New(pgxdb)
+		authStr     = pgstoreauth.New(pgxdb)
 		s3client    = connect.NewS3(context.Background(), lg, cfg)
 		s3str       = s3store.New(s3client, context.Background(), cfg)
-		handlers    = httphandlers.New(rout, lg, cfg, s3str, pgxdb, categoryStr, candlesStr, colorStr, userStr)
+		handlers    = httphandlers.New(rout, lg, cfg, s3str, pgxdb, categoryStr, candlesStr, colorStr, userStr, authStr)
 	)
 	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGTERM, syscall.SIGINT, os.Interrupt)
 	defer cancel()

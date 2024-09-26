@@ -1,0 +1,10 @@
+type User {
+  id: Uuid!
+  title: String!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  slug: String!
+  version:UInt!
+  phone:String!
+  role:Role!
+}

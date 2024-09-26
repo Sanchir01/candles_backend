@@ -32,5 +32,21 @@ migrations-status:
 migrations-new:
 	goose -dir migrations create $(MIGRATION_NAME) sql
 
-compose-up:
+migrations-up-prod:
+	goose -dir migrations postgres "host=92.118.114.96 user=gen_user password=lzGFBsM~#Z%8Qv port=5432 dbname=default_db"  up
+
+migrations-down-prod:
+	goose -dir migrations postgres  "host=92.118.114.96 user=gen_user password=lzGFBsM~#Z%8Qv port=5432 dbname=default_db"  down
+
+
+migrations-status-prod:
+	goose -dir migrations postgres  "host=92.118.114.96 user=gen_user password=lzGFBsM~#Z%8Qv port=5432 dbname=default_db" status
+
+docker-build:
+	docker build -t candles .
+
+docker:
 	docker-compose  up -d
+
+docker-app: docker-build docker
+

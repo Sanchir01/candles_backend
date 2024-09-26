@@ -1,0 +1,12 @@
+extend type UserQuery {
+    profile(id:Uuid!): UserProfileResult! @goField(forceResolver: true)  @hasRole(role: USER)
+}
+
+type UserProfileOk {
+    profile:User!
+}
+
+union UserProfileResult=
+    | UserProfileOk
+    | InternalErrorProblem
+    | VersionMismatchProblem

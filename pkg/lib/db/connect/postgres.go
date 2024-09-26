@@ -6,33 +6,27 @@ import (
 	"github.com/Sanchir01/candles_backend/internal/config"
 	"github.com/Sanchir01/candles_backend/pkg/lib/utils"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/jmoiron/sqlx"
-	_ "github.com/lib/pq"
 	"log/slog"
 	"os"
 	"time"
 )
 
-func PostgresCon(cfg *config.Config, lg *slog.Logger) *sqlx.DB {
-	postgresString := fmt.Sprintf(
-		"user=%s dbname=%s sslmode=%s password=%s port=%s host=%s",
-		cfg.DB.User, cfg.DB.Database, cfg.DB.SSL, os.Getenv("PASSWORD_POSTGRES"),
-		cfg.DB.Port, cfg.DB.Host,
-	)
+func PGXNew(cfg *config.Config, lg *slog.Logger, ctx context.Context, env string) (*pgxpool.Pool, error) {
 
-	db, err := sqlx.Open("postgres", postgresString)
-	if err != nil {
-		lg.Error("sqlx.Connect error", slog.String("error", err.Error()))
+	var dsn string
+	switch env {
+	case "development":
+		dsn = fmt.Sprintf(
+			"postgresql://postgres:postgres@localhost:5435/test",
+		)
+	case "production":
+		dsn = fmt.Sprintf(
+			"postgresql://%s:%s@%s:%s/%s",
+			cfg.DB.User, os.Getenv("PASSWORD_POSTGRES"),
+			cfg.DB.Host, cfg.DB.Port, cfg.DB.Database,
+		)
 	}
-	return db
-}
 
-func PGXNew(cfg *config.Config, lg *slog.Logger, ctx context.Context) (*pgxpool.Pool, error) {
-	dsn := fmt.Sprintf(
-		"postgresql://%s:%s@%s:%s/%s",
-		cfg.DB.User, os.Getenv("PASSWORD_POSTGRES"),
-		cfg.DB.Host, cfg.DB.Port, cfg.DB.Database,
-	)
 	var pool *pgxpool.Pool
 	var err error
 

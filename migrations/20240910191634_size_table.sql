@@ -1,6 +1,6 @@
 -- +goose Up
 -- +goose StatementBegin
-CREATE TABLE IF NOT EXISTS size(
+CREATE TABLE IF NOT EXISTS color(
             id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
             title VARCHAR(100) NOT NULL ,
             slug VARCHAR(100) NOT NULL UNIQUE,
@@ -18,7 +18,7 @@ END;
 $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER set_timestamp
-    BEFORE UPDATE ON "size"
+    BEFORE UPDATE ON "color"
     FOR EACH ROW
 EXECUTE PROCEDURE update_timestamp();
 -- +goose StatementEnd

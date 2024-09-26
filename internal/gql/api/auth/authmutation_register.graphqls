@@ -4,10 +4,12 @@ extend type AuthMutations {
 
 input  RegistrationsInput {
     phone:String!
+    role:String!
     title:String!
 }
 
 union RegistrationsResult =
+    | RegistrationsOk
     | InternalErrorProblem
     | VersionMismatchProblem
 
@@ -15,4 +17,5 @@ type RegistrationsOk {
     id:Uuid!
     verify_code:String!
     phone:String!
+    role:Role!
 }

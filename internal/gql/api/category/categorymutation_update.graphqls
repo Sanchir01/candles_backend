@@ -1,0 +1,15 @@
+extend type CategoryMutation {
+  updateCategory(input:UpdateCategoryInput!):UpdateCategoryResult! @goField(forceResolver: true)
+}
+
+union UpdateCategoryResult=
+    | UpdateCategoryOk
+    | InternalErrorProblem
+    | VersionMismatchProblem
+
+input UpdateCategoryInput{
+    title:String!
+}
+type UpdateCategoryOk {
+  id:Uuid!
+}

@@ -8,11 +8,16 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/99designs/gqlgen/graphql"
 	"github.com/google/uuid"
 )
 
 type AllCategoryResult interface {
 	IsAllCategoryResult()
+}
+
+type AllColorResult interface {
+	IsAllColorResult()
 }
 
 type CandlesMutationResult interface {
@@ -25,6 +30,10 @@ type CategoryCreateResult interface {
 
 type CategoryGetAllResult interface {
 	IsCategoryGetAllResult()
+}
+
+type ColorCreateResult interface {
+	IsColorCreateResult()
 }
 
 type LoginResult interface {
@@ -40,6 +49,14 @@ type RegistrationsResult interface {
 	IsRegistrationsResult()
 }
 
+type UpdateCategoryResult interface {
+	IsUpdateCategoryResult()
+}
+
+type UserProfileResult interface {
+	IsUserProfileResult()
+}
+
 type VersionInterface interface {
 	IsVersionInterface()
 	GetVersion() uint
@@ -50,6 +67,12 @@ type AllCandlesOk struct {
 }
 
 func (AllCandlesOk) IsAllCategoryResult() {}
+
+type AllColorOk struct {
+	Colors []*Color `json:"colors"`
+}
+
+func (AllColorOk) IsAllColorResult() {}
 
 type AuthMutations struct {
 	Login         LoginResult         `json:"login"`
@@ -65,6 +88,7 @@ type Candles struct {
 	Version    uint      `json:"version"`
 	Price      int       `json:"price"`
 	Images     []string  `json:"images"`
+	ColorID    uuid.UUID `json:"color_id"`
 	CategoryID uuid.UUID `json:"category_id"`
 }
 
@@ -108,20 +132,49 @@ func (CategoryGetAllOk) IsCategoryGetAllResult() {}
 
 type CategoryMutation struct {
 	CreateCategory CategoryCreateResult `json:"createCategory"`
+	UpdateCategory UpdateCategoryResult `json:"updateCategory"`
 }
 
 type CategoryQuery struct {
 	GetAllCategory CategoryGetAllResult `json:"getAllCategory"`
 }
 
+type Color struct {
+	ID        uuid.UUID `json:"id"`
+	Title     string    `json:"title"`
+	Slug      string    `json:"slug"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
+	Version   uint      `json:"version"`
+}
+
+type ColorCreateOk struct {
+	ID uuid.UUID `json:"id"`
+}
+
+func (ColorCreateOk) IsColorCreateResult() {}
+
+type ColorMutation struct {
+	CreateColor ColorCreateResult `json:"createColor"`
+}
+
+type ColorQuery struct {
+	AllColor AllColorResult `json:"allColor"`
+}
+
 type CreateCandleInput struct {
-	Title      string    `json:"title"`
-	Price      int       `json:"price"`
-	CategoryID uuid.UUID `json:"category_id"`
-	Images     []string  `json:"images"`
+	Title      string            `json:"title"`
+	Price      int               `json:"price"`
+	CategoryID uuid.UUID         `json:"category_id"`
+	ColorID    uuid.UUID         `json:"color_id"`
+	Images     []*graphql.Upload `json:"images"`
 }
 
 type CreateCategoryInput struct {
+	Title string `json:"title"`
+}
+
+type CreateColorInput struct {
 	Title string `json:"title"`
 }
 
@@ -139,10 +192,18 @@ func (InternalErrorProblem) IsAllCategoryResult() {}
 
 func (InternalErrorProblem) IsCategoryCreateResult() {}
 
+func (InternalErrorProblem) IsUpdateCategoryResult() {}
+
 func (InternalErrorProblem) IsCategoryGetAllResult() {}
+
+func (InternalErrorProblem) IsColorCreateResult() {}
+
+func (InternalErrorProblem) IsAllColorResult() {}
 
 func (InternalErrorProblem) IsProblemInterface()     {}
 func (this InternalErrorProblem) GetMessage() string { return this.Message }
+
+func (InternalErrorProblem) IsUserProfileResult() {}
 
 type InvalidSortRankProblem struct {
 	Message string `json:"message"`
@@ -159,6 +220,7 @@ type LoginOk struct {
 	ID         uuid.UUID `json:"id"`
 	VerifyCode string    `json:"verify_code"`
 	Phone      string    `json:"phone"`
+	Role       Role      `json:"role"`
 }
 
 func (LoginOk) IsLoginResult() {}
@@ -171,6 +233,7 @@ type Query struct {
 
 type RegistrationsInput struct {
 	Phone string `json:"phone"`
+	Role  string `json:"role"`
 	Title string `json:"title"`
 }
 
@@ -178,7 +241,10 @@ type RegistrationsOk struct {
 	ID         uuid.UUID `json:"id"`
 	VerifyCode string    `json:"verify_code"`
 	Phone      string    `json:"phone"`
+	Role       Role      `json:"role"`
 }
+
+func (RegistrationsOk) IsRegistrationsResult() {}
 
 type SortRankInput struct {
 	Prev string `json:"prev"`
@@ -189,19 +255,44 @@ type UnauthorizedProblem struct {
 	Message string `json:"message"`
 }
 
+func (UnauthorizedProblem) IsCandlesMutationResult() {}
+
 func (UnauthorizedProblem) IsCategoryCreateResult() {}
+
+func (UnauthorizedProblem) IsColorCreateResult() {}
 
 func (UnauthorizedProblem) IsProblemInterface()     {}
 func (this UnauthorizedProblem) GetMessage() string { return this.Message }
 
+type UpdateCategoryInput struct {
+	Title string `json:"title"`
+}
+
+type UpdateCategoryOk struct {
+	ID uuid.UUID `json:"id"`
+}
+
+func (UpdateCategoryOk) IsUpdateCategoryResult() {}
+
 type User struct {
 	ID        uuid.UUID `json:"id"`
 	Title     string    `json:"title"`
+	CreatedAt time.Time `json:"createdAt"`
+	UpdatedAt time.Time `json:"updatedAt"`
 	Slug      string    `json:"slug"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
 	Version   uint      `json:"version"`
-	Role      bool      `json:"role"`
+	Phone     string    `json:"phone"`
+	Role      Role      `json:"role"`
+}
+
+type UserProfileOk struct {
+	Profile *User `json:"profile"`
+}
+
+func (UserProfileOk) IsUserProfileResult() {}
+
+type UserQuery struct {
+	Profile UserProfileResult `json:"profile"`
 }
 
 type VersionMismatchProblem struct {
@@ -215,6 +306,16 @@ func (VersionMismatchProblem) IsRegistrationsResult() {}
 func (VersionMismatchProblem) IsCandlesMutationResult() {}
 
 func (VersionMismatchProblem) IsAllCategoryResult() {}
+
+func (VersionMismatchProblem) IsCategoryCreateResult() {}
+
+func (VersionMismatchProblem) IsUpdateCategoryResult() {}
+
+func (VersionMismatchProblem) IsColorCreateResult() {}
+
+func (VersionMismatchProblem) IsAllColorResult() {}
+
+func (VersionMismatchProblem) IsUserProfileResult() {}
 
 func (VersionMismatchProblem) IsProblemInterface()     {}
 func (this VersionMismatchProblem) GetMessage() string { return this.Message }

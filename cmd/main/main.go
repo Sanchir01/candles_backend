@@ -5,8 +5,12 @@ import (
 	"errors"
 	telegrambot "github.com/Sanchir01/candles_backend/internal/bot"
 	"github.com/Sanchir01/candles_backend/internal/config"
+	pgstoreauth "github.com/Sanchir01/candles_backend/internal/database/postgres/auth"
 	pgstorecandles "github.com/Sanchir01/candles_backend/internal/database/postgres/candles"
 	pgstorecategory "github.com/Sanchir01/candles_backend/internal/database/postgres/category"
+	pgstorecolor "github.com/Sanchir01/candles_backend/internal/database/postgres/color"
+	pgstoreuser "github.com/Sanchir01/candles_backend/internal/database/postgres/user"
+	s3store "github.com/Sanchir01/candles_backend/internal/database/s3"
 	httphandlers "github.com/Sanchir01/candles_backend/internal/handlers"
 	httpserver "github.com/Sanchir01/candles_backend/internal/server/http"
 	"github.com/Sanchir01/candles_backend/pkg/lib/db/connect"
@@ -14,6 +18,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"log"
+
 	"log/slog"
 	"os"
 	"os/signal"
@@ -30,9 +35,7 @@ func main() {
 	lg := setupLogger(cfg.Env)
 	lg.Info("Graphql server starting up...", slog.String("port", cfg.HttpServer.Port))
 
-	db := connect.PostgresCon(cfg, lg)
-	defer db.Close()
-	pgxdb, err := connect.PGXNew(cfg, lg, context.Background())
+	pgxdb, err := connect.PGXNew(cfg, lg, context.Background(), cfg.Env)
 	if err != nil {
 		lg.Error("pgx error connect", err.Error())
 	}
@@ -41,11 +44,14 @@ func main() {
 	rout := chi.NewRouter()
 	var (
 		categoryStr = pgstorecategory.New(pgxdb)
-		candlesStr  = pgstorecandles.New(db, pgxdb)
-		handlers    = httphandlers.New(rout, lg, cfg, categoryStr, candlesStr, pgxdb)
+		candlesStr  = pgstorecandles.New(pgxdb)
+		colorStr    = pgstorecolor.New(pgxdb)
+		userStr     = pgstoreuser.New(pgxdb)
+		authStr     = pgstoreauth.New(pgxdb)
+		s3client    = connect.NewS3(context.Background(), lg, cfg)
+		s3str       = s3store.New(s3client, context.Background(), cfg)
+		handlers    = httphandlers.New(rout, lg, cfg, s3str, pgxdb, categoryStr, candlesStr, colorStr, userStr, authStr)
 	)
-	callcat, err := categoryStr.AllCategories(context.Background())
-	lg.Warn("categoru", callcat)
 	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGTERM, syscall.SIGINT, os.Interrupt)
 	defer cancel()
 
@@ -69,9 +75,10 @@ func main() {
 	}
 
 	if err := serve.Gracefull(ctx); err != nil {
-		log.Fatalf("Graphql serve gracefull")
+		lg.Error("Graphql serve gracefull")
 	}
 }
+
 func setupLogger(env string) *slog.Logger {
 	var lg *slog.Logger
 	switch env {

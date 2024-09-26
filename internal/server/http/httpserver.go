@@ -12,7 +12,6 @@ type Server struct {
 }
 
 func NewHttpServer(cfg *config.Config) *Server {
-
 	srv := &http.Server{
 		Addr:           cfg.HttpServer.Host + ":" + cfg.HttpServer.Port,
 		MaxHeaderBytes: 1 << 20,

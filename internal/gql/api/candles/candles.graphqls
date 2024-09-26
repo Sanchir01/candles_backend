@@ -7,5 +7,6 @@ type Candles {
     version: UInt!
     price:Int!
     images:[String!]!
+    color_id: Uuid!
     category_id: Uuid!
 }

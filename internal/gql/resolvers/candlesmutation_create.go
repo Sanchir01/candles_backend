@@ -6,6 +6,8 @@ package resolver
 
 import (
 	"context"
+	"errors"
+
 	"github.com/Sanchir01/candles_backend/internal/gql/model"
 	responseErr "github.com/Sanchir01/candles_backend/pkg/lib/api/response"
 	"github.com/Sanchir01/candles_backend/pkg/lib/utils"
@@ -27,6 +29,14 @@ func (r *candlesMutationResolver) CreateCandle(ctx context.Context, obj *model.C
 		r.lg.Error("error pgx transaction", err.Error())
 		return nil, err
 	}
+	defer func() {
+		if err != nil {
+			rollbackErr := tr.Rollback(ctx)
+			if rollbackErr != nil {
+				err = errors.Join(err, rollbackErr)
+			}
+		}
+	}()
 
 	slug, err := utils.Slugify(input.Title)
 	if err != nil {
@@ -45,7 +55,6 @@ func (r *candlesMutationResolver) CreateCandle(ctx context.Context, obj *model.C
 
 	s3urlimage, err := r.s3store.PutObjects(ctx, "candles", input.Images)
 	if err != nil {
-		tr.Rollback(ctx)
 		r.lg.Warn("error  s3", err.Error())
 		return responseErr.NewInternalErrorProblem("ошибка при загрузке s3"), nil
 	}
@@ -54,11 +63,10 @@ func (r *candlesMutationResolver) CreateCandle(ctx context.Context, obj *model.C
 
 	id, err := r.candlesStr.CreateCandles(ctx, input.CategoryID, input.ColorID, input.Title, slug, s3urlimage, input.Price, tr)
 	if err != nil {
-		tr.Rollback(ctx)
 		r.s3store.DeleteObjects(ctx, "candles", input.Images)
 		return responseErr.NewInternalErrorProblem("ошибка во время создания свечи"), err
 	}
-
+	tr.Commit(ctx)
 	return &model.CandlesCreateOk{
 		ID: id,
 	}, nil

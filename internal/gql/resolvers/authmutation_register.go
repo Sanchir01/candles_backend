@@ -6,6 +6,9 @@ package resolver
 
 import (
 	"context"
+	"errors"
+	pgstoreauth "github.com/Sanchir01/candles_backend/internal/database/postgres/auth"
+	"github.com/jackc/pgx/v5"
 
 	userFeature "github.com/Sanchir01/candles_backend/internal/feature/user"
 	"github.com/Sanchir01/candles_backend/internal/gql/model"
@@ -16,11 +19,29 @@ import (
 
 // Registrations is the resolver for the registrations field.
 func (r *authMutationsResolver) Registrations(ctx context.Context, obj *model.AuthMutations, input model.RegistrationsInput) (model.RegistrationsResult, error) {
+	conn, err := r.pgxdb.Acquire(ctx)
+	if err != nil {
+		return responseErr.NewInternalErrorProblem("ошибка при взятия пула подключений в бд"), nil
+	}
+	defer conn.Release()
+	tx, err := conn.BeginTx(ctx, pgx.TxOptions{})
+	if err != nil {
+		return responseErr.NewInternalErrorProblem("ошибка при создании транзакции"), nil
+	}
+	defer func() {
+		if err != nil {
+			rollbackErr := tx.Rollback(ctx)
+			if rollbackErr != nil {
+				err = errors.Join(err, rollbackErr)
+			}
+		}
+	}()
+
 	slug, err := utils.Slugify(input.Title)
 	if err != nil {
 		return responseErr.NewInternalErrorProblem("error for creating slug"), nil
 	}
-	user, err := r.authStr.Register(ctx, input.Title, input.Phone, slug, input.Role)
+	user, err := pgstoreauth.Register(ctx, input.Title, input.Phone, slug, input.Role, tx)
 	if err != nil {
 		r.lg.Error(err.Error())
 		return responseErr.NewInternalErrorProblem("error for creating user"), err
@@ -29,6 +50,9 @@ func (r *authMutationsResolver) Registrations(ctx context.Context, obj *model.Au
 	if err = userFeature.AddCookieTokens(user.ID, user.Role, w); err != nil {
 		r.lg.Error("login errors", err)
 		return responseErr.NewInternalErrorProblem("Error for generating jwt tokens"), nil
+	}
+	if err := tx.Commit(ctx); err != nil {
+		return responseErr.NewInternalErrorProblem("ошибка во время коммита транзакции"), err
 	}
 	return model.RegistrationsOk{ID: user.ID, Phone: user.Phone, VerifyCode: "sdad"}, nil
 }

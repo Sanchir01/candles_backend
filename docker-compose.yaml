@@ -1,20 +1,4 @@
 services:
-  app:
-    restart: always
-    image: candles
-    ports:
-      - "5000:5000"
-    volumes:
-      - .:/app
-    depends_on:
-      - db
-      - localstack
-    environment:
-      - TELEGRAM_BOT_TOKEN=7508240683:AAHAUrhIH9zTe_ogqEYA9HT8oUUDvLoAUps
-      - JWT_SECRET=sdw@#!@#Fxd
-      - CONFIG_PATH=./config/config.yaml
-      - STORAGE_PATH=postgresql://postgres:postgres@db:5432/test?sslmode=disable
-      - PASSWORD_POSTGRES=postgres
   db:
     restart: always
     image: postgres:latest

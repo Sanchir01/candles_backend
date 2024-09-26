@@ -24,14 +24,14 @@ func (r *candlesMutationResolver) CreateCandle(ctx context.Context, obj *model.C
 
 	defer conn.Release()
 
-	tr, err := conn.BeginTx(ctx, pgx.TxOptions{})
+	tx, err := conn.BeginTx(ctx, pgx.TxOptions{})
 	if err != nil {
 		r.lg.Error("error pgx transaction", err.Error())
 		return nil, err
 	}
 	defer func() {
 		if err != nil {
-			rollbackErr := tr.Rollback(ctx)
+			rollbackErr := tx.Rollback(ctx)
 			if rollbackErr != nil {
 				err = errors.Join(err, rollbackErr)
 			}
@@ -61,12 +61,14 @@ func (r *candlesMutationResolver) CreateCandle(ctx context.Context, obj *model.C
 
 	r.lg.Info("s3urlimage", s3urlimage)
 
-	id, err := r.candlesStr.CreateCandles(ctx, input.CategoryID, input.ColorID, input.Title, slug, s3urlimage, input.Price, tr)
+	id, err := r.candlesStr.CreateCandles(ctx, input.CategoryID, input.ColorID, input.Title, slug, s3urlimage, input.Price, tx)
 	if err != nil {
 		r.s3store.DeleteObjects(ctx, "candles", input.Images)
 		return responseErr.NewInternalErrorProblem("ошибка во время создания свечи"), err
 	}
-	tr.Commit(ctx)
+	if err := tx.Commit(ctx); err != nil {
+		return responseErr.NewInternalErrorProblem("ошибка во время коммита транзакции"), err
+	}
 	return &model.CandlesCreateOk{
 		ID: id,
 	}, nil

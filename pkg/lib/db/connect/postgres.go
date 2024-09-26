@@ -11,12 +11,22 @@ import (
 	"time"
 )
 
-func PGXNew(cfg *config.Config, lg *slog.Logger, ctx context.Context) (*pgxpool.Pool, error) {
-	dsn := fmt.Sprintf(
-		"postgresql://%s:%s@%s:%s/%s",
-		cfg.DB.User, os.Getenv("PASSWORD_POSTGRES"),
-		cfg.DB.Host, cfg.DB.Port, cfg.DB.Database,
-	)
+func PGXNew(cfg *config.Config, lg *slog.Logger, ctx context.Context, env string) (*pgxpool.Pool, error) {
+
+	var dsn string
+	switch env {
+	case "development":
+		dsn = fmt.Sprintf(
+			"postgresql://postgres:postgres@localhost:5435/test",
+		)
+	case "production":
+		dsn = fmt.Sprintf(
+			"postgresql://%s:%s@%s:%s/%s",
+			cfg.DB.User, os.Getenv("PASSWORD_POSTGRES"),
+			cfg.DB.Host, cfg.DB.Port, cfg.DB.Database,
+		)
+	}
+
 	var pool *pgxpool.Pool
 	var err error
 

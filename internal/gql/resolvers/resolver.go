@@ -2,7 +2,6 @@ package resolver
 
 import (
 	"github.com/Sanchir01/candles_backend/internal/config"
-	pgstoreauth "github.com/Sanchir01/candles_backend/internal/database/postgres/auth"
 	pgstorecandles "github.com/Sanchir01/candles_backend/internal/database/postgres/candles"
 	pgstorecategory "github.com/Sanchir01/candles_backend/internal/database/postgres/category"
 	pgstorecolor "github.com/Sanchir01/candles_backend/internal/database/postgres/color"
@@ -21,7 +20,6 @@ type Resolver struct {
 	categoryStr *pgstorecategory.CategoryPostgresStore
 	candlesStr  *pgstorecandles.CandlesPostgresStore
 	colorStr    *pgstorecolor.ColorPostgresStore
-	authStr     *pgstoreauth.AuthPostgresStore
 	s3store     *s3store.S3Store
 	pgxdb       *pgxpool.Pool
 	cfg         *config.Config
@@ -30,12 +28,12 @@ type Resolver struct {
 
 func New(
 	category *pgstorecategory.CategoryPostgresStore, candles *pgstorecandles.CandlesPostgresStore,
-	color *pgstorecolor.ColorPostgresStore, auth *pgstoreauth.AuthPostgresStore,
+	color *pgstorecolor.ColorPostgresStore,
 	lg *slog.Logger, user *pgstoreuser.UserPostgresStore, config *config.Config, s3store *s3store.S3Store,
 	pgxdb *pgxpool.Pool,
 ) *Resolver {
 	return &Resolver{
-		categoryStr: category, lg: lg, candlesStr: candles, userStr: user, colorStr: color, authStr: auth, cfg: config,
+		categoryStr: category, lg: lg, candlesStr: candles, userStr: user, colorStr: color, cfg: config,
 		s3store: s3store, pgxdb: pgxdb,
 	}
 }

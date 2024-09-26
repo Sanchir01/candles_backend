@@ -5,7 +5,6 @@ import (
 	"errors"
 	telegrambot "github.com/Sanchir01/candles_backend/internal/bot"
 	"github.com/Sanchir01/candles_backend/internal/config"
-	pgstoreauth "github.com/Sanchir01/candles_backend/internal/database/postgres/auth"
 	pgstorecandles "github.com/Sanchir01/candles_backend/internal/database/postgres/candles"
 	pgstorecategory "github.com/Sanchir01/candles_backend/internal/database/postgres/category"
 	pgstorecolor "github.com/Sanchir01/candles_backend/internal/database/postgres/color"
@@ -15,7 +14,6 @@ import (
 	httpserver "github.com/Sanchir01/candles_backend/internal/server/http"
 	"github.com/Sanchir01/candles_backend/pkg/lib/db/connect"
 	"github.com/Sanchir01/candles_backend/pkg/lib/logger/handlers/slogpretty"
-	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/go-chi/chi/v5"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"log"
@@ -36,7 +34,7 @@ func main() {
 	lg := setupLogger(cfg.Env)
 	lg.Info("Graphql server starting up...", slog.String("port", cfg.HttpServer.Port))
 
-	pgxdb, err := connect.PGXNew(cfg, lg, context.Background())
+	pgxdb, err := connect.PGXNew(cfg, lg, context.Background(), cfg.Env)
 	if err != nil {
 		lg.Error("pgx error connect", err.Error())
 	}
@@ -47,19 +45,11 @@ func main() {
 		categoryStr = pgstorecategory.New(pgxdb)
 		candlesStr  = pgstorecandles.New(pgxdb)
 		colorStr    = pgstorecolor.New(pgxdb)
-		authStr     = pgstoreauth.New(pgxdb)
 		userStr     = pgstoreuser.New(pgxdb)
 		s3client    = connect.NewS3(context.Background(), lg, cfg)
 		s3str       = s3store.New(s3client, context.Background(), cfg)
-		handlers    = httphandlers.New(rout, lg, cfg, s3str, pgxdb, categoryStr, candlesStr, colorStr, authStr, userStr)
+		handlers    = httphandlers.New(rout, lg, cfg, s3str, pgxdb, categoryStr, candlesStr, colorStr, userStr)
 	)
-	output, err := s3client.ListBuckets(context.TODO(), &s3.ListBucketsInput{})
-	if err != nil {
-		lg.Error("s3 error connect", err.Error())
-	}
-	for _, bucket := range output.Buckets {
-		lg.Warn("bucket", bucket.Name)
-	}
 	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGTERM, syscall.SIGINT, os.Interrupt)
 	defer cancel()
 

@@ -6,6 +6,9 @@ package resolver
 
 import (
 	"context"
+	"errors"
+	pgstoreauth "github.com/Sanchir01/candles_backend/internal/database/postgres/auth"
+	"github.com/jackc/pgx/v5"
 
 	userFeature "github.com/Sanchir01/candles_backend/internal/feature/user"
 	"github.com/Sanchir01/candles_backend/internal/gql/model"
@@ -15,16 +18,37 @@ import (
 
 // Login is the resolver for the login field.
 func (r *authMutationsResolver) Login(ctx context.Context, obj *model.AuthMutations, input model.LoginInput) (model.LoginResult, error) {
-	user, err := r.authStr.Login(ctx, input.Phone)
+	conn, err := r.pgxdb.Acquire(ctx)
 	if err != nil {
-		r.lg.Error("login errors", err)
 		return nil, err
 	}
-	r.lg.Warn("login", user)
+	defer conn.Release()
+
+	tx, err := conn.BeginTx(ctx, pgx.TxOptions{})
+	if err != nil {
+		return nil, err
+	}
+	defer func() {
+		if err != nil {
+			rollbackErr := tx.Rollback(ctx)
+			if rollbackErr != nil {
+				err = errors.Join(err, rollbackErr)
+			}
+		}
+	}()
+
+	user, err := pgstoreauth.Login(ctx, input.Phone, tx)
+	if err != nil {
+		r.lg.Error("login errors", err.Error())
+		return nil, err
+	}
 	w := customMiddleware.GetResponseWriter(ctx)
 	if err = userFeature.AddCookieTokens(user.ID, user.Role, w); err != nil {
 		r.lg.Error("login errors", err)
 		return responseErr.NewInternalErrorProblem("Error for generating jwt tokens"), nil
+	}
+	if err := tx.Commit(ctx); err != nil {
+		return responseErr.NewInternalErrorProblem("ошибка во время коммита транзакции"), err
 	}
 	return model.LoginOk{ID: user.ID, Phone: user.Phone, VerifyCode: "sdaddw21", Role: user.Role}, nil
 }

@@ -8,7 +8,6 @@ import (
 	"github.com/99designs/gqlgen/graphql/handler/transport"
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/Sanchir01/candles_backend/internal/config"
-	pgstoreauth "github.com/Sanchir01/candles_backend/internal/database/postgres/auth"
 	pgstorecandles "github.com/Sanchir01/candles_backend/internal/database/postgres/candles"
 	pgstoreCategory "github.com/Sanchir01/candles_backend/internal/database/postgres/category"
 	pgstorecolor "github.com/Sanchir01/candles_backend/internal/database/postgres/color"
@@ -41,7 +40,6 @@ type HttpRouter struct {
 	category  *pgstoreCategory.CategoryPostgresStore
 	candles   *pgstorecandles.CandlesPostgresStore
 	color     *pgstorecolor.ColorPostgresStore
-	auth      *pgstoreauth.AuthPostgresStore
 	userStr   *pgstoreuser.UserPostgresStore
 }
 
@@ -55,13 +53,11 @@ const (
 func New(r *chi.Mux, lg *slog.Logger, cfg *config.Config,
 	s3store *s3store.S3Store, pgxdb *pgxpool.Pool,
 	category *pgstoreCategory.CategoryPostgresStore, candlesStr *pgstorecandles.CandlesPostgresStore, colorStr *pgstorecolor.ColorPostgresStore,
-	authStr *pgstoreauth.AuthPostgresStore,
 	userStr *pgstoreuser.UserPostgresStore,
 ) *HttpRouter {
 	return &HttpRouter{
 		chiRouter: r, logger: lg, config: cfg, category: category, color: colorStr,
 		candles: candlesStr, userStr: userStr,
-		auth:    authStr,
 		s3store: s3store, pgxdb: pgxdb,
 	}
 }
@@ -105,7 +101,7 @@ func (r *HttpRouter) NewGraphQLHandler() *gqlhandler.Server {
 
 func (r *HttpRouter) newSchemaConfig() genGql.Config {
 	cfg := genGql.Config{Resolvers: resolver.New(
-		r.category, r.candles, r.color, r.auth, r.logger,
+		r.category, r.candles, r.color, r.logger,
 		r.userStr, r.config, r.s3store, r.pgxdb,
 	)}
 	cfg.Directives.InputUnion = directive.NewInputUnionDirective()
@@ -114,11 +110,22 @@ func (r *HttpRouter) newSchemaConfig() genGql.Config {
 	return cfg
 }
 func (r *HttpRouter) newChiCors() {
-	r.chiRouter.Use(cors.Handler(cors.Options{
-		AllowedOrigins:   []string{"https://*", "http://*"},
-		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
-		AllowCredentials: true,
-		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
-		MaxAge:           300,
-	}))
+	switch r.config.Env {
+	case "development":
+		r.chiRouter.Use(cors.Handler(cors.Options{
+			AllowedOrigins:   []string{"https://*", "http://*"},
+			AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+			AllowCredentials: true,
+			AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
+			MaxAge:           300,
+		}))
+	case "production":
+		r.chiRouter.Use(cors.Handler(cors.Options{
+			AllowedOrigins:   []string{"https://mahakala.ru", "http://mahakala.ru"},
+			AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+			AllowCredentials: true,
+			AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
+			MaxAge:           300,
+		}))
+	}
 }

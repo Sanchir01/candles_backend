@@ -35,7 +35,7 @@ func main() {
 	lg := setupLogger(cfg.Env)
 	lg.Info("Graphql server starting up...", slog.String("port", cfg.HttpServer.Port))
 
-	pgxdb, err := connect.PGXNew(cfg, lg, context.Background(), cfg.Env)
+	pgxdb, err := connect.PGXNew(cfg, context.Background(), cfg.Env)
 	if err != nil {
 		lg.Error("pgx error connect", err.Error())
 	}

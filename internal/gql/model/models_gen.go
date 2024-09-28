@@ -20,6 +20,10 @@ type AllColorResult interface {
 	IsAllColorResult()
 }
 
+type CandlesByIDResult interface {
+	IsCandlesByIDResult()
+}
+
 type CandlesMutationResult interface {
 	IsCandlesMutationResult()
 }
@@ -92,6 +96,16 @@ type Candles struct {
 	CategoryID uuid.UUID `json:"category_id"`
 }
 
+type CandlesByIDInput struct {
+	ID uuid.UUID `json:"id"`
+}
+
+type CandlesByIDOk struct {
+	Candle *Candles `json:"candle"`
+}
+
+func (CandlesByIDOk) IsCandlesByIDResult() {}
+
 type CandlesCreateOk struct {
 	ID uuid.UUID `json:"id"`
 }
@@ -103,6 +117,7 @@ type CandlesMutation struct {
 }
 
 type CandlesQuery struct {
+	CandleByID CandlesByIDResult `json:"candleById"`
 	AllCandles AllCategoryResult `json:"allCandles"`
 }
 
@@ -187,6 +202,8 @@ func (InternalErrorProblem) IsLoginResult() {}
 func (InternalErrorProblem) IsRegistrationsResult() {}
 
 func (InternalErrorProblem) IsCandlesMutationResult() {}
+
+func (InternalErrorProblem) IsCandlesByIDResult() {}
 
 func (InternalErrorProblem) IsAllCategoryResult() {}
 
@@ -304,6 +321,8 @@ func (VersionMismatchProblem) IsLoginResult() {}
 func (VersionMismatchProblem) IsRegistrationsResult() {}
 
 func (VersionMismatchProblem) IsCandlesMutationResult() {}
+
+func (VersionMismatchProblem) IsCandlesByIDResult() {}
 
 func (VersionMismatchProblem) IsAllCategoryResult() {}
 

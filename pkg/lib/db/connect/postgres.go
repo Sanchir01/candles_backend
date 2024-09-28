@@ -6,12 +6,11 @@ import (
 	"github.com/Sanchir01/candles_backend/internal/config"
 	"github.com/Sanchir01/candles_backend/pkg/lib/utils"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"log/slog"
 	"os"
 	"time"
 )
 
-func PGXNew(cfg *config.Config, lg *slog.Logger, ctx context.Context, env string) (*pgxpool.Pool, error) {
+func PGXNew(cfg *config.Config, ctx context.Context, env string) (*pgxpool.Pool, error) {
 	var dsn string
 	switch env {
 	case "development":

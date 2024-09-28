@@ -7,14 +7,14 @@ package resolver
 import (
 	"context"
 	"errors"
-	pgstoreauth "github.com/Sanchir01/candles_backend/internal/database/postgres/auth"
-	"github.com/jackc/pgx/v5"
 
+	pgstoreauth "github.com/Sanchir01/candles_backend/internal/database/postgres/auth"
 	userFeature "github.com/Sanchir01/candles_backend/internal/feature/user"
 	"github.com/Sanchir01/candles_backend/internal/gql/model"
 	customMiddleware "github.com/Sanchir01/candles_backend/internal/handlers/middleware"
 	responseErr "github.com/Sanchir01/candles_backend/pkg/lib/api/response"
 	"github.com/Sanchir01/candles_backend/pkg/lib/utils"
+	pgx "github.com/jackc/pgx/v5"
 )
 
 // Registrations is the resolver for the registrations field.

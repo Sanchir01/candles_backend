@@ -12,7 +12,6 @@ import (
 )
 
 func PGXNew(cfg *config.Config, lg *slog.Logger, ctx context.Context, env string) (*pgxpool.Pool, error) {
-
 	var dsn string
 	switch env {
 	case "development":

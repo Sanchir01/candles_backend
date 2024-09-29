@@ -2,6 +2,7 @@ package pgstorecategory
 
 import (
 	"context"
+	"time"
 
 	"github.com/Sanchir01/candles_backend/internal/gql/model"
 	"github.com/google/uuid"
@@ -17,22 +18,40 @@ func New(pgxdb *pgxpool.Pool) *CategoryPostgresStore {
 		pgxdb: pgxdb,
 	}
 }
-func (s *CategoryPostgresStore) CategoryBySlug(ctx context.Context, slug string) (model.Category, error) {
+func (s *CategoryPostgresStore) CategoryById(ctx context.Context, id uuid.UUID) (*model.Category, error) {
 	conn, err := s.pgxdb.Acquire(ctx)
 	if err != nil {
-		return model.Category{}, err
+		return nil, err
+	}
+	defer conn.Release()
+
+	query := "SELECT id , title, slug, created_at, updated_at, version FROM public.category WHERE id = $1"
+
+	var category dbCategory
+	err = conn.QueryRow(ctx, query, id).Scan(&category.ID, &category.Title, category.Slug, &category.CreatedAt, &category.UpdatedAt, &category.Version)
+	if err != nil {
+		return nil, err
+	}
+
+	return (*model.Category)(&category), nil
+
+}
+func (s *CategoryPostgresStore) CategoryBySlug(ctx context.Context, slug string) (*model.Category, error) {
+	conn, err := s.pgxdb.Acquire(ctx)
+	if err != nil {
+		return nil, err
 	}
 	defer conn.Release()
 
 	query := "SELECT id , title, slug, created_at, updated_at, version FROM public.category WHERE slug = $1"
 
-	var category model.Category
+	var category dbCategory
 	err = conn.QueryRow(ctx, query, slug).Scan(&category.ID, &category.Title, category.Slug, &category.CreatedAt, &category.UpdatedAt, &category.Version)
 	if err != nil {
-		return model.Category{}, err
+		return nil, err
 	}
 
-	return category, nil
+	return (*model.Category)(&category), nil
 
 }
 
@@ -96,4 +115,13 @@ func (s *CategoryPostgresStore) UpdateCategory(ctx context.Context, id uuid.UUID
 		return uuid.Nil, err
 	}
 	return idReturning, nil
+}
+
+type dbCategory struct {
+	ID        uuid.UUID `db:"id"`
+	Title     string    `db:"title"`
+	Slug      string    `db:"slug"`
+	CreatedAt time.Time `db:"created_at"`
+	UpdatedAt time.Time `db:"updated_at"`
+	Version   uint      `db:"version"`
 }

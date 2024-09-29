@@ -89,6 +89,10 @@ type ComplexityRoot struct {
 		Candle func(childComplexity int) int
 	}
 
+	CandlesBySlugOk struct {
+		Candle func(childComplexity int) int
+	}
+
 	CandlesCreateOk struct {
 		ID func(childComplexity int) int
 	}
@@ -98,8 +102,9 @@ type ComplexityRoot struct {
 	}
 
 	CandlesQuery struct {
-		AllCandles func(childComplexity int) int
-		CandleByID func(childComplexity int, input model.CandlesByIDInput) int
+		AllCandles   func(childComplexity int) int
+		CandleByID   func(childComplexity int, input model.CandlesByIDInput) int
+		CandleBySlug func(childComplexity int, input model.CandlesBySlugInput) int
 	}
 
 	Category struct {
@@ -109,6 +114,14 @@ type ComplexityRoot struct {
 		Title     func(childComplexity int) int
 		UpdatedAt func(childComplexity int) int
 		Version   func(childComplexity int) int
+	}
+
+	CategoryByIdOk struct {
+		Category func(childComplexity int) int
+	}
+
+	CategoryBySlugOk struct {
+		Category func(childComplexity int) int
 	}
 
 	CategoryCreateOk struct {
@@ -125,6 +138,8 @@ type ComplexityRoot struct {
 	}
 
 	CategoryQuery struct {
+		CategoryByID   func(childComplexity int, input model.CategoryByIDInput) int
+		CategoryBySlug func(childComplexity int, input model.CategoryBySlugInput) int
 		GetAllCategory func(childComplexity int) int
 	}
 
@@ -226,6 +241,7 @@ type CandlesMutationResolver interface {
 }
 type CandlesQueryResolver interface {
 	CandleByID(ctx context.Context, obj *model.CandlesQuery, input model.CandlesByIDInput) (model.CandlesByIDResult, error)
+	CandleBySlug(ctx context.Context, obj *model.CandlesQuery, input model.CandlesBySlugInput) (model.CandlesBySlugResult, error)
 	AllCandles(ctx context.Context, obj *model.CandlesQuery) (model.AllCategoryResult, error)
 }
 type CategoryMutationResolver interface {
@@ -233,6 +249,8 @@ type CategoryMutationResolver interface {
 	UpdateCategory(ctx context.Context, obj *model.CategoryMutation, input model.UpdateCategoryInput) (model.UpdateCategoryResult, error)
 }
 type CategoryQueryResolver interface {
+	CategoryBySlug(ctx context.Context, obj *model.CategoryQuery, input model.CategoryBySlugInput) (model.CategoryBySlugResult, error)
+	CategoryByID(ctx context.Context, obj *model.CategoryQuery, input model.CategoryByIDInput) (model.CategoryByIDResult, error)
 	GetAllCategory(ctx context.Context, obj *model.CategoryQuery) (model.CategoryGetAllResult, error)
 }
 type ColorMutationResolver interface {
@@ -391,6 +409,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.CandlesByIdOk.Candle(childComplexity), true
 
+	case "CandlesBySlugOk.candle":
+		if e.complexity.CandlesBySlugOk.Candle == nil {
+			break
+		}
+
+		return e.complexity.CandlesBySlugOk.Candle(childComplexity), true
+
 	case "CandlesCreateOk.id":
 		if e.complexity.CandlesCreateOk.ID == nil {
 			break
@@ -428,6 +453,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.CandlesQuery.CandleByID(childComplexity, args["input"].(model.CandlesByIDInput)), true
+
+	case "CandlesQuery.candleBySlug":
+		if e.complexity.CandlesQuery.CandleBySlug == nil {
+			break
+		}
+
+		args, err := ec.field_CandlesQuery_candleBySlug_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.CandlesQuery.CandleBySlug(childComplexity, args["input"].(model.CandlesBySlugInput)), true
 
 	case "Category.created_at":
 		if e.complexity.Category.CreatedAt == nil {
@@ -471,6 +508,20 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Category.Version(childComplexity), true
 
+	case "CategoryByIdOk.category":
+		if e.complexity.CategoryByIdOk.Category == nil {
+			break
+		}
+
+		return e.complexity.CategoryByIdOk.Category(childComplexity), true
+
+	case "CategoryBySlugOk.category":
+		if e.complexity.CategoryBySlugOk.Category == nil {
+			break
+		}
+
+		return e.complexity.CategoryBySlugOk.Category(childComplexity), true
+
 	case "CategoryCreateOk.id":
 		if e.complexity.CategoryCreateOk.ID == nil {
 			break
@@ -508,6 +559,30 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.CategoryMutation.UpdateCategory(childComplexity, args["input"].(model.UpdateCategoryInput)), true
+
+	case "CategoryQuery.categoryById":
+		if e.complexity.CategoryQuery.CategoryByID == nil {
+			break
+		}
+
+		args, err := ec.field_CategoryQuery_categoryById_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.CategoryQuery.CategoryByID(childComplexity, args["input"].(model.CategoryByIDInput)), true
+
+	case "CategoryQuery.categoryBySlug":
+		if e.complexity.CategoryQuery.CategoryBySlug == nil {
+			break
+		}
+
+		args, err := ec.field_CategoryQuery_categoryBySlug_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.CategoryQuery.CategoryBySlug(childComplexity, args["input"].(model.CategoryBySlugInput)), true
 
 	case "CategoryQuery.getAllCategory":
 		if e.complexity.CategoryQuery.GetAllCategory == nil {
@@ -815,6 +890,9 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 	ec := executionContext{rc, e, 0, 0, make(chan graphql.DeferredResult)}
 	inputUnmarshalMap := graphql.BuildUnmarshalerMap(
 		ec.unmarshalInputCandlesByIdInput,
+		ec.unmarshalInputCandlesBySlugInput,
+		ec.unmarshalInputCategoryByIdInput,
+		ec.unmarshalInputCategoryBySlugInput,
 		ec.unmarshalInputCreateCandleInput,
 		ec.unmarshalInputCreateCategoryInput,
 		ec.unmarshalInputCreateColorInput,
@@ -1053,6 +1131,20 @@ union CandlesByIdResult =
     | VersionMismatchProblem
     | InternalErrorProblem
     | CandlesByIdOk`, BuiltIn: false},
+	{Name: "../api/candles/candlesquery_byslug.graphqls", Input: `extend type CandlesQuery {
+    candleBySlug(input: CandlesBySlugInput!): CandlesBySlugResult! @goField(forceResolver: true)
+}
+
+type CandlesBySlugOk {
+    candle: Candles!
+}
+input CandlesBySlugInput {
+    slug: String!
+}
+union CandlesBySlugResult =
+    | VersionMismatchProblem
+    | InternalErrorProblem
+    | CandlesBySlugOk`, BuiltIn: false},
 	{Name: "../api/candles/candlesquery_getall.graphqls", Input: `extend type CandlesQuery {
     allCandles: AllCategoryResult! @goField(forceResolver: true)
 }
@@ -1116,11 +1208,35 @@ type UpdateCategoryOk {
   id:Uuid!
 }
 `, BuiltIn: false},
+	{Name: "../api/category/categoryquery.byslug.graphqls", Input: `extend type CategoryQuery {
+    categoryBySlug(input: CategoryBySlugInput!): CategoryBySlugResult! @goField(forceResolver: true)
+}
+
+input CategoryBySlugInput {
+    slug: String!
+}
+
+type CategoryBySlugOk  {
+    category: Category
+}
+union CategoryBySlugResult = CategoryBySlugOk | InternalErrorProblem | VersionMismatchProblem`, BuiltIn: false},
 	{Name: "../api/category/categoryquery.graphqls", Input: `type CategoryQuery
 
 extend type Query {
     category:CategoryQuery
 }`, BuiltIn: false},
+	{Name: "../api/category/categoryquery_byid.graphqls", Input: `extend type CategoryQuery {
+    categoryById(input: CategoryByIdInput!): CategoryByIdResult! @goField(forceResolver: true)
+}
+
+input CategoryByIdInput {
+    id: Uuid!
+}
+
+type CategoryByIdOk  {
+    category: Category
+}
+union CategoryByIdResult = CategoryByIdOk | InternalErrorProblem | VersionMismatchProblem`, BuiltIn: false},
 	{Name: "../api/category/categoryquery_getAll.graphqls", Input: `
 extend type  CategoryQuery {
     getAllCategory:CategoryGetAllResult! @goField(forceResolver: true)
@@ -1410,6 +1526,38 @@ func (ec *executionContext) field_CandlesQuery_candleById_argsInput(
 	return zeroVal, nil
 }
 
+func (ec *executionContext) field_CandlesQuery_candleBySlug_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	arg0, err := ec.field_CandlesQuery_candleBySlug_argsInput(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["input"] = arg0
+	return args, nil
+}
+func (ec *executionContext) field_CandlesQuery_candleBySlug_argsInput(
+	ctx context.Context,
+	rawArgs map[string]interface{},
+) (model.CandlesBySlugInput, error) {
+	// We won't call the directive if the argument is null.
+	// Set call_argument_directives_with_null to true to call directives
+	// even if the argument is null.
+	_, ok := rawArgs["input"]
+	if !ok {
+		var zeroVal model.CandlesBySlugInput
+		return zeroVal, nil
+	}
+
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+	if tmp, ok := rawArgs["input"]; ok {
+		return ec.unmarshalNCandlesBySlugInput2githubᚗcomᚋSanchir01ᚋcandles_backendᚋinternalᚋgqlᚋmodelᚐCandlesBySlugInput(ctx, tmp)
+	}
+
+	var zeroVal model.CandlesBySlugInput
+	return zeroVal, nil
+}
+
 func (ec *executionContext) field_CategoryMutation_createCategory_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -1471,6 +1619,70 @@ func (ec *executionContext) field_CategoryMutation_updateCategory_argsInput(
 	}
 
 	var zeroVal model.UpdateCategoryInput
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_CategoryQuery_categoryById_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	arg0, err := ec.field_CategoryQuery_categoryById_argsInput(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["input"] = arg0
+	return args, nil
+}
+func (ec *executionContext) field_CategoryQuery_categoryById_argsInput(
+	ctx context.Context,
+	rawArgs map[string]interface{},
+) (model.CategoryByIDInput, error) {
+	// We won't call the directive if the argument is null.
+	// Set call_argument_directives_with_null to true to call directives
+	// even if the argument is null.
+	_, ok := rawArgs["input"]
+	if !ok {
+		var zeroVal model.CategoryByIDInput
+		return zeroVal, nil
+	}
+
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+	if tmp, ok := rawArgs["input"]; ok {
+		return ec.unmarshalNCategoryByIdInput2githubᚗcomᚋSanchir01ᚋcandles_backendᚋinternalᚋgqlᚋmodelᚐCategoryByIDInput(ctx, tmp)
+	}
+
+	var zeroVal model.CategoryByIDInput
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_CategoryQuery_categoryBySlug_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	arg0, err := ec.field_CategoryQuery_categoryBySlug_argsInput(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["input"] = arg0
+	return args, nil
+}
+func (ec *executionContext) field_CategoryQuery_categoryBySlug_argsInput(
+	ctx context.Context,
+	rawArgs map[string]interface{},
+) (model.CategoryBySlugInput, error) {
+	// We won't call the directive if the argument is null.
+	// Set call_argument_directives_with_null to true to call directives
+	// even if the argument is null.
+	_, ok := rawArgs["input"]
+	if !ok {
+		var zeroVal model.CategoryBySlugInput
+		return zeroVal, nil
+	}
+
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+	if tmp, ok := rawArgs["input"]; ok {
+		return ec.unmarshalNCategoryBySlugInput2githubᚗcomᚋSanchir01ᚋcandles_backendᚋinternalᚋgqlᚋmodelᚐCategoryBySlugInput(ctx, tmp)
+	}
+
+	var zeroVal model.CategoryBySlugInput
 	return zeroVal, nil
 }
 
@@ -2382,6 +2594,72 @@ func (ec *executionContext) fieldContext_CandlesByIdOk_candle(_ context.Context,
 	return fc, nil
 }
 
+func (ec *executionContext) _CandlesBySlugOk_candle(ctx context.Context, field graphql.CollectedField, obj *model.CandlesBySlugOk) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_CandlesBySlugOk_candle(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Candle, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.Candles)
+	fc.Result = res
+	return ec.marshalNCandles2ᚖgithubᚗcomᚋSanchir01ᚋcandles_backendᚋinternalᚋgqlᚋmodelᚐCandles(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_CandlesBySlugOk_candle(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "CandlesBySlugOk",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Candles_id(ctx, field)
+			case "title":
+				return ec.fieldContext_Candles_title(ctx, field)
+			case "slug":
+				return ec.fieldContext_Candles_slug(ctx, field)
+			case "created_at":
+				return ec.fieldContext_Candles_created_at(ctx, field)
+			case "updated_at":
+				return ec.fieldContext_Candles_updated_at(ctx, field)
+			case "version":
+				return ec.fieldContext_Candles_version(ctx, field)
+			case "price":
+				return ec.fieldContext_Candles_price(ctx, field)
+			case "images":
+				return ec.fieldContext_Candles_images(ctx, field)
+			case "color_id":
+				return ec.fieldContext_Candles_color_id(ctx, field)
+			case "category_id":
+				return ec.fieldContext_Candles_category_id(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Candles", field.Name)
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _CandlesCreateOk_id(ctx context.Context, field graphql.CollectedField, obj *model.CandlesCreateOk) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_CandlesCreateOk_id(ctx, field)
 	if err != nil {
@@ -2530,6 +2808,61 @@ func (ec *executionContext) fieldContext_CandlesQuery_candleById(ctx context.Con
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_CandlesQuery_candleById_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _CandlesQuery_candleBySlug(ctx context.Context, field graphql.CollectedField, obj *model.CandlesQuery) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_CandlesQuery_candleBySlug(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.CandlesQuery().CandleBySlug(rctx, obj, fc.Args["input"].(model.CandlesBySlugInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(model.CandlesBySlugResult)
+	fc.Result = res
+	return ec.marshalNCandlesBySlugResult2githubᚗcomᚋSanchir01ᚋcandles_backendᚋinternalᚋgqlᚋmodelᚐCandlesBySlugResult(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_CandlesQuery_candleBySlug(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "CandlesQuery",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type CandlesBySlugResult does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_CandlesQuery_candleBySlug_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -2844,6 +3177,116 @@ func (ec *executionContext) fieldContext_Category_version(_ context.Context, fie
 	return fc, nil
 }
 
+func (ec *executionContext) _CategoryByIdOk_category(ctx context.Context, field graphql.CollectedField, obj *model.CategoryByIDOk) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_CategoryByIdOk_category(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Category, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.Category)
+	fc.Result = res
+	return ec.marshalOCategory2ᚖgithubᚗcomᚋSanchir01ᚋcandles_backendᚋinternalᚋgqlᚋmodelᚐCategory(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_CategoryByIdOk_category(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "CategoryByIdOk",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Category_id(ctx, field)
+			case "title":
+				return ec.fieldContext_Category_title(ctx, field)
+			case "slug":
+				return ec.fieldContext_Category_slug(ctx, field)
+			case "created_at":
+				return ec.fieldContext_Category_created_at(ctx, field)
+			case "updated_at":
+				return ec.fieldContext_Category_updated_at(ctx, field)
+			case "version":
+				return ec.fieldContext_Category_version(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Category", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _CategoryBySlugOk_category(ctx context.Context, field graphql.CollectedField, obj *model.CategoryBySlugOk) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_CategoryBySlugOk_category(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Category, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.Category)
+	fc.Result = res
+	return ec.marshalOCategory2ᚖgithubᚗcomᚋSanchir01ᚋcandles_backendᚋinternalᚋgqlᚋmodelᚐCategory(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_CategoryBySlugOk_category(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "CategoryBySlugOk",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Category_id(ctx, field)
+			case "title":
+				return ec.fieldContext_Category_title(ctx, field)
+			case "slug":
+				return ec.fieldContext_Category_slug(ctx, field)
+			case "created_at":
+				return ec.fieldContext_Category_created_at(ctx, field)
+			case "updated_at":
+				return ec.fieldContext_Category_updated_at(ctx, field)
+			case "version":
+				return ec.fieldContext_Category_version(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Category", field.Name)
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _CategoryCreateOk_id(ctx context.Context, field graphql.CollectedField, obj *model.CategoryCreateOk) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_CategoryCreateOk_id(ctx, field)
 	if err != nil {
@@ -3050,6 +3493,116 @@ func (ec *executionContext) fieldContext_CategoryMutation_updateCategory(ctx con
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_CategoryMutation_updateCategory_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _CategoryQuery_categoryBySlug(ctx context.Context, field graphql.CollectedField, obj *model.CategoryQuery) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_CategoryQuery_categoryBySlug(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.CategoryQuery().CategoryBySlug(rctx, obj, fc.Args["input"].(model.CategoryBySlugInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(model.CategoryBySlugResult)
+	fc.Result = res
+	return ec.marshalNCategoryBySlugResult2githubᚗcomᚋSanchir01ᚋcandles_backendᚋinternalᚋgqlᚋmodelᚐCategoryBySlugResult(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_CategoryQuery_categoryBySlug(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "CategoryQuery",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type CategoryBySlugResult does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_CategoryQuery_categoryBySlug_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _CategoryQuery_categoryById(ctx context.Context, field graphql.CollectedField, obj *model.CategoryQuery) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_CategoryQuery_categoryById(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.CategoryQuery().CategoryByID(rctx, obj, fc.Args["input"].(model.CategoryByIDInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(model.CategoryByIDResult)
+	fc.Result = res
+	return ec.marshalNCategoryByIdResult2githubᚗcomᚋSanchir01ᚋcandles_backendᚋinternalᚋgqlᚋmodelᚐCategoryByIDResult(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_CategoryQuery_categoryById(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "CategoryQuery",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type CategoryByIdResult does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_CategoryQuery_categoryById_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -4005,6 +4558,8 @@ func (ec *executionContext) fieldContext_Query_candles(_ context.Context, field 
 			switch field.Name {
 			case "candleById":
 				return ec.fieldContext_CandlesQuery_candleById(ctx, field)
+			case "candleBySlug":
+				return ec.fieldContext_CandlesQuery_candleBySlug(ctx, field)
 			case "allCandles":
 				return ec.fieldContext_CandlesQuery_allCandles(ctx, field)
 			}
@@ -4050,6 +4605,10 @@ func (ec *executionContext) fieldContext_Query_category(_ context.Context, field
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
+			case "categoryBySlug":
+				return ec.fieldContext_CategoryQuery_categoryBySlug(ctx, field)
+			case "categoryById":
+				return ec.fieldContext_CategoryQuery_categoryById(ctx, field)
 			case "getAllCategory":
 				return ec.fieldContext_CategoryQuery_getAllCategory(ctx, field)
 			}
@@ -6885,6 +7444,87 @@ func (ec *executionContext) unmarshalInputCandlesByIdInput(ctx context.Context, 
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputCandlesBySlugInput(ctx context.Context, obj interface{}) (model.CandlesBySlugInput, error) {
+	var it model.CandlesBySlugInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"slug"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "slug":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("slug"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Slug = data
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputCategoryByIdInput(ctx context.Context, obj interface{}) (model.CategoryByIDInput, error) {
+	var it model.CategoryByIDInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"id"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "id":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+			data, err := ec.unmarshalNUuid2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ID = data
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputCategoryBySlugInput(ctx context.Context, obj interface{}) (model.CategoryBySlugInput, error) {
+	var it model.CategoryBySlugInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"slug"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "slug":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("slug"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Slug = data
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputCreateCandleInput(ctx context.Context, obj interface{}) (model.CreateCandleInput, error) {
 	var it model.CreateCandleInput
 	asMap := map[string]interface{}{}
@@ -7224,6 +7864,36 @@ func (ec *executionContext) _CandlesByIdResult(ctx context.Context, sel ast.Sele
 	}
 }
 
+func (ec *executionContext) _CandlesBySlugResult(ctx context.Context, sel ast.SelectionSet, obj model.CandlesBySlugResult) graphql.Marshaler {
+	switch obj := (obj).(type) {
+	case nil:
+		return graphql.Null
+	case model.VersionMismatchProblem:
+		return ec._VersionMismatchProblem(ctx, sel, &obj)
+	case *model.VersionMismatchProblem:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._VersionMismatchProblem(ctx, sel, obj)
+	case model.InternalErrorProblem:
+		return ec._InternalErrorProblem(ctx, sel, &obj)
+	case *model.InternalErrorProblem:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._InternalErrorProblem(ctx, sel, obj)
+	case model.CandlesBySlugOk:
+		return ec._CandlesBySlugOk(ctx, sel, &obj)
+	case *model.CandlesBySlugOk:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._CandlesBySlugOk(ctx, sel, obj)
+	default:
+		panic(fmt.Errorf("unexpected type %T", obj))
+	}
+}
+
 func (ec *executionContext) _CandlesMutationResult(ctx context.Context, sel ast.SelectionSet, obj model.CandlesMutationResult) graphql.Marshaler {
 	switch obj := (obj).(type) {
 	case nil:
@@ -7256,6 +7926,66 @@ func (ec *executionContext) _CandlesMutationResult(ctx context.Context, sel ast.
 			return graphql.Null
 		}
 		return ec._CandlesCreateOk(ctx, sel, obj)
+	default:
+		panic(fmt.Errorf("unexpected type %T", obj))
+	}
+}
+
+func (ec *executionContext) _CategoryByIdResult(ctx context.Context, sel ast.SelectionSet, obj model.CategoryByIDResult) graphql.Marshaler {
+	switch obj := (obj).(type) {
+	case nil:
+		return graphql.Null
+	case model.InternalErrorProblem:
+		return ec._InternalErrorProblem(ctx, sel, &obj)
+	case *model.InternalErrorProblem:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._InternalErrorProblem(ctx, sel, obj)
+	case model.VersionMismatchProblem:
+		return ec._VersionMismatchProblem(ctx, sel, &obj)
+	case *model.VersionMismatchProblem:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._VersionMismatchProblem(ctx, sel, obj)
+	case model.CategoryByIDOk:
+		return ec._CategoryByIdOk(ctx, sel, &obj)
+	case *model.CategoryByIDOk:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._CategoryByIdOk(ctx, sel, obj)
+	default:
+		panic(fmt.Errorf("unexpected type %T", obj))
+	}
+}
+
+func (ec *executionContext) _CategoryBySlugResult(ctx context.Context, sel ast.SelectionSet, obj model.CategoryBySlugResult) graphql.Marshaler {
+	switch obj := (obj).(type) {
+	case nil:
+		return graphql.Null
+	case model.InternalErrorProblem:
+		return ec._InternalErrorProblem(ctx, sel, &obj)
+	case *model.InternalErrorProblem:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._InternalErrorProblem(ctx, sel, obj)
+	case model.VersionMismatchProblem:
+		return ec._VersionMismatchProblem(ctx, sel, &obj)
+	case *model.VersionMismatchProblem:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._VersionMismatchProblem(ctx, sel, obj)
+	case model.CategoryBySlugOk:
+		return ec._CategoryBySlugOk(ctx, sel, &obj)
+	case *model.CategoryBySlugOk:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._CategoryBySlugOk(ctx, sel, obj)
 	default:
 		panic(fmt.Errorf("unexpected type %T", obj))
 	}
@@ -7842,6 +8572,45 @@ func (ec *executionContext) _CandlesByIdOk(ctx context.Context, sel ast.Selectio
 	return out
 }
 
+var candlesBySlugOkImplementors = []string{"CandlesBySlugOk", "CandlesBySlugResult"}
+
+func (ec *executionContext) _CandlesBySlugOk(ctx context.Context, sel ast.SelectionSet, obj *model.CandlesBySlugOk) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, candlesBySlugOkImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("CandlesBySlugOk")
+		case "candle":
+			out.Values[i] = ec._CandlesBySlugOk_candle(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
 var candlesCreateOkImplementors = []string{"CandlesCreateOk", "CandlesMutationResult"}
 
 func (ec *executionContext) _CandlesCreateOk(ctx context.Context, sel ast.SelectionSet, obj *model.CandlesCreateOk) graphql.Marshaler {
@@ -7998,6 +8767,42 @@ func (ec *executionContext) _CandlesQuery(ctx context.Context, sel ast.Selection
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "candleBySlug":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._CandlesQuery_candleBySlug(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		case "allCandles":
 			field := field
 
@@ -8098,6 +8903,78 @@ func (ec *executionContext) _Category(ctx context.Context, sel ast.SelectionSet,
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var categoryByIdOkImplementors = []string{"CategoryByIdOk", "CategoryByIdResult"}
+
+func (ec *executionContext) _CategoryByIdOk(ctx context.Context, sel ast.SelectionSet, obj *model.CategoryByIDOk) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, categoryByIdOkImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("CategoryByIdOk")
+		case "category":
+			out.Values[i] = ec._CategoryByIdOk_category(ctx, field, obj)
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var categoryBySlugOkImplementors = []string{"CategoryBySlugOk", "CategoryBySlugResult"}
+
+func (ec *executionContext) _CategoryBySlugOk(ctx context.Context, sel ast.SelectionSet, obj *model.CategoryBySlugOk) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, categoryBySlugOkImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("CategoryBySlugOk")
+		case "category":
+			out.Values[i] = ec._CategoryBySlugOk_category(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -8316,6 +9193,78 @@ func (ec *executionContext) _CategoryQuery(ctx context.Context, sel ast.Selectio
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("CategoryQuery")
+		case "categoryBySlug":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._CategoryQuery_categoryBySlug(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "categoryById":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._CategoryQuery_categoryById(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		case "getAllCategory":
 			field := field
 
@@ -8618,7 +9567,7 @@ func (ec *executionContext) _ColorQuery(ctx context.Context, sel ast.SelectionSe
 	return out
 }
 
-var internalErrorProblemImplementors = []string{"InternalErrorProblem", "LoginResult", "RegistrationsResult", "CandlesMutationResult", "CandlesByIdResult", "AllCategoryResult", "CategoryCreateResult", "UpdateCategoryResult", "CategoryGetAllResult", "ColorCreateResult", "AllColorResult", "ProblemInterface", "UserProfileResult"}
+var internalErrorProblemImplementors = []string{"InternalErrorProblem", "LoginResult", "RegistrationsResult", "CandlesMutationResult", "CandlesByIdResult", "CandlesBySlugResult", "AllCategoryResult", "CategoryCreateResult", "UpdateCategoryResult", "CategoryBySlugResult", "CategoryByIdResult", "CategoryGetAllResult", "ColorCreateResult", "AllColorResult", "ProblemInterface", "UserProfileResult"}
 
 func (ec *executionContext) _InternalErrorProblem(ctx context.Context, sel ast.SelectionSet, obj *model.InternalErrorProblem) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, internalErrorProblemImplementors)
@@ -9264,7 +10213,7 @@ func (ec *executionContext) _UserQuery(ctx context.Context, sel ast.SelectionSet
 	return out
 }
 
-var versionMismatchProblemImplementors = []string{"VersionMismatchProblem", "LoginResult", "RegistrationsResult", "CandlesMutationResult", "CandlesByIdResult", "AllCategoryResult", "CategoryCreateResult", "UpdateCategoryResult", "ColorCreateResult", "AllColorResult", "UserProfileResult", "ProblemInterface"}
+var versionMismatchProblemImplementors = []string{"VersionMismatchProblem", "LoginResult", "RegistrationsResult", "CandlesMutationResult", "CandlesByIdResult", "CandlesBySlugResult", "AllCategoryResult", "CategoryCreateResult", "UpdateCategoryResult", "CategoryBySlugResult", "CategoryByIdResult", "ColorCreateResult", "AllColorResult", "UserProfileResult", "ProblemInterface"}
 
 func (ec *executionContext) _VersionMismatchProblem(ctx context.Context, sel ast.SelectionSet, obj *model.VersionMismatchProblem) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, versionMismatchProblemImplementors)
@@ -9747,6 +10696,21 @@ func (ec *executionContext) marshalNCandlesByIdResult2githubᚗcomᚋSanchir01�
 	return ec._CandlesByIdResult(ctx, sel, v)
 }
 
+func (ec *executionContext) unmarshalNCandlesBySlugInput2githubᚗcomᚋSanchir01ᚋcandles_backendᚋinternalᚋgqlᚋmodelᚐCandlesBySlugInput(ctx context.Context, v interface{}) (model.CandlesBySlugInput, error) {
+	res, err := ec.unmarshalInputCandlesBySlugInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNCandlesBySlugResult2githubᚗcomᚋSanchir01ᚋcandles_backendᚋinternalᚋgqlᚋmodelᚐCandlesBySlugResult(ctx context.Context, sel ast.SelectionSet, v model.CandlesBySlugResult) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._CandlesBySlugResult(ctx, sel, v)
+}
+
 func (ec *executionContext) marshalNCandlesMutation2githubᚗcomᚋSanchir01ᚋcandles_backendᚋinternalᚋgqlᚋmodelᚐCandlesMutation(ctx context.Context, sel ast.SelectionSet, v model.CandlesMutation) graphql.Marshaler {
 	return ec._CandlesMutation(ctx, sel, &v)
 }
@@ -9823,6 +10787,36 @@ func (ec *executionContext) marshalNCategory2ᚖgithubᚗcomᚋSanchir01ᚋcandl
 		return graphql.Null
 	}
 	return ec._Category(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNCategoryByIdInput2githubᚗcomᚋSanchir01ᚋcandles_backendᚋinternalᚋgqlᚋmodelᚐCategoryByIDInput(ctx context.Context, v interface{}) (model.CategoryByIDInput, error) {
+	res, err := ec.unmarshalInputCategoryByIdInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNCategoryByIdResult2githubᚗcomᚋSanchir01ᚋcandles_backendᚋinternalᚋgqlᚋmodelᚐCategoryByIDResult(ctx context.Context, sel ast.SelectionSet, v model.CategoryByIDResult) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._CategoryByIdResult(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNCategoryBySlugInput2githubᚗcomᚋSanchir01ᚋcandles_backendᚋinternalᚋgqlᚋmodelᚐCategoryBySlugInput(ctx context.Context, v interface{}) (model.CategoryBySlugInput, error) {
+	res, err := ec.unmarshalInputCategoryBySlugInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNCategoryBySlugResult2githubᚗcomᚋSanchir01ᚋcandles_backendᚋinternalᚋgqlᚋmodelᚐCategoryBySlugResult(ctx context.Context, sel ast.SelectionSet, v model.CategoryBySlugResult) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._CategoryBySlugResult(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalNCategoryCreateResult2githubᚗcomᚋSanchir01ᚋcandles_backendᚋinternalᚋgqlᚋmodelᚐCategoryCreateResult(ctx context.Context, sel ast.SelectionSet, v model.CategoryCreateResult) graphql.Marshaler {
@@ -10480,6 +11474,13 @@ func (ec *executionContext) marshalOCandlesQuery2ᚖgithubᚗcomᚋSanchir01ᚋc
 		return graphql.Null
 	}
 	return ec._CandlesQuery(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalOCategory2ᚖgithubᚗcomᚋSanchir01ᚋcandles_backendᚋinternalᚋgqlᚋmodelᚐCategory(ctx context.Context, sel ast.SelectionSet, v *model.Category) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._Category(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalOCategoryQuery2ᚖgithubᚗcomᚋSanchir01ᚋcandles_backendᚋinternalᚋgqlᚋmodelᚐCategoryQuery(ctx context.Context, sel ast.SelectionSet, v *model.CategoryQuery) graphql.Marshaler {

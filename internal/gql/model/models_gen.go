@@ -24,8 +24,20 @@ type CandlesByIDResult interface {
 	IsCandlesByIDResult()
 }
 
+type CandlesBySlugResult interface {
+	IsCandlesBySlugResult()
+}
+
 type CandlesMutationResult interface {
 	IsCandlesMutationResult()
+}
+
+type CategoryByIDResult interface {
+	IsCategoryByIDResult()
+}
+
+type CategoryBySlugResult interface {
+	IsCategoryBySlugResult()
 }
 
 type CategoryCreateResult interface {
@@ -106,6 +118,16 @@ type CandlesByIDOk struct {
 
 func (CandlesByIDOk) IsCandlesByIDResult() {}
 
+type CandlesBySlugInput struct {
+	Slug string `json:"slug"`
+}
+
+type CandlesBySlugOk struct {
+	Candle *Candles `json:"candle"`
+}
+
+func (CandlesBySlugOk) IsCandlesBySlugResult() {}
+
 type CandlesCreateOk struct {
 	ID uuid.UUID `json:"id"`
 }
@@ -117,8 +139,9 @@ type CandlesMutation struct {
 }
 
 type CandlesQuery struct {
-	CandleByID CandlesByIDResult `json:"candleById"`
-	AllCandles AllCategoryResult `json:"allCandles"`
+	CandleByID   CandlesByIDResult   `json:"candleById"`
+	CandleBySlug CandlesBySlugResult `json:"candleBySlug"`
+	AllCandles   AllCategoryResult   `json:"allCandles"`
 }
 
 type Category struct {
@@ -132,6 +155,26 @@ type Category struct {
 
 func (Category) IsVersionInterface()   {}
 func (this Category) GetVersion() uint { return this.Version }
+
+type CategoryByIDInput struct {
+	ID uuid.UUID `json:"id"`
+}
+
+type CategoryByIDOk struct {
+	Category *Category `json:"category,omitempty"`
+}
+
+func (CategoryByIDOk) IsCategoryByIDResult() {}
+
+type CategoryBySlugInput struct {
+	Slug string `json:"slug"`
+}
+
+type CategoryBySlugOk struct {
+	Category *Category `json:"category,omitempty"`
+}
+
+func (CategoryBySlugOk) IsCategoryBySlugResult() {}
 
 type CategoryCreateOk struct {
 	ID uuid.UUID `json:"id"`
@@ -151,6 +194,8 @@ type CategoryMutation struct {
 }
 
 type CategoryQuery struct {
+	CategoryBySlug CategoryBySlugResult `json:"categoryBySlug"`
+	CategoryByID   CategoryByIDResult   `json:"categoryById"`
 	GetAllCategory CategoryGetAllResult `json:"getAllCategory"`
 }
 
@@ -205,11 +250,17 @@ func (InternalErrorProblem) IsCandlesMutationResult() {}
 
 func (InternalErrorProblem) IsCandlesByIDResult() {}
 
+func (InternalErrorProblem) IsCandlesBySlugResult() {}
+
 func (InternalErrorProblem) IsAllCategoryResult() {}
 
 func (InternalErrorProblem) IsCategoryCreateResult() {}
 
 func (InternalErrorProblem) IsUpdateCategoryResult() {}
+
+func (InternalErrorProblem) IsCategoryBySlugResult() {}
+
+func (InternalErrorProblem) IsCategoryByIDResult() {}
 
 func (InternalErrorProblem) IsCategoryGetAllResult() {}
 
@@ -324,11 +375,17 @@ func (VersionMismatchProblem) IsCandlesMutationResult() {}
 
 func (VersionMismatchProblem) IsCandlesByIDResult() {}
 
+func (VersionMismatchProblem) IsCandlesBySlugResult() {}
+
 func (VersionMismatchProblem) IsAllCategoryResult() {}
 
 func (VersionMismatchProblem) IsCategoryCreateResult() {}
 
 func (VersionMismatchProblem) IsUpdateCategoryResult() {}
+
+func (VersionMismatchProblem) IsCategoryBySlugResult() {}
+
+func (VersionMismatchProblem) IsCategoryByIDResult() {}
 
 func (VersionMismatchProblem) IsColorCreateResult() {}
 

@@ -36,7 +36,7 @@ func main() {
 	lg := setupLogger(cfg.Env)
 	lg.Info("Graphql server starting up...", slog.String("port", cfg.HttpServer.Port))
 
-	pgxdb, err := connect.PGXNew(cfg, lg, context.Background(), cfg.Env)
+	pgxdb, err := connect.PGXNew(cfg, context.Background(), cfg.Env)
 	if err != nil {
 		lg.Error("pgx error connect", err.Error())
 	}
@@ -51,7 +51,7 @@ func main() {
 		authStr     = pgstoreauth.New(pgxdb)
 		s3client    = connect.NewS3(context.Background(), lg, cfg)
 		s3str       = s3store.New(s3client, context.Background(), cfg)
-		handlers    = httphandlers.New(rout, lg, cfg, s3str, pgxdb, categoryStr, candlesStr, colorStr, userStr,authStr)
+		handlers    = httphandlers.New(rout, lg, cfg, s3str, pgxdb, categoryStr, candlesStr, colorStr, userStr, authStr)
 	)
 	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGTERM, syscall.SIGINT, os.Interrupt)
 	defer cancel()

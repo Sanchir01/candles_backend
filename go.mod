@@ -58,6 +58,9 @@ require (
 	github.com/mitchellh/mapstructure v1.5.1-0.20231216201459-8508981c8b6c // indirect
 	github.com/rogpeppe/go-internal v1.12.0 // indirect
 	github.com/sosodev/duration v1.3.1 // indirect
+	github.com/vikstrous/dataloadgen v0.0.6 // indirect
+	go.opentelemetry.io/otel v1.11.1 // indirect
+	go.opentelemetry.io/otel/trace v1.11.1 // indirect
 	golang.org/x/net v0.29.0 // indirect
 	golang.org/x/sync v0.8.0 // indirect
 	golang.org/x/sys v0.25.0 // indirect

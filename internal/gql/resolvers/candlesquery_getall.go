@@ -6,11 +6,18 @@ package resolver
 
 import (
 	"context"
-
+	"fmt"
 	featurecandles "github.com/Sanchir01/candles_backend/internal/feature/candles"
+	runtime "github.com/Sanchir01/candles_backend/internal/gql/generated"
 	"github.com/Sanchir01/candles_backend/internal/gql/model"
 	responseErr "github.com/Sanchir01/candles_backend/pkg/lib/api/response"
 )
+
+// TotalCount is the resolver for the totalCount field.
+func (r *allCandlesOkResolver) TotalCount(ctx context.Context, obj *model.AllCandlesOk, estimate uint) (model.TotalCountResolvingResult, error) {
+	panic(fmt.Errorf("not implemented: TotalCount - totalCount"))
+	//filter := graphql.GetFieldContext(ctx).Parent.Args["filter"].(*model)
+}
 
 // AllCandles is the resolver for the allCandles field.
 func (r *candlesQueryResolver) AllCandles(ctx context.Context, obj *model.CandlesQuery) (model.AllCategoryResult, error) {
@@ -26,3 +33,8 @@ func (r *candlesQueryResolver) AllCandles(ctx context.Context, obj *model.Candle
 	}
 	return model.AllCandlesOk{Candles: gqlCandles}, nil
 }
+
+// AllCandlesOk returns runtime.AllCandlesOkResolver implementation.
+func (r *Resolver) AllCandlesOk() runtime.AllCandlesOkResolver { return &allCandlesOkResolver{r} }
+
+type allCandlesOkResolver struct{ *Resolver }

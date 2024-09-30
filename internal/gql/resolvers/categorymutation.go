@@ -11,18 +11,9 @@ import (
 	"github.com/Sanchir01/candles_backend/internal/gql/model"
 )
 
-// Candles is the resolver for the candles field.
-func (r *mutationResolver) Candles(ctx context.Context) (*model.CandlesMutation, error) {
-	return &model.CandlesMutation{}, nil
-}
-
+// Category is the resolver for the category field.
 func (r *mutationResolver) Category(ctx context.Context) (*model.CategoryMutation, error) {
 	return &model.CategoryMutation{}, nil
-}
-
-// CandlesMutation returns runtime.CandlesMutationResolver implementation.
-func (r *Resolver) CandlesMutation() runtime.CandlesMutationResolver {
-	return &candlesMutationResolver{r}
 }
 
 // CategoryMutation returns runtime.CategoryMutationResolver implementation.
@@ -30,5 +21,4 @@ func (r *Resolver) CategoryMutation() runtime.CategoryMutationResolver {
 	return &categoryMutationResolver{r}
 }
 
-type candlesMutationResolver struct{ *Resolver }
 type categoryMutationResolver struct{ *Resolver }

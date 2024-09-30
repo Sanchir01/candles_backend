@@ -3,6 +3,8 @@ package main
 import (
 	"context"
 	"errors"
+	"log"
+
 	telegrambot "github.com/Sanchir01/candles_backend/internal/bot"
 	"github.com/Sanchir01/candles_backend/internal/config"
 	pgstoreauth "github.com/Sanchir01/candles_backend/internal/database/postgres/auth"
@@ -17,7 +19,6 @@ import (
 	"github.com/Sanchir01/candles_backend/pkg/lib/logger/handlers/slogpretty"
 	"github.com/go-chi/chi/v5"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
-	"log"
 
 	"log/slog"
 	"os"
@@ -35,7 +36,7 @@ func main() {
 	lg := setupLogger(cfg.Env)
 	lg.Info("Graphql server starting up...", slog.String("port", cfg.HttpServer.Port))
 
-	pgxdb, err := connect.PGXNew(cfg, lg, context.Background(), cfg.Env)
+	pgxdb, err := connect.PGXNew(cfg, context.Background(), cfg.Env)
 	if err != nil {
 		lg.Error("pgx error connect", err.Error())
 	}

@@ -1,0 +1,5 @@
+type CandlesMutation
+
+extend type Mutation {
+    candles:CandlesMutation!
+}

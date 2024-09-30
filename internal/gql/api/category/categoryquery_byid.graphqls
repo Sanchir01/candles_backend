@@ -1,0 +1,12 @@
+extend type CategoryQuery {
+    categoryById(input: CategoryByIdInput!): CategoryByIdResult! @goField(forceResolver: true)
+}
+
+input CategoryByIdInput {
+    id: Uuid!
+}
+
+type CategoryByIdOk  {
+    category: Category
+}
+union CategoryByIdResult = CategoryByIdOk | InternalErrorProblem | VersionMismatchProblem

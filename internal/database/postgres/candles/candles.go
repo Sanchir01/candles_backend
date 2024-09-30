@@ -6,6 +6,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"log/slog"
 	"time"
 )
 
@@ -69,10 +70,21 @@ func (s *CandlesPostgresStore) CandlesBySlug(ctx context.Context, slug string) (
 	}
 	defer conn.Release()
 
-	query := "SELECT id ,title,slug, price, images, version, category_id, created_at, updated_at color_id FROM public.candles WHERE slug = $1"
+	query := "SELECT id ,title,slug, price, images, version, category_id, created_at, updated_at, color_id FROM public.candles WHERE slug = $1"
 
 	var candle dbCandles
-	if err := conn.QueryRow(ctx, query, slug).Scan(&candle.ID, &candle.Title, candle.Slug, &candle.CreatedAt, &candle.UpdatedAt, &candle.Version, &candle.CategoryID); err != nil {
+	if err := conn.QueryRow(ctx, query, slug).Scan(
+		&candle.ID,
+		&candle.Title,
+		&candle.Slug,
+		&candle.Price,
+		&candle.Images,
+		&candle.Version,
+		&candle.CategoryID,
+		&candle.CreatedAt,
+		&candle.UpdatedAt,
+		&candle.ColorID,
+	); err != nil {
 		return nil, err
 	}
 	return (*model.Candles)(&candle), nil
@@ -85,12 +97,24 @@ func (s *CandlesPostgresStore) CandlesById(ctx context.Context, id uuid.UUID) (*
 	}
 	defer conn.Release()
 
-	query := "SELECT id ,title,slug, price, images, version, category_id, created_at, updated_at FROM public.candles WHERE id = $1"
+	query := "SELECT id ,title,slug, price, images, version, category_id, created_at, updated_at ,color_id FROM public.candles WHERE id = $1"
 
 	var candle dbCandles
-	if err := conn.QueryRow(ctx, query, id).Scan(&candle.ID, &candle.Title, candle.Slug, &candle.CreatedAt, &candle.UpdatedAt, &candle.Version); err != nil {
+	if err := conn.QueryRow(ctx, query, id).Scan(
+		&candle.ID,
+		&candle.Title,
+		&candle.Slug,
+		&candle.Price,
+		&candle.Images,
+		&candle.Version,
+		&candle.CategoryID,
+		&candle.CreatedAt,
+		&candle.UpdatedAt,
+		&candle.ColorID,
+	); err != nil {
 		return nil, err
 	}
+	slog.Error("candleId", candle)
 	return (*model.Candles)(&candle), nil
 }
 

@@ -1,0 +1,12 @@
+extend type CategoryQuery {
+    categoryBySlug(input: CategoryBySlugInput!): CategoryBySlugResult! @goField(forceResolver: true)
+}
+
+input CategoryBySlugInput {
+    slug: String!
+}
+
+type CategoryBySlugOk  {
+    category: Category
+}
+union CategoryBySlugResult = CategoryBySlugOk | InternalErrorProblem | VersionMismatchProblem

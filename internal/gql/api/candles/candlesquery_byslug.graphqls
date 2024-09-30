@@ -1,0 +1,14 @@
+extend type CandlesQuery {
+    candleBySlug(input: CandlesBySlugInput!): CandlesBySlugResult! @goField(forceResolver: true)
+}
+
+type CandlesBySlugOk {
+    candle: Candles!
+}
+input CandlesBySlugInput {
+    slug: String!
+}
+union CandlesBySlugResult =
+    | VersionMismatchProblem
+    | InternalErrorProblem
+    | CandlesBySlugOk

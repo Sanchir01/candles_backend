@@ -1,0 +1,14 @@
+extend type CandlesQuery {
+    candleById(input: CandlesByIdInput!): CandlesByIdResult! @goField(forceResolver: true)
+}
+
+type CandlesByIdOk {
+    candle: Candles!
+}
+input CandlesByIdInput {
+    id: Uuid!
+}
+union CandlesByIdResult =
+    | VersionMismatchProblem
+    | InternalErrorProblem
+    | CandlesByIdOk

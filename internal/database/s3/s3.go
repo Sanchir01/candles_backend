@@ -28,7 +28,7 @@ func (s3str *S3Store) PutObjects(ctx context.Context, folderpath string, images 
 		if image.File == nil {
 			return nil, nil
 		}
-		filekey := fmt.Sprintf("%s/%s", folderpath, image.Filename)
+		filekey := fmt.Sprintf("/%s/%s", folderpath, image.Filename)
 		_, err := s3str.s3Client.PutObject(ctx, &s3.PutObjectInput{
 			Bucket:        aws.String(s3str.cfg.S3Store.BucketName),
 			Key:           aws.String(filekey),

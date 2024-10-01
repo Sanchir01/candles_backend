@@ -5,7 +5,6 @@ import (
 	"github.com/Sanchir01/candles_backend/internal/gql/model"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"time"
 )
 
 type ColorPostgresStore struct {
@@ -55,13 +54,4 @@ func (s *ColorPostgresStore) CreateColor(ctx context.Context, title, slug string
 		return uuid.Nil, err
 	}
 	return id, nil
-}
-
-type dbColor struct {
-	ID        uuid.UUID `db:"id"`
-	Title     string    `db:"title"`
-	Slug      string    `db:"slug"`
-	CreatedAt time.Time `db:"created_at"`
-	UpdatedAt time.Time `db:"updated_at"`
-	Version   int       `db:"version"`
 }

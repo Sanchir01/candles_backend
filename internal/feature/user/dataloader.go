@@ -1,4 +1,4 @@
-package userFeature
+package featureuser
 
 //func userLoaderFetch(keys []uuid.UUID) ([]*model.User, []error) {
 //	// Получаем пользователей по их UUID

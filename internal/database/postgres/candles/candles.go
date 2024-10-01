@@ -2,12 +2,12 @@ package pgstorecandles
 
 import (
 	"context"
+	featurecandles "github.com/Sanchir01/candles_backend/internal/feature/candles"
 	"github.com/Sanchir01/candles_backend/internal/gql/model"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"log/slog"
-	"time"
 )
 
 type CandlesPostgresStore struct {
@@ -72,7 +72,7 @@ func (s *CandlesPostgresStore) CandlesBySlug(ctx context.Context, slug string) (
 
 	query := "SELECT id ,title,slug, price, images, version, category_id, created_at, updated_at, color_id FROM public.candles WHERE slug = $1"
 
-	var candle dbCandles
+	var candle featurecandles.DBCandles
 	if err := conn.QueryRow(ctx, query, slug).Scan(
 		&candle.ID,
 		&candle.Title,
@@ -99,7 +99,7 @@ func (s *CandlesPostgresStore) CandlesById(ctx context.Context, id uuid.UUID) (*
 
 	query := "SELECT id ,title,slug, price, images, version, category_id, created_at, updated_at ,color_id FROM public.candles WHERE id = $1"
 
-	var candle dbCandles
+	var candle featurecandles.DBCandles
 	if err := conn.QueryRow(ctx, query, id).Scan(
 		&candle.ID,
 		&candle.Title,
@@ -116,17 +116,4 @@ func (s *CandlesPostgresStore) CandlesById(ctx context.Context, id uuid.UUID) (*
 	}
 	slog.Error("candleId", candle)
 	return (*model.Candles)(&candle), nil
-}
-
-type dbCandles struct {
-	ID         uuid.UUID `db:"id"`
-	Title      string    `db:"title"`
-	Slug       string    `db:"slug"`
-	CreatedAt  time.Time `db:"created_at"`
-	UpdatedAt  time.Time `db:"updated_at"`
-	Version    uint      `db:"version"`
-	Price      int       `db:"price"`
-	Images     []string  `db:"images"`
-	ColorID    uuid.UUID `db:"color_id"`
-	CategoryID uuid.UUID `db:"category_id"`
 }

@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"errors"
+	"fmt"
 	"github.com/Sanchir01/candles_backend/internal/app"
 	telegrambot "github.com/Sanchir01/candles_backend/internal/bot"
 	pgstoreauth "github.com/Sanchir01/candles_backend/internal/database/postgres/auth"
@@ -17,7 +18,6 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/vikstrous/dataloadgen"
 	"log"
-	"strconv"
 	"time"
 
 	"log/slog"
@@ -65,18 +65,25 @@ func main() {
 			env.Logger.Error("Listen server error", slog.String("error", err.Error()))
 		}
 	}(ctx)
-	loader := dataloadgen.NewLoader(func(ctx context.Context, keys []string) (ret []int, errs []error) {
-		for _, key := range keys {
-			num, err := strconv.ParseInt(key, 10, 10000000)
-			ret = append(ret, int(num))
-			errs = append(errs, err)
+	loader := dataloadgen.NewLoader(func(ctx context.Context, keys []string) ([]string, []error) {
+		items := make([]string, len(keys))
+		errs := make([]error, len(keys))
+
+		for i, key := range keys {
+			items[i] = key
+			if key == "errorKey" {
+				errs[i] = fmt.Errorf("произошла ошибка с ключом: %s", key)
+			} else {
+				errs[i] = nil
+			}
 		}
-		return
+		return items, errs
 	},
 		dataloadgen.WithBatchCapacity(10),
 		dataloadgen.WithWait(2*time.Second),
 	)
-	one, err := loader.Load(ctx, "10")
+	myStrings := []string{"123", "213123"}
+	one, err := loader.LoadAll(ctx, myStrings)
 	if err != nil {
 		panic(err)
 	}

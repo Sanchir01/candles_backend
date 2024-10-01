@@ -1,7 +1,11 @@
 package app
 
+import (
+	featurecolor "github.com/Sanchir01/candles_backend/internal/feature/color"
+)
+
 const (
-	articleLoaderByIDMaxBatch             int = 100
+	colorLoaderByIDMaxBatch               int = 100
 	articleBlockLoaderByArticleIDMaxBatch int = 10
 	articleTagLoaderByArticleIDMaxBatch   int = 10
 	imageLoaderByIDMaxBatch               int = 100
@@ -10,8 +14,9 @@ const (
 )
 
 type DataLoaders struct {
+	ColorDataLoaderById *featurecolor.ColorDataLoader
 }
 
-func newDataLoaders() {
-	return
+func newDataLoaders(repos *Repositories) *DataLoaders {
+	return &DataLoaders{ColorDataLoaderById: featurecolor.NewDataLoader(repos.ColorRepository, colorLoaderByIDMaxBatch)}
 }

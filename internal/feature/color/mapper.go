@@ -1,4 +1,4 @@
-package featurecolor
+package color
 
 import "github.com/Sanchir01/candles_backend/internal/gql/model"
 

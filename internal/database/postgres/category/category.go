@@ -2,8 +2,7 @@ package pgstorecategory
 
 import (
 	"context"
-	"time"
-
+	featurecategory "github.com/Sanchir01/candles_backend/internal/feature/category"
 	"github.com/Sanchir01/candles_backend/internal/gql/model"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -27,7 +26,7 @@ func (s *CategoryPostgresStore) CategoryById(ctx context.Context, id uuid.UUID) 
 
 	query := "SELECT id , title, slug, created_at, updated_at, version FROM public.category WHERE id = $1"
 
-	var category dbCategory
+	var category featurecategory.DBCategory
 	err = conn.QueryRow(ctx, query, id).Scan(&category.ID, &category.Title, category.Slug, &category.CreatedAt, &category.UpdatedAt, &category.Version)
 	if err != nil {
 		return nil, err
@@ -45,7 +44,7 @@ func (s *CategoryPostgresStore) CategoryBySlug(ctx context.Context, slug string)
 
 	query := "SELECT id , title, slug, created_at, updated_at, version FROM public.category WHERE slug = $1"
 
-	var category dbCategory
+	var category featurecategory.DBCategory
 	err = conn.QueryRow(ctx, query, slug).Scan(&category.ID, &category.Title, category.Slug, &category.CreatedAt, &category.UpdatedAt, &category.Version)
 	if err != nil {
 		return nil, err
@@ -115,13 +114,4 @@ func (s *CategoryPostgresStore) UpdateCategory(ctx context.Context, id uuid.UUID
 		return uuid.Nil, err
 	}
 	return idReturning, nil
-}
-
-type dbCategory struct {
-	ID        uuid.UUID `db:"id"`
-	Title     string    `db:"title"`
-	Slug      string    `db:"slug"`
-	CreatedAt time.Time `db:"created_at"`
-	UpdatedAt time.Time `db:"updated_at"`
-	Version   uint      `db:"version"`
 }

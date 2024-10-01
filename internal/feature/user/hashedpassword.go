@@ -1,4 +1,4 @@
-package userFeature
+package featureuser
 
 import (
 	"crypto/subtle"

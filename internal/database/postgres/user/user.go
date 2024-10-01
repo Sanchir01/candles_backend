@@ -41,7 +41,7 @@ func (s *UserPostgresStore) GetById(ctx context.Context, userid uuid.UUID) (*mod
 	}
 	defer conn.Release()
 
-	query := `SELECT id ,title,slug, phone, created_at, updated_at, version, role FROM public.users WHERE phone = $1`
+	query := `SELECT id ,title,slug, phone, created_at, updated_at, version, role FROM public.users WHERE id = $1`
 	var user dbUser
 	if err := conn.QueryRow(ctx, query, userid).Scan(
 		&user.ID, &user.Title, &user.Slug, &user.Phone, &user.CreatedAt, &user.UpdatedAt, &user.Version, &user.Role); err != nil {

@@ -7,14 +7,16 @@ import (
 )
 
 type Env struct {
-	Logger       *slog.Logger
-	DataBase     *Database
-	Storages     *Storages
-	Repositories *Repositories
-	Services     *Services
+	Logger   *slog.Logger
+	DataBase *Database
+	Storages *Storages
+	Config   *config.Config
+	//Repositories *Repositories
+	//Services     *Services
 }
 
-func NewEnv(cfg *config.Config, ctx context.Context) (*Env, error) {
+func NewEnv() (*Env, error) {
+	cfg := config.InitConfig()
 	lg := setupLogger(cfg.Env)
 
 	pgxdb, err := NewDataBases(cfg)
@@ -22,7 +24,7 @@ func NewEnv(cfg *config.Config, ctx context.Context) (*Env, error) {
 		lg.Error("pgx error connect", err.Error())
 		return nil, err
 	}
-
+	ctx := context.Background()
 	s3client, err := NewS3(ctx, lg, cfg)
 	if err != nil {
 		lg.Error("s3 error connect", err.Error())
@@ -31,6 +33,7 @@ func NewEnv(cfg *config.Config, ctx context.Context) (*Env, error) {
 		Logger:   lg,
 		DataBase: pgxdb,
 		Storages: s3client,
+		Config:   cfg,
 	}
 
 	return &env, nil

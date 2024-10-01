@@ -20,7 +20,7 @@ func (r *colorMutationResolver) CreateColor(ctx context.Context, obj *model.Colo
 	}
 	id, err := r.colorStr.CreateColor(ctx, input.Title, slug)
 	if err != nil {
-		r.lg.Error(err.Error())
+		r.env.Logger.Error(err.Error())
 		return responseErr.NewInternalErrorProblem("error for creating color"), nil
 	}
 	return model.ColorCreateOk{ID: id}, nil

@@ -7,6 +7,7 @@ package resolver
 import (
 	"context"
 	"fmt"
+
 	featurecandles "github.com/Sanchir01/candles_backend/internal/feature/candles"
 	runtime "github.com/Sanchir01/candles_backend/internal/gql/generated"
 	"github.com/Sanchir01/candles_backend/internal/gql/model"
@@ -23,7 +24,7 @@ func (r *allCandlesOkResolver) TotalCount(ctx context.Context, obj *model.AllCan
 func (r *candlesQueryResolver) AllCandles(ctx context.Context, obj *model.CandlesQuery) (model.AllCategoryResult, error) {
 	allCandles, err := r.candlesStr.AllCandles(ctx)
 	if err != nil {
-		r.lg.Error(err.Error())
+		r.env.Logger.Error(err.Error())
 		return responseErr.NewInternalErrorProblem("такая категория уже есть"), err
 	}
 	gqlCandles, err := featurecandles.MapCandlesToGql(allCandles)

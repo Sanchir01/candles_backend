@@ -3,10 +3,8 @@ package main
 import (
 	"context"
 	"errors"
-	"log"
-
+	"github.com/Sanchir01/candles_backend/internal/app"
 	telegrambot "github.com/Sanchir01/candles_backend/internal/bot"
-	"github.com/Sanchir01/candles_backend/internal/config"
 	pgstoreauth "github.com/Sanchir01/candles_backend/internal/database/postgres/auth"
 	pgstorecandles "github.com/Sanchir01/candles_backend/internal/database/postgres/candles"
 	pgstorecategory "github.com/Sanchir01/candles_backend/internal/database/postgres/category"
@@ -15,10 +13,12 @@ import (
 	s3store "github.com/Sanchir01/candles_backend/internal/database/s3"
 	httphandlers "github.com/Sanchir01/candles_backend/internal/handlers"
 	httpserver "github.com/Sanchir01/candles_backend/internal/server/http"
-	"github.com/Sanchir01/candles_backend/pkg/lib/db/connect"
-	"github.com/Sanchir01/candles_backend/pkg/lib/logger/handlers/slogpretty"
 	"github.com/go-chi/chi/v5"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
+	"github.com/vikstrous/dataloadgen"
+	"log"
+	"strconv"
+	"time"
 
 	"log/slog"
 	"os"
@@ -31,27 +31,27 @@ var (
 	production  = "production"
 )
 
+type ctxKey string
+
+const (
+	loadersKey = ctxKey("dataloaders")
+)
+
 func main() {
-	cfg := config.InitConfig()
-	lg := setupLogger(cfg.Env)
-	lg.Info("Graphql server starting up...", slog.String("port", cfg.HttpServer.Port))
-
-	pgxdb, err := connect.PGXNew(cfg, context.Background(), cfg.Env)
+	env, err := app.NewEnv()
 	if err != nil {
-		lg.Error("pgx error connect", err.Error())
+		panic(err)
 	}
-
-	serve := httpserver.NewHttpServer(cfg)
+	serve := httpserver.NewHttpServer(env.Config)
 	rout := chi.NewRouter()
 	var (
-		categoryStr = pgstorecategory.New(pgxdb)
-		candlesStr  = pgstorecandles.New(pgxdb)
-		colorStr    = pgstorecolor.New(pgxdb)
-		userStr     = pgstoreuser.New(pgxdb)
-		authStr     = pgstoreauth.New(pgxdb)
-		s3client    = connect.NewS3(context.Background(), lg, cfg)
-		s3str       = s3store.New(s3client, context.Background(), cfg)
-		handlers    = httphandlers.New(rout, lg, cfg, s3str, pgxdb, categoryStr, candlesStr, colorStr, userStr, authStr)
+		categoryStr = pgstorecategory.New(env.DataBase.PrimaryDB)
+		candlesStr  = pgstorecandles.New(env.DataBase.PrimaryDB)
+		colorStr    = pgstorecolor.New(env.DataBase.PrimaryDB)
+		userStr     = pgstoreuser.New(env.DataBase.PrimaryDB)
+		authStr     = pgstoreauth.New(env.DataBase.PrimaryDB)
+		s3str       = s3store.New(env.Storages.ImageStorage, context.Background(), env.Config)
+		handlers    = httphandlers.New(rout, env, s3str, categoryStr, candlesStr, colorStr, userStr, authStr)
 	)
 	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGTERM, syscall.SIGINT, os.Interrupt)
 	defer cancel()
@@ -59,46 +59,37 @@ func main() {
 	go func(ctx context.Context) {
 		if err := serve.Run(handlers.StartHttpServer()); err != nil {
 			if !errors.Is(err, context.Canceled) {
-				lg.Error("Listen server error", slog.String("error", err.Error()))
+				env.Logger.Error("Listen server error", slog.String("error", err.Error()))
 				return
 			}
-			lg.Error("Listen server error", slog.String("error", err.Error()))
+			env.Logger.Error("Listen server error", slog.String("error", err.Error()))
 		}
 	}(ctx)
-
+	loader := dataloadgen.NewLoader(func(ctx context.Context, keys []string) (ret []int, errs []error) {
+		for _, key := range keys {
+			num, err := strconv.ParseInt(key, 10, 10000000)
+			ret = append(ret, int(num))
+			errs = append(errs, err)
+		}
+		return
+	},
+		dataloadgen.WithBatchCapacity(10),
+		dataloadgen.WithWait(2*time.Second),
+	)
+	one, err := loader.Load(ctx, "10")
+	if err != nil {
+		panic(err)
+	}
+	env.Logger.Warn("loader user", one)
 	bot, err := tgbotapi.NewBotAPI(os.Getenv("TELEGRAM_BOT_TOKEN"))
 	if err != nil {
 		log.Panic(err)
 	}
-	tgbot := telegrambot.New(bot, lg)
-	if err := tgbot.Start(cfg); err != nil {
-		lg.Error("error for get updates bot")
+	tgbot := telegrambot.New(bot, env.Logger)
+	if err := tgbot.Start(env.Config); err != nil {
+		env.Logger.Error("error for get updates bot")
 	}
-
 	if err := serve.Gracefull(ctx); err != nil {
-		lg.Error("Graphql serve gracefull")
+		env.Logger.Error("Graphql serve gracefull")
 	}
-}
-
-func setupLogger(env string) *slog.Logger {
-	var lg *slog.Logger
-	switch env {
-	case development:
-		lg = setupPrettySlog()
-	case production:
-		lg = slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo}))
-	}
-	return lg
-}
-
-func setupPrettySlog() *slog.Logger {
-	opts := slogpretty.PrettyHandlerOptions{
-		SlogOpts: &slog.HandlerOptions{
-			Level: slog.LevelDebug,
-		},
-	}
-
-	handler := opts.NewPrettyHandler(os.Stdout)
-
-	return slog.New(handler)
 }

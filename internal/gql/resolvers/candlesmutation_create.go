@@ -16,9 +16,9 @@ import (
 
 // CreateCandle is the resolver for the createCandle field.
 func (r *candlesMutationResolver) CreateCandle(ctx context.Context, obj *model.CandlesMutation, input model.CreateCandleInput) (model.CandlesMutationResult, error) {
-	conn, err := r.pgxdb.Acquire(ctx)
+	conn, err := r.env.DataBase.PrimaryDB.Acquire(ctx)
 	if err != nil {
-		r.lg.Error("error pgx transaction", err.Error())
+		r.env.Logger.Error("error pgx transaction", err.Error())
 		return nil, err
 	}
 
@@ -26,7 +26,7 @@ func (r *candlesMutationResolver) CreateCandle(ctx context.Context, obj *model.C
 
 	tx, err := conn.BeginTx(ctx, pgx.TxOptions{})
 	if err != nil {
-		r.lg.Error("error pgx transaction", err.Error())
+		r.env.Logger.Error("error pgx transaction", err.Error())
 		return nil, err
 	}
 	defer func() {
@@ -55,11 +55,9 @@ func (r *candlesMutationResolver) CreateCandle(ctx context.Context, obj *model.C
 
 	s3urlimage, err := r.s3store.PutObjects(ctx, "candles", input.Images)
 	if err != nil {
-		r.lg.Warn("error  s3", err.Error())
+		r.env.Logger.Warn("error  s3", err.Error())
 		return responseErr.NewInternalErrorProblem("ошибка при загрузке s3"), nil
 	}
-
-	r.lg.Info("s3urlimage", s3urlimage)
 
 	id, err := r.candlesStr.CreateCandles(ctx, input.CategoryID, input.ColorID, input.Title, slug, s3urlimage, input.Price, tx)
 	if err != nil {

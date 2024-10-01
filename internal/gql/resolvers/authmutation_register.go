@@ -19,7 +19,7 @@ import (
 
 // Registrations is the resolver for the registrations field.
 func (r *authMutationsResolver) Registrations(ctx context.Context, obj *model.AuthMutations, input model.RegistrationsInput) (model.RegistrationsResult, error) {
-	conn, err := r.pgxdb.Acquire(ctx)
+	conn, err := r.env.DataBase.PrimaryDB.Acquire(ctx)
 	if err != nil {
 		return responseErr.NewInternalErrorProblem("ошибка при взятия пула подключений в бд"), nil
 	}
@@ -43,12 +43,12 @@ func (r *authMutationsResolver) Registrations(ctx context.Context, obj *model.Au
 	}
 	user, err := pgstoreauth.Register(ctx, input.Title, input.Phone, slug, input.Role, tx)
 	if err != nil {
-		r.lg.Error(err.Error())
+		r.env.Logger.Error(err.Error())
 		return responseErr.NewInternalErrorProblem("error for creating user"), err
 	}
 	w := customMiddleware.GetResponseWriter(ctx)
 	if err = userFeature.AddCookieTokens(user.ID, user.Role, w); err != nil {
-		r.lg.Error("login errors", err)
+		r.env.Logger.Error("login errors", err)
 		return responseErr.NewInternalErrorProblem("Error for generating jwt tokens"), nil
 	}
 	if err := tx.Commit(ctx); err != nil {

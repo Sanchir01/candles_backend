@@ -7,7 +7,7 @@ import (
 	"github.com/99designs/gqlgen/graphql/handler/lru"
 	"github.com/99designs/gqlgen/graphql/handler/transport"
 	"github.com/99designs/gqlgen/graphql/playground"
-	"github.com/Sanchir01/candles_backend/internal/config"
+	"github.com/Sanchir01/candles_backend/internal/app"
 	pgstoreauth "github.com/Sanchir01/candles_backend/internal/database/postgres/auth"
 	pgstorecandles "github.com/Sanchir01/candles_backend/internal/database/postgres/candles"
 	pgstoreCategory "github.com/Sanchir01/candles_backend/internal/database/postgres/category"
@@ -21,28 +21,22 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
-	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/jmoiron/sqlx"
 	"github.com/vektah/gqlparser/v2/ast"
 	"github.com/vektah/gqlparser/v2/gqlerror"
 	"log"
-	"log/slog"
 	"net/http"
 	"runtime"
 )
 
 type HttpRouter struct {
 	chiRouter *chi.Mux
-	logger    *slog.Logger
-	config    *config.Config
-	db        *sqlx.DB
 	s3store   *s3store.S3Store
-	pgxdb     *pgxpool.Pool
 	authStr   *pgstoreauth.AuthStorePosrtgres
 	category  *pgstoreCategory.CategoryPostgresStore
 	candles   *pgstorecandles.CandlesPostgresStore
 	color     *pgstorecolor.ColorPostgresStore
 	userStr   *pgstoreuser.UserPostgresStore
+	env       *app.Env
 }
 
 const (
@@ -52,15 +46,16 @@ const (
 	automaticPersistedQueryCacheLRUSize = 100
 )
 
-func New(r *chi.Mux, lg *slog.Logger, cfg *config.Config,
-	s3store *s3store.S3Store, pgxdb *pgxpool.Pool,
+func New(r *chi.Mux, env *app.Env,
+	s3store *s3store.S3Store,
 	category *pgstoreCategory.CategoryPostgresStore, candlesStr *pgstorecandles.CandlesPostgresStore, colorStr *pgstorecolor.ColorPostgresStore,
 	userStr *pgstoreuser.UserPostgresStore, authStr *pgstoreauth.AuthStorePosrtgres,
 ) *HttpRouter {
 	return &HttpRouter{
-		chiRouter: r, logger: lg, config: cfg, category: category, color: colorStr,
+		chiRouter: r, category: category, color: colorStr,
 		candles: candlesStr, userStr: userStr,
-		s3store: s3store, pgxdb: pgxdb, authStr: authStr,
+		s3store: s3store, authStr: authStr,
+		env: env,
 	}
 }
 
@@ -103,9 +98,9 @@ func (r *HttpRouter) NewGraphQLHandler() *gqlhandler.Server {
 
 func (r *HttpRouter) newSchemaConfig() genGql.Config {
 	cfg := genGql.Config{Resolvers: resolver.New(
-		r.category, r.candles, r.color, r.logger,
-		r.userStr, r.config, r.s3store, r.pgxdb,
-		r.authStr,
+		r.category, r.candles, r.color,
+		r.userStr, r.s3store,
+		r.authStr, r.env,
 	)}
 	cfg.Directives.InputUnion = directive.NewInputUnionDirective()
 	cfg.Directives.SortRankInput = directive.NewSortRankInputDirective()
@@ -113,7 +108,7 @@ func (r *HttpRouter) newSchemaConfig() genGql.Config {
 	return cfg
 }
 func (r *HttpRouter) newChiCors() {
-	switch r.config.Env {
+	switch r.env.Config.Env {
 	case "development":
 		r.chiRouter.Use(cors.Handler(cors.Options{
 			AllowedOrigins:   []string{"https://*", "http://*"},

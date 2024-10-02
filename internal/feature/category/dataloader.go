@@ -12,7 +12,7 @@ type ColorDataLoader struct {
 	ColorLoader *dataloadgen.Loader[string, string]
 }
 type LoaderByIDRepository interface {
-	AllColor(ctx context.Context) ([]model.Color, error)
+	AllCategory(ctx context.Context) ([]model.Color, error)
 }
 
 func NewDataLoader(repo LoaderByIDRepository, maxBatch int) *ColorDataLoader {

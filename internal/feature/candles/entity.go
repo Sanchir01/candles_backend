@@ -1,4 +1,4 @@
-package featurecandles
+package candles
 
 import (
 	"github.com/google/uuid"

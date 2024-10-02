@@ -7,9 +7,9 @@ package resolver
 import (
 	"context"
 	"errors"
+	"github.com/Sanchir01/candles_backend/internal/feature/user"
 
 	pgstoreauth "github.com/Sanchir01/candles_backend/internal/database/postgres/auth"
-	userFeature "github.com/Sanchir01/candles_backend/internal/feature/user"
 	"github.com/Sanchir01/candles_backend/internal/gql/model"
 	customMiddleware "github.com/Sanchir01/candles_backend/internal/handlers/middleware"
 	responseErr "github.com/Sanchir01/candles_backend/pkg/lib/api/response"
@@ -41,18 +41,18 @@ func (r *authMutationsResolver) Registrations(ctx context.Context, obj *model.Au
 	if err != nil {
 		return responseErr.NewInternalErrorProblem("error for creating slug"), nil
 	}
-	user, err := pgstoreauth.Register(ctx, input.Title, input.Phone, slug, input.Role, tx)
+	usersdb, err := pgstoreauth.Register(ctx, input.Title, input.Phone, slug, input.Role, tx)
 	if err != nil {
 		r.env.Logger.Error(err.Error())
 		return responseErr.NewInternalErrorProblem("error for creating user"), err
 	}
 	w := customMiddleware.GetResponseWriter(ctx)
-	if err = userFeature.AddCookieTokens(user.ID, user.Role, w); err != nil {
+	if err = user.AddCookieTokens(usersdb.ID, usersdb.Role, w); err != nil {
 		r.env.Logger.Error("login errors", err)
 		return responseErr.NewInternalErrorProblem("Error for generating jwt tokens"), nil
 	}
 	if err := tx.Commit(ctx); err != nil {
 		return responseErr.NewInternalErrorProblem("ошибка во время коммита транзакции"), err
 	}
-	return model.RegistrationsOk{ID: user.ID, Phone: user.Phone, VerifyCode: "sdad"}, nil
+	return model.RegistrationsOk{ID: usersdb.ID, Phone: usersdb.Phone, VerifyCode: "sdad"}, nil
 }

@@ -7,8 +7,8 @@ package resolver
 import (
 	"context"
 	"fmt"
+	"github.com/Sanchir01/candles_backend/internal/feature/candles"
 
-	featurecandles "github.com/Sanchir01/candles_backend/internal/feature/candles"
 	runtime "github.com/Sanchir01/candles_backend/internal/gql/generated"
 	"github.com/Sanchir01/candles_backend/internal/gql/model"
 	responseErr "github.com/Sanchir01/candles_backend/pkg/lib/api/response"
@@ -27,7 +27,7 @@ func (r *candlesQueryResolver) AllCandles(ctx context.Context, obj *model.Candle
 		r.env.Logger.Error(err.Error())
 		return responseErr.NewInternalErrorProblem("такая категория уже есть"), err
 	}
-	gqlCandles, err := featurecandles.MapCandlesToGql(allCandles)
+	gqlCandles, err := candles.MapCandlesToGql(allCandles)
 
 	if err != nil {
 		return responseErr.NewInternalErrorProblem("не удалось выполнить операцию по превращению в gql model"), err

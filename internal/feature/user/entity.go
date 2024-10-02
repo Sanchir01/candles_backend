@@ -1,4 +1,4 @@
-package featureuser
+package user
 
 import (
 	"github.com/Sanchir01/candles_backend/internal/gql/model"

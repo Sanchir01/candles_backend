@@ -3,8 +3,6 @@ package color
 import (
 	"context"
 	"fmt"
-	"github.com/Sanchir01/candles_backend/internal/gql/model"
-	"github.com/google/uuid"
 	"github.com/vikstrous/dataloadgen"
 	"time"
 )
@@ -14,8 +12,6 @@ type ColorDataLoader struct {
 	ColorRepo   *Repository
 }
 type LoaderByIDRepository interface {
-	AllColor(ctx context.Context) ([]model.Color, error)
-	CreateColor(ctx context.Context, title, slug string) (uuid.UUID, error)
 }
 
 func NewDataLoader(repo LoaderByIDRepository, maxBatch int) *ColorDataLoader {

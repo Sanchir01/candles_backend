@@ -3,6 +3,7 @@ package app
 import (
 	"context"
 	"github.com/Sanchir01/candles_backend/internal/config"
+	"github.com/Sanchir01/candles_backend/internal/feature/candles"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awscfg "github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials"
@@ -12,10 +13,10 @@ import (
 )
 
 type Storages struct {
-	ImageStorage *s3.Client
+	CandlesStorage *candles.Storage
 }
 
-func NewS3(ctx context.Context, lg *slog.Logger, cfg *config.Config) (*Storages, error) {
+func NewS3(ctx context.Context, lg *slog.Logger, cfg *config.Config) (*s3.Client, error) {
 	creds := credentials.NewStaticCredentialsProvider(cfg.S3Store.Key, os.Getenv("S3_SECRET"), "")
 	newawsconfig, err := awscfg.LoadDefaultConfig(
 		ctx,
@@ -24,7 +25,7 @@ func NewS3(ctx context.Context, lg *slog.Logger, cfg *config.Config) (*Storages,
 		awscfg.WithEndpointResolver(aws.EndpointResolverFunc(
 			func(service, region string) (aws.Endpoint, error) {
 				return aws.Endpoint{
-					URL: cfg.S3Store.URL, // URL для MinIO или LocalStack
+					URL: cfg.S3Store.URL,
 				}, nil
 			}),
 		))
@@ -35,7 +36,13 @@ func NewS3(ctx context.Context, lg *slog.Logger, cfg *config.Config) (*Storages,
 	}
 	awsS3Client := s3.NewFromConfig(newawsconfig)
 
-	return &Storages{
-		ImageStorage: awsS3Client,
-	}, nil
+	return awsS3Client, nil
+}
+func NewStorages(ctx context.Context, lg *slog.Logger, cfg *config.Config) (*Storages, error) {
+	s3client, err := NewS3(ctx, lg, cfg)
+	if err != nil {
+		return nil, err
+	}
+	candlesStorage := candles.NewStorage(s3client, cfg.S3Store.BucketName, cfg.S3Store.URL)
+	return &Storages{candlesStorage}, err
 }

@@ -9,21 +9,14 @@ import (
 	"github.com/Sanchir01/candles_backend/internal/feature/user"
 	"github.com/Sanchir01/candles_backend/internal/gql/model"
 	customMiddleware "github.com/Sanchir01/candles_backend/internal/handlers/middleware"
-	responseErr "github.com/Sanchir01/candles_backend/pkg/lib/api/response"
 )
 
 // Login is the resolver for the login field.
 func (r *authMutationsResolver) Login(ctx context.Context, obj *model.AuthMutations, input model.LoginInput) (model.LoginResult, error) {
-	usersdb, err := r.authStr.Login(ctx, input.Phone)
-	if err != nil {
-		r.env.Logger.Error("login errors", err.Error())
+	userdb, err := r.env.Services.UserService.UserByPhone(ctx, input.Phone)
+	w := customMiddleware.GetResponseWriter(ctx)
+	if err = user.AddCookieTokens(userdb.ID, userdb.Role, w); err != nil {
 		return nil, err
 	}
-	w := customMiddleware.GetResponseWriter(ctx)
-	if err = user.AddCookieTokens(usersdb.ID, usersdb.Role, w); err != nil {
-		r.env.Logger.Error("error creating cookie jwt", err.Error())
-		return responseErr.NewInternalErrorProblem("Error for generating jwt tokens"), nil
-	}
-
-	return model.LoginOk{ID: usersdb.ID, Phone: usersdb.Phone, VerifyCode: "sdaddw21", Role: usersdb.Role}, nil
+	return model.LoginOk{ID: userdb.ID, Phone: userdb.Phone, VerifyCode: "sdaddw21", Role: userdb.Role}, nil
 }

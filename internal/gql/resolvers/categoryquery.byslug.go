@@ -13,7 +13,7 @@ import (
 
 // CategoryBySlug is the resolver for the categoryBySlug field.
 func (r *categoryQueryResolver) CategoryBySlug(ctx context.Context, obj *model.CategoryQuery, input model.CategoryBySlugInput) (model.CategoryBySlugResult, error) {
-	category, err := r.categoryStr.CategoryBySlug(ctx, input.Slug)
+	category, err := r.env.Repositories.CategoryRepository.CategoryBySlug(ctx, input.Slug)
 	if err != nil {
 		return responseErr.NewInternalErrorProblem("не удалось получить категорию"), err
 	}

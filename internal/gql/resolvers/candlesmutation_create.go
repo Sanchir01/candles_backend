@@ -6,66 +6,17 @@ package resolver
 
 import (
 	"context"
-	"errors"
-
 	"github.com/Sanchir01/candles_backend/internal/gql/model"
 	responseErr "github.com/Sanchir01/candles_backend/pkg/lib/api/response"
-	"github.com/Sanchir01/candles_backend/pkg/lib/utils"
-	pgx "github.com/jackc/pgx/v5"
 )
 
 // CreateCandle is the resolver for the createCandle field.
 func (r *candlesMutationResolver) CreateCandle(ctx context.Context, obj *model.CandlesMutation, input model.CreateCandleInput) (model.CandlesMutationResult, error) {
-	conn, err := r.env.DataBase.PrimaryDB.Acquire(ctx)
+
+	id, err := r.env.Services.CandlesService.CreateCandles(ctx, input.CategoryID, input.ColorID, input.Title, input.Images, input.Price)
 	if err != nil {
-		r.env.Logger.Error("error pgx transaction", err.Error())
-		return nil, err
-	}
-
-	defer conn.Release()
-
-	tx, err := conn.BeginTx(ctx, pgx.TxOptions{})
-	if err != nil {
-		r.env.Logger.Error("error pgx transaction", err.Error())
-		return nil, err
-	}
-	defer func() {
-		if err != nil {
-			rollbackErr := tx.Rollback(ctx)
-			if rollbackErr != nil {
-				err = errors.Join(err, rollbackErr)
-			}
-		}
-	}()
-
-	slug, err := utils.Slugify(input.Title)
-	if err != nil {
-		return responseErr.NewInternalErrorProblem("не удалось создат слаг"), err
-	}
-
-	_, err = r.candlesStr.CandlesById(ctx, input.CategoryID)
-	if err == nil {
-		return responseErr.NewInternalErrorProblem("товар с таким айди уже есть"), err
-	}
-
-	_, err = r.candlesStr.CandlesBySlug(ctx, slug)
-	if err == nil {
-		return responseErr.NewInternalErrorProblem("такая категория уже есть"), err
-	}
-
-	s3urlimage, err := r.s3store.PutObjects(ctx, "candles", input.Images)
-	if err != nil {
-		r.env.Logger.Warn("error  s3", err.Error())
-		return responseErr.NewInternalErrorProblem("ошибка при загрузке s3"), nil
-	}
-
-	id, err := r.candlesStr.CreateCandles(ctx, input.CategoryID, input.ColorID, input.Title, slug, s3urlimage, input.Price, tx)
-	if err != nil {
-		r.s3store.DeleteObjects(ctx, "candles", input.Images)
-		return responseErr.NewInternalErrorProblem("ошибка во время создания свечи"), err
-	}
-	if err := tx.Commit(ctx); err != nil {
-		return responseErr.NewInternalErrorProblem("ошибка во время коммита транзакции"), err
+		r.env.Logger.Error("could not create candle", err.Error())
+		return responseErr.NewInternalErrorProblem("could not create candle"), err
 	}
 	return &model.CandlesCreateOk{
 		ID: id,

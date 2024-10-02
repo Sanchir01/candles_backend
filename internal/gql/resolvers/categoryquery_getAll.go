@@ -6,22 +6,15 @@ package resolver
 
 import (
 	"context"
-	"github.com/Sanchir01/candles_backend/internal/feature/category"
-
 	"github.com/Sanchir01/candles_backend/internal/gql/model"
 	responseErr "github.com/Sanchir01/candles_backend/pkg/lib/api/response"
 )
 
 // GetAllCategory is the resolver for the getAllCategory field.
 func (r *categoryQueryResolver) GetAllCategory(ctx context.Context, obj *model.CategoryQuery) (model.CategoryGetAllResult, error) {
-	allCategory, err := r.categoryStr.AllCategories(ctx)
+	categories, err := r.env.Services.CategoryService.AllCategory(ctx)
 	if err != nil {
-		r.env.Logger.Warn("error for get all category", err.Error())
-		return responseErr.NewInternalErrorProblem("ошибка при получении всех категорий"), nil
-	}
-	categories, err := category.MapCategoryToGql(allCategory)
-	if err != nil {
-		return responseErr.NewInternalErrorProblem("error for get all category.sql db"), nil
+		return responseErr.NewInternalErrorProblem("не удалось получить категорию"), err
 	}
 	return model.CategoryGetAllOk{Category: categories}, err
 }

@@ -4,16 +4,10 @@ import (
 	"context"
 	"errors"
 	userFeature "github.com/Sanchir01/candles_backend/internal/feature/user"
-	"github.com/Sanchir01/candles_backend/internal/gql/model"
-	"github.com/vikstrous/dataloadgen"
 	"net/http"
 )
 
 const responseWriterKey = "responseWriter"
-
-type Loaders struct {
-	UserLoader *dataloadgen.Loader[string, *model.User]
-}
 
 func GetJWTClaimsFromCtx(ctx context.Context) (*userFeature.Claims, error) {
 	claims, ok := ctx.Value("user").(*userFeature.Claims)

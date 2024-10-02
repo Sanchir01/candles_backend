@@ -74,3 +74,23 @@ func (r *Repository) ColorById(ctx context.Context, id uuid.UUID) (*model.Color,
 
 	return (*model.Color)(&color), nil
 }
+
+func (r *Repository) ColorBySlug(ctx context.Context, slug string) (*model.Color, error) {
+	conn, err := r.primartDB.Acquire(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer conn.Release()
+
+	query := "SELECT id, title, slug, version, created_at updated_at FROM public.color WHERE slug = $1"
+
+	var color DBColor
+
+	if err := conn.QueryRow(ctx, query, slug).Scan(
+		&color.ID, &color.Title, &color.Slug, &color.Version, &color.CreatedAt, &color.UpdatedAt,
+	); err != nil {
+		return nil, err
+	}
+
+	return (*model.Color)(&color), nil
+}

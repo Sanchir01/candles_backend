@@ -8,12 +8,6 @@ import (
 	"github.com/99designs/gqlgen/graphql/handler/transport"
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/Sanchir01/candles_backend/internal/app"
-	pgstoreauth "github.com/Sanchir01/candles_backend/internal/database/postgres/auth"
-	pgstorecandles "github.com/Sanchir01/candles_backend/internal/database/postgres/candles"
-	pgstoreCategory "github.com/Sanchir01/candles_backend/internal/database/postgres/category"
-	pgstorecolor "github.com/Sanchir01/candles_backend/internal/database/postgres/color"
-	pgstoreuser "github.com/Sanchir01/candles_backend/internal/database/postgres/user"
-	s3store "github.com/Sanchir01/candles_backend/internal/database/s3"
 	"github.com/Sanchir01/candles_backend/internal/gql/directive"
 	genGql "github.com/Sanchir01/candles_backend/internal/gql/generated"
 	resolver "github.com/Sanchir01/candles_backend/internal/gql/resolvers"
@@ -30,12 +24,6 @@ import (
 
 type HttpRouter struct {
 	chiRouter *chi.Mux
-	s3store   *s3store.S3Store
-	authStr   *pgstoreauth.AuthStorePosrtgres
-	category  *pgstoreCategory.CategoryPostgresStore
-	candles   *pgstorecandles.CandlesPostgresStore
-	color     *pgstorecolor.ColorPostgresStore
-	userStr   *pgstoreuser.UserPostgresStore
 	env       *app.Env
 }
 
@@ -46,16 +34,12 @@ const (
 	automaticPersistedQueryCacheLRUSize = 100
 )
 
-func New(r *chi.Mux, env *app.Env,
-	s3store *s3store.S3Store,
-	category *pgstoreCategory.CategoryPostgresStore, candlesStr *pgstorecandles.CandlesPostgresStore, colorStr *pgstorecolor.ColorPostgresStore,
-	userStr *pgstoreuser.UserPostgresStore, authStr *pgstoreauth.AuthStorePosrtgres,
+func New(
+	r *chi.Mux, env *app.Env,
 ) *HttpRouter {
 	return &HttpRouter{
-		chiRouter: r, category: category, color: colorStr,
-		candles: candlesStr, userStr: userStr,
-		s3store: s3store, authStr: authStr,
-		env: env,
+		chiRouter: r,
+		env:       env,
 	}
 }
 
@@ -98,9 +82,7 @@ func (r *HttpRouter) NewGraphQLHandler() *gqlhandler.Server {
 
 func (r *HttpRouter) newSchemaConfig() genGql.Config {
 	cfg := genGql.Config{Resolvers: resolver.New(
-		r.category, r.candles, r.color,
-		r.userStr, r.s3store,
-		r.authStr, r.env,
+		r.env,
 	)}
 	cfg.Directives.InputUnion = directive.NewInputUnionDirective()
 	cfg.Directives.SortRankInput = directive.NewSortRankInputDirective()

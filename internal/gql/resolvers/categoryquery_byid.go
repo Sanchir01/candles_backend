@@ -13,7 +13,7 @@ import (
 
 // CategoryByID is the resolver for the categoryById field.
 func (r *categoryQueryResolver) CategoryByID(ctx context.Context, obj *model.CategoryQuery, input model.CategoryByIDInput) (model.CategoryByIDResult, error) {
-	category, err := r.categoryStr.CategoryById(ctx, input.ID)
+	category, err := r.env.Services.CategoryService.CategoryById(ctx, input.ID)
 	if err != nil {
 		return responseErr.NewInternalErrorProblem("не удалось получить категорию"), err
 	}

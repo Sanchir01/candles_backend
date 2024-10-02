@@ -6,12 +6,6 @@ import (
 	"fmt"
 	"github.com/Sanchir01/candles_backend/internal/app"
 	telegrambot "github.com/Sanchir01/candles_backend/internal/bot"
-	pgstoreauth "github.com/Sanchir01/candles_backend/internal/database/postgres/auth"
-	pgstorecandles "github.com/Sanchir01/candles_backend/internal/database/postgres/candles"
-	pgstorecategory "github.com/Sanchir01/candles_backend/internal/database/postgres/category"
-	pgstorecolor "github.com/Sanchir01/candles_backend/internal/database/postgres/color"
-	pgstoreuser "github.com/Sanchir01/candles_backend/internal/database/postgres/user"
-	s3store "github.com/Sanchir01/candles_backend/internal/database/s3"
 	httphandlers "github.com/Sanchir01/candles_backend/internal/handlers"
 	httpserver "github.com/Sanchir01/candles_backend/internal/server/http"
 	"github.com/go-chi/chi/v5"
@@ -45,13 +39,7 @@ func main() {
 	serve := httpserver.NewHttpServer(env.Config)
 	rout := chi.NewRouter()
 	var (
-		categoryStr = pgstorecategory.New(env.DataBase.PrimaryDB)
-		candlesStr  = pgstorecandles.New(env.DataBase.PrimaryDB)
-		colorStr    = pgstorecolor.New(env.DataBase.PrimaryDB)
-		userStr     = pgstoreuser.New(env.DataBase.PrimaryDB)
-		authStr     = pgstoreauth.New(env.DataBase.PrimaryDB)
-		s3str       = s3store.New(env.Storages.ImageStorage, context.Background(), env.Config)
-		handlers    = httphandlers.New(rout, env, s3str, categoryStr, candlesStr, colorStr, userStr, authStr)
+		handlers = httphandlers.New(rout, env)
 	)
 
 	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGTERM, syscall.SIGINT, os.Interrupt)
@@ -94,6 +82,7 @@ func main() {
 		log.Panic(err)
 	}
 	tgbot := telegrambot.New(bot, env.Logger)
+
 	if err := tgbot.Start(env.Config); err != nil {
 		env.Logger.Error("error for get updates bot")
 	}

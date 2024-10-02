@@ -18,14 +18,14 @@ type Env struct {
 func NewEnv() (*Env, error) {
 	cfg := config.InitConfig()
 	lg := setupLogger(cfg.Env)
+	ctx := context.Background()
 
 	pgxdb, err := NewDataBases(cfg)
 	if err != nil {
 		lg.Error("pgx error connect", err.Error())
 		return nil, err
 	}
-	ctx := context.Background()
-	s3client, err := NewS3(ctx, lg, cfg)
+	s3client, err := NewStorages(ctx, lg, cfg)
 	if err != nil {
 		lg.Error("s3 error connect", err.Error())
 	}

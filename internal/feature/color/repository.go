@@ -12,7 +12,9 @@ type Repository struct {
 }
 
 func NewRepository(primartDB *pgxpool.Pool) *Repository {
-	return &Repository{primartDB: primartDB}
+	return &Repository{
+		primartDB,
+	}
 }
 
 func (r *Repository) AllColor(ctx context.Context) ([]model.Color, error) {
@@ -21,7 +23,7 @@ func (r *Repository) AllColor(ctx context.Context) ([]model.Color, error) {
 		return nil, err
 	}
 	defer conn.Release()
-	query := "SELECT id , title, slug, created_at, updated_at, version FROM public.color"
+	query := "SELECT id , title, slug, created_at, updated_at,version version FROM public.color"
 	rows, err := conn.Query(ctx, query)
 	defer rows.Close()
 
@@ -51,4 +53,24 @@ func (r *Repository) CreateColor(ctx context.Context, title, slug string) (uuid.
 		return uuid.Nil, err
 	}
 	return id, nil
+}
+
+func (r *Repository) ColorById(ctx context.Context, id uuid.UUID) (*model.Color, error) {
+	conn, err := r.primartDB.Acquire(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer conn.Release()
+
+	query := "SELECT id, title, slug, version, created_at updated_at FROM public.color WHERE id = $1"
+
+	var color DBColor
+
+	if err := conn.QueryRow(ctx, query, id).Scan(
+		&color.ID, &color.Title, &color.Slug, &color.Version, &color.CreatedAt, &color.UpdatedAt,
+	); err != nil {
+		return nil, err
+	}
+
+	return (*model.Color)(&color), nil
 }

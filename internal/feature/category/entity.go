@@ -1,4 +1,4 @@
-package featurecategory
+package category
 
 import (
 	"github.com/google/uuid"

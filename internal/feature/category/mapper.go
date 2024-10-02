@@ -1,4 +1,4 @@
-package featurecategory
+package category
 
 import "github.com/Sanchir01/candles_backend/internal/gql/model"
 

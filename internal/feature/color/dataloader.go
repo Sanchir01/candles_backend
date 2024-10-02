@@ -4,22 +4,24 @@ import (
 	"context"
 	"fmt"
 	"github.com/Sanchir01/candles_backend/internal/gql/model"
+	"github.com/google/uuid"
 	"github.com/vikstrous/dataloadgen"
 	"time"
 )
 
 type ColorDataLoader struct {
 	ColorLoader *dataloadgen.Loader[string, string]
+	ColorRepo   *Repository
 }
 type LoaderByIDRepository interface {
 	AllColor(ctx context.Context) ([]model.Color, error)
+	CreateColor(ctx context.Context, title, slug string) (uuid.UUID, error)
 }
 
 func NewDataLoader(repo LoaderByIDRepository, maxBatch int) *ColorDataLoader {
 	loader := dataloadgen.NewLoader(func(ctx context.Context, keys []string) ([]string, []error) {
 		items := make([]string, len(keys))
 		errs := make([]error, len(keys))
-
 		for i, key := range keys {
 			items[i] = key
 			if key == "errorKey" {

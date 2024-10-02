@@ -53,6 +53,7 @@ func main() {
 		s3str       = s3store.New(env.Storages.ImageStorage, context.Background(), env.Config)
 		handlers    = httphandlers.New(rout, env, s3str, categoryStr, candlesStr, colorStr, userStr, authStr)
 	)
+
 	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGTERM, syscall.SIGINT, os.Interrupt)
 	defer cancel()
 

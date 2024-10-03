@@ -2,8 +2,10 @@ package user
 
 import (
 	"context"
+	"fmt"
 	"github.com/Sanchir01/candles_backend/internal/gql/model"
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -46,4 +48,21 @@ func (r *Repository) GetById(ctx context.Context, userid uuid.UUID) (*model.User
 		return nil, err
 	}
 	return (*model.User)(&user), nil
+}
+
+func (r *Repository) CreateUser(ctx context.Context, title, phone, slug, role string, tx pgx.Tx) (*model.User, error) {
+	query := `INSERT INTO users (title, slug, phone, role)
+	     VALUES ($1, $2, $3, $4)
+	     RETURNING id, phone, role`
+
+	var users DBUser
+
+	if err := tx.QueryRow(ctx, query, title, slug, phone, role).Scan(&users.ID, &users.Phone, &users.Role); err != nil {
+		if err == pgx.ErrTxCommitRollback {
+			return nil, fmt.Errorf("ошибка при создании пользователя")
+		}
+		return nil, err
+	}
+
+	return (*model.User)(&users), nil
 }

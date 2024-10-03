@@ -8,51 +8,42 @@ import (
 	"context"
 	"errors"
 	"github.com/Sanchir01/candles_backend/internal/feature/user"
+	"github.com/jackc/pgx/v5"
 
-	pgstoreauth "github.com/Sanchir01/candles_backend/internal/database/postgres/auth"
 	"github.com/Sanchir01/candles_backend/internal/gql/model"
 	customMiddleware "github.com/Sanchir01/candles_backend/internal/handlers/middleware"
 	responseErr "github.com/Sanchir01/candles_backend/pkg/lib/api/response"
-	"github.com/Sanchir01/candles_backend/pkg/lib/utils"
-	pgx "github.com/jackc/pgx/v5"
 )
 
 // Registrations is the resolver for the registrations field.
 func (r *authMutationsResolver) Registrations(ctx context.Context, obj *model.AuthMutations, input model.RegistrationsInput) (model.RegistrationsResult, error) {
 	conn, err := r.env.DataBase.PrimaryDB.Acquire(ctx)
 	if err != nil {
-		return responseErr.NewInternalErrorProblem("ошибка при взятия пула подключений в бд"), nil
+		return nil, err
 	}
 	defer conn.Release()
 	tx, err := conn.BeginTx(ctx, pgx.TxOptions{})
 	if err != nil {
-		return responseErr.NewInternalErrorProblem("ошибка при создании транзакции"), nil
+		return nil, err
 	}
 	defer func() {
 		if err != nil {
 			rollbackErr := tx.Rollback(ctx)
 			if rollbackErr != nil {
 				err = errors.Join(err, rollbackErr)
+				return
 			}
 		}
 	}()
 
-	slug, err := utils.Slugify(input.Title)
-	if err != nil {
-		return responseErr.NewInternalErrorProblem("error for creating slug"), nil
-	}
-	usersdb, err := pgstoreauth.Register(ctx, input.Title, input.Phone, slug, input.Role, tx)
-	if err != nil {
-		r.env.Logger.Error(err.Error())
-		return responseErr.NewInternalErrorProblem("error for creating user"), err
-	}
+	usersdb, err := r.env.Services.UserService.Registrations(ctx, input.Title, input.Phone, input.Role, tx)
 	w := customMiddleware.GetResponseWriter(ctx)
 	if err = user.AddCookieTokens(usersdb.ID, usersdb.Role, w); err != nil {
 		r.env.Logger.Error("login errors", err)
 		return responseErr.NewInternalErrorProblem("Error for generating jwt tokens"), nil
 	}
 	if err := tx.Commit(ctx); err != nil {
-		return responseErr.NewInternalErrorProblem("ошибка во время коммита транзакции"), err
+		return nil, err
 	}
 	return model.RegistrationsOk{ID: usersdb.ID, Phone: usersdb.Phone, VerifyCode: "sdad"}, nil
 }

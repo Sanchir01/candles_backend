@@ -3,7 +3,9 @@ package user
 import (
 	"context"
 	"github.com/Sanchir01/candles_backend/internal/gql/model"
+	"github.com/Sanchir01/candles_backend/pkg/lib/utils"
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 )
 
 type Service struct {
@@ -28,6 +30,20 @@ func (s *Service) UserByPhone(ctx context.Context, phone string) (*model.User, e
 	usersdb, err := s.repository.GetByPhone(ctx, phone)
 	if err != nil {
 
+		return nil, err
+	}
+
+	return usersdb, nil
+}
+
+func (s *Service) Registrations(ctx context.Context, title, phone, role string, tx pgx.Tx) (*model.User, error) {
+
+	slug, err := utils.Slugify(title)
+	if err != nil {
+		return nil, err
+	}
+	usersdb, err := s.repository.CreateUser(ctx, title, phone, slug, role, tx)
+	if err != nil {
 		return nil, err
 	}
 

@@ -18,6 +18,6 @@ func (r *categoryMutationResolver) UpdateCategory(ctx context.Context, obj *mode
 	if err != nil {
 		return responseErr.NewInternalErrorProblem("error for creating slug"), nil
 	}
-	r.lg.Warn(slug, "slug")
+	r.env.Logger.Warn(slug, "slug")
 	return nil, nil
 }

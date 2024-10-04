@@ -9,6 +9,23 @@ import (
 
 const responseWriterKey = "responseWriter"
 
+func GetJWTClaimsFromCtx(ctx context.Context) (*userFeature.Claims, error) {
+	claims, ok := ctx.Value("user").(*userFeature.Claims)
+	if !ok {
+		return nil, errors.New("no JWT claims found in context")
+	}
+	return claims, nil
+}
+
+func WithResponseWriter(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		ctx := context.WithValue(r.Context(), responseWriterKey, w)
+		next.ServeHTTP(w, r.WithContext(ctx))
+	})
+}
+func GetResponseWriter(ctx context.Context) http.ResponseWriter {
+	return ctx.Value(responseWriterKey).(http.ResponseWriter)
+}
 func AuthMiddleware() func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -53,20 +70,16 @@ func AuthMiddleware() func(http.Handler) http.Handler {
 	}
 }
 
-func GetJWTClaimsFromCtx(ctx context.Context) (*userFeature.Claims, error) {
-	claims, ok := ctx.Value("user").(*userFeature.Claims)
-	if !ok {
-		return nil, errors.New("no JWT claims found in context")
-	}
-	return claims, nil
-}
+//func DataLoaderMiddleware(next http.Handler) http.Handler {
+//	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+//		ctx := context.WithValue(r.Context(), Loaders{}, &Loaders{
+//			UserLoader: dataloadgen.NewLoader(),
+//		})
+//		next.ServeHTTP(w, r.WithContext(ctx))
+//	})
+//}
 
-func WithResponseWriter(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		ctx := context.WithValue(r.Context(), responseWriterKey, w)
-		next.ServeHTTP(w, r.WithContext(ctx))
-	})
-}
-func GetResponseWriter(ctx context.Context) http.ResponseWriter {
-	return ctx.Value(responseWriterKey).(http.ResponseWriter)
-}
+// Функция для получения DataLoader из контекста
+//func For(ctx context.Context) *Loaders {
+//	return ctx.Value(loadersKey{}).(*Loaders)
+//}

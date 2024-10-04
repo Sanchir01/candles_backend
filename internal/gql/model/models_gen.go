@@ -65,6 +65,10 @@ type RegistrationsResult interface {
 	IsRegistrationsResult()
 }
 
+type TotalCountResolvingResult interface {
+	IsTotalCountResolvingResult()
+}
+
 type UpdateCategoryResult interface {
 	IsUpdateCategoryResult()
 }
@@ -79,7 +83,8 @@ type VersionInterface interface {
 }
 
 type AllCandlesOk struct {
-	Candles []*Candles `json:"candles"`
+	Candles    []*Candles                `json:"candles"`
+	TotalCount TotalCountResolvingResult `json:"totalCount"`
 }
 
 func (AllCandlesOk) IsAllCategoryResult() {}
@@ -254,6 +259,8 @@ func (InternalErrorProblem) IsCandlesBySlugResult() {}
 
 func (InternalErrorProblem) IsAllCategoryResult() {}
 
+func (InternalErrorProblem) IsTotalCountResolvingResult() {}
+
 func (InternalErrorProblem) IsCategoryCreateResult() {}
 
 func (InternalErrorProblem) IsUpdateCategoryResult() {}
@@ -319,6 +326,12 @@ type SortRankInput struct {
 	Next string `json:"next"`
 }
 
+type TotalCountResolvingOk struct {
+	TotalCount uint `json:"totalCount"`
+}
+
+func (TotalCountResolvingOk) IsTotalCountResolvingResult() {}
+
 type UnauthorizedProblem struct {
 	Message string `json:"message"`
 }
@@ -378,6 +391,8 @@ func (VersionMismatchProblem) IsCandlesByIDResult() {}
 func (VersionMismatchProblem) IsCandlesBySlugResult() {}
 
 func (VersionMismatchProblem) IsAllCategoryResult() {}
+
+func (VersionMismatchProblem) IsTotalCountResolvingResult() {}
 
 func (VersionMismatchProblem) IsCategoryCreateResult() {}
 

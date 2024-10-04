@@ -7,6 +7,10 @@ MIGRATION_NAME ?= new_migration
 build:
 	go build -o ./.bin/main ./cmd/main/main.go
 
+
+generate-dataloaders:
+	(cd internal/feature/color  && dataloaden  LoaderByID LoaderByIdColor \*github.com/Sanchir01/colors/pkg/feature/color.Color)
+
 gql:
 	go get github.com/99designs/gqlgen@latest && go run github.com/99designs/gqlgen generate
 

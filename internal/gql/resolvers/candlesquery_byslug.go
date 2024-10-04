@@ -12,7 +12,7 @@ import (
 
 // CandleBySlug is the resolver for the candleBySlug field.
 func (r *candlesQueryResolver) CandleBySlug(ctx context.Context, obj *model.CandlesQuery, input model.CandlesBySlugInput) (model.CandlesBySlugResult, error) {
-	candles, err := r.candlesStr.CandlesBySlug(ctx, input.Slug)
+	candles, err := r.env.Services.CandlesService.CandlesBySlug(ctx, input.Slug)
 	if err != nil {
 		return nil, err
 	}

@@ -16,7 +16,7 @@ CREATE TABLE IF NOT EXISTS order_items (
   price NUMERIC NOT NULL,
   order_id UUID NOT NULL REFERENCES orders(id),
   quantity INT NOT NULL,
-  product_id UUID NOT NULL REFERENCES candles(id)
+  product_id UUID NOT NULL REFERENCES candles(id) ON DELETE SET NULL ON UPDATE CASCADE
 );
 -- +goose StatementEnd
 

@@ -40,6 +40,7 @@ type Config struct {
 }
 
 type ResolverRoot interface {
+	AllCandlesOk() AllCandlesOkResolver
 	AuthMutations() AuthMutationsResolver
 	CandlesMutation() CandlesMutationResolver
 	CandlesQuery() CandlesQueryResolver
@@ -60,7 +61,8 @@ type DirectiveRoot struct {
 
 type ComplexityRoot struct {
 	AllCandlesOk struct {
-		Candles func(childComplexity int) int
+		Candles    func(childComplexity int) int
+		TotalCount func(childComplexity int, estimate uint) int
 	}
 
 	AllColorOk struct {
@@ -200,6 +202,10 @@ type ComplexityRoot struct {
 		VerifyCode func(childComplexity int) int
 	}
 
+	TotalCountResolvingOk struct {
+		TotalCount func(childComplexity int) int
+	}
+
 	UnauthorizedProblem struct {
 		Message func(childComplexity int) int
 	}
@@ -232,6 +238,9 @@ type ComplexityRoot struct {
 	}
 }
 
+type AllCandlesOkResolver interface {
+	TotalCount(ctx context.Context, obj *model.AllCandlesOk, estimate uint) (model.TotalCountResolvingResult, error)
+}
 type AuthMutationsResolver interface {
 	Login(ctx context.Context, obj *model.AuthMutations, input model.LoginInput) (model.LoginResult, error)
 	Registrations(ctx context.Context, obj *model.AuthMutations, input model.RegistrationsInput) (model.RegistrationsResult, error)
@@ -300,6 +309,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.AllCandlesOk.Candles(childComplexity), true
+
+	case "AllCandlesOk.totalCount":
+		if e.complexity.AllCandlesOk.TotalCount == nil {
+			break
+		}
+
+		args, err := ec.field_AllCandlesOk_totalCount_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.AllCandlesOk.TotalCount(childComplexity, args["estimate"].(uint)), true
 
 	case "AllColorOk.colors":
 		if e.complexity.AllColorOk.Colors == nil {
@@ -785,6 +806,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.RegistrationsOk.VerifyCode(childComplexity), true
 
+	case "TotalCountResolvingOk.totalCount":
+		if e.complexity.TotalCountResolvingOk.TotalCount == nil {
+			break
+		}
+
+		return e.complexity.TotalCountResolvingOk.TotalCount(childComplexity), true
+
 	case "UnauthorizedProblem.message":
 		if e.complexity.UnauthorizedProblem.Message == nil {
 			break
@@ -1157,7 +1185,16 @@ union AllCategoryResult =
 
 type AllCandlesOk {
     candles: [Candles!]!
-}`, BuiltIn: false},
+    totalCount(estimate:UInt! = 1000):TotalCountResolvingResult! @goField(forceResolver: true)
+}
+
+type TotalCountResolvingOk{
+    totalCount: UInt!
+}
+union TotalCountResolvingResult =
+    | TotalCountResolvingOk
+    | VersionMismatchProblem
+    | InternalErrorProblem`, BuiltIn: false},
 	{Name: "../api/category/category.graphqls", Input: `type Category implements VersionInterface{
     id:Uuid!
     title:String!
@@ -1303,6 +1340,7 @@ type AllColorOk {
     colors: [Color!]!
 }`, BuiltIn: false},
 	{Name: "../api/mutation.graphqls", Input: `type Mutation`, BuiltIn: false},
+	{Name: "../api/order/order.graphqls", Input: ``, BuiltIn: false},
 	{Name: "../api/problem.graphqls", Input: `interface ProblemInterface {
     message: String!
 }
@@ -1395,6 +1433,38 @@ func (ec *executionContext) dir_hasRole_argsRole(
 	}
 
 	var zeroVal *model.Role
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_AllCandlesOk_totalCount_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	arg0, err := ec.field_AllCandlesOk_totalCount_argsEstimate(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["estimate"] = arg0
+	return args, nil
+}
+func (ec *executionContext) field_AllCandlesOk_totalCount_argsEstimate(
+	ctx context.Context,
+	rawArgs map[string]interface{},
+) (uint, error) {
+	// We won't call the directive if the argument is null.
+	// Set call_argument_directives_with_null to true to call directives
+	// even if the argument is null.
+	_, ok := rawArgs["estimate"]
+	if !ok {
+		var zeroVal uint
+		return zeroVal, nil
+	}
+
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("estimate"))
+	if tmp, ok := rawArgs["estimate"]; ok {
+		return ec.unmarshalNUInt2uint(ctx, tmp)
+	}
+
+	var zeroVal uint
 	return zeroVal, nil
 }
 
@@ -1916,6 +1986,61 @@ func (ec *executionContext) fieldContext_AllCandlesOk_candles(_ context.Context,
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Candles", field.Name)
 		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _AllCandlesOk_totalCount(ctx context.Context, field graphql.CollectedField, obj *model.AllCandlesOk) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_AllCandlesOk_totalCount(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.AllCandlesOk().TotalCount(rctx, obj, fc.Args["estimate"].(uint))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(model.TotalCountResolvingResult)
+	fc.Result = res
+	return ec.marshalNTotalCountResolvingResult2githubᚗcomᚋSanchir01ᚋcandles_backendᚋinternalᚋgqlᚋmodelᚐTotalCountResolvingResult(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_AllCandlesOk_totalCount(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "AllCandlesOk",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type TotalCountResolvingResult does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_AllCandlesOk_totalCount_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
 	}
 	return fc, nil
 }
@@ -5011,6 +5136,50 @@ func (ec *executionContext) fieldContext_RegistrationsOk_role(_ context.Context,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type Role does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TotalCountResolvingOk_totalCount(ctx context.Context, field graphql.CollectedField, obj *model.TotalCountResolvingOk) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TotalCountResolvingOk_totalCount(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.TotalCount, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(uint)
+	fc.Result = res
+	return ec.marshalNUInt2uint(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TotalCountResolvingOk_totalCount(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TotalCountResolvingOk",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type UInt does not have child fields")
 		},
 	}
 	return fc, nil
@@ -8185,6 +8354,36 @@ func (ec *executionContext) _RegistrationsResult(ctx context.Context, sel ast.Se
 	}
 }
 
+func (ec *executionContext) _TotalCountResolvingResult(ctx context.Context, sel ast.SelectionSet, obj model.TotalCountResolvingResult) graphql.Marshaler {
+	switch obj := (obj).(type) {
+	case nil:
+		return graphql.Null
+	case model.VersionMismatchProblem:
+		return ec._VersionMismatchProblem(ctx, sel, &obj)
+	case *model.VersionMismatchProblem:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._VersionMismatchProblem(ctx, sel, obj)
+	case model.InternalErrorProblem:
+		return ec._InternalErrorProblem(ctx, sel, &obj)
+	case *model.InternalErrorProblem:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._InternalErrorProblem(ctx, sel, obj)
+	case model.TotalCountResolvingOk:
+		return ec._TotalCountResolvingOk(ctx, sel, &obj)
+	case *model.TotalCountResolvingOk:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._TotalCountResolvingOk(ctx, sel, obj)
+	default:
+		panic(fmt.Errorf("unexpected type %T", obj))
+	}
+}
+
 func (ec *executionContext) _UpdateCategoryResult(ctx context.Context, sel ast.SelectionSet, obj model.UpdateCategoryResult) graphql.Marshaler {
 	switch obj := (obj).(type) {
 	case nil:
@@ -8279,8 +8478,44 @@ func (ec *executionContext) _AllCandlesOk(ctx context.Context, sel ast.Selection
 		case "candles":
 			out.Values[i] = ec._AllCandlesOk_candles(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				out.Invalids++
+				atomic.AddUint32(&out.Invalids, 1)
 			}
+		case "totalCount":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._AllCandlesOk_totalCount(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -9567,7 +9802,7 @@ func (ec *executionContext) _ColorQuery(ctx context.Context, sel ast.SelectionSe
 	return out
 }
 
-var internalErrorProblemImplementors = []string{"InternalErrorProblem", "LoginResult", "RegistrationsResult", "CandlesMutationResult", "CandlesByIdResult", "CandlesBySlugResult", "AllCategoryResult", "CategoryCreateResult", "UpdateCategoryResult", "CategoryBySlugResult", "CategoryByIdResult", "CategoryGetAllResult", "ColorCreateResult", "AllColorResult", "ProblemInterface", "UserProfileResult"}
+var internalErrorProblemImplementors = []string{"InternalErrorProblem", "LoginResult", "RegistrationsResult", "CandlesMutationResult", "CandlesByIdResult", "CandlesBySlugResult", "AllCategoryResult", "TotalCountResolvingResult", "CategoryCreateResult", "UpdateCategoryResult", "CategoryBySlugResult", "CategoryByIdResult", "CategoryGetAllResult", "ColorCreateResult", "AllColorResult", "ProblemInterface", "UserProfileResult"}
 
 func (ec *executionContext) _InternalErrorProblem(ctx context.Context, sel ast.SelectionSet, obj *model.InternalErrorProblem) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, internalErrorProblemImplementors)
@@ -9952,6 +10187,45 @@ func (ec *executionContext) _RegistrationsOk(ctx context.Context, sel ast.Select
 	return out
 }
 
+var totalCountResolvingOkImplementors = []string{"TotalCountResolvingOk", "TotalCountResolvingResult"}
+
+func (ec *executionContext) _TotalCountResolvingOk(ctx context.Context, sel ast.SelectionSet, obj *model.TotalCountResolvingOk) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, totalCountResolvingOkImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("TotalCountResolvingOk")
+		case "totalCount":
+			out.Values[i] = ec._TotalCountResolvingOk_totalCount(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
 var unauthorizedProblemImplementors = []string{"UnauthorizedProblem", "CandlesMutationResult", "CategoryCreateResult", "ColorCreateResult", "ProblemInterface"}
 
 func (ec *executionContext) _UnauthorizedProblem(ctx context.Context, sel ast.SelectionSet, obj *model.UnauthorizedProblem) graphql.Marshaler {
@@ -10213,7 +10487,7 @@ func (ec *executionContext) _UserQuery(ctx context.Context, sel ast.SelectionSet
 	return out
 }
 
-var versionMismatchProblemImplementors = []string{"VersionMismatchProblem", "LoginResult", "RegistrationsResult", "CandlesMutationResult", "CandlesByIdResult", "CandlesBySlugResult", "AllCategoryResult", "CategoryCreateResult", "UpdateCategoryResult", "CategoryBySlugResult", "CategoryByIdResult", "ColorCreateResult", "AllColorResult", "UserProfileResult", "ProblemInterface"}
+var versionMismatchProblemImplementors = []string{"VersionMismatchProblem", "LoginResult", "RegistrationsResult", "CandlesMutationResult", "CandlesByIdResult", "CandlesBySlugResult", "AllCategoryResult", "TotalCountResolvingResult", "CategoryCreateResult", "UpdateCategoryResult", "CategoryBySlugResult", "CategoryByIdResult", "ColorCreateResult", "AllColorResult", "UserProfileResult", "ProblemInterface"}
 
 func (ec *executionContext) _VersionMismatchProblem(ctx context.Context, sel ast.SelectionSet, obj *model.VersionMismatchProblem) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, versionMismatchProblemImplementors)
@@ -11070,6 +11344,16 @@ func (ec *executionContext) marshalNString2ᚕstringᚄ(ctx context.Context, sel
 	}
 
 	return ret
+}
+
+func (ec *executionContext) marshalNTotalCountResolvingResult2githubᚗcomᚋSanchir01ᚋcandles_backendᚋinternalᚋgqlᚋmodelᚐTotalCountResolvingResult(ctx context.Context, sel ast.SelectionSet, v model.TotalCountResolvingResult) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._TotalCountResolvingResult(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNUInt2uint(ctx context.Context, v interface{}) (uint, error) {

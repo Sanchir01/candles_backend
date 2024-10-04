@@ -10,9 +10,9 @@ import (
 	"time"
 )
 
-func PGXNew(cfg *config.Config, ctx context.Context, env string) (*pgxpool.Pool, error) {
+func PGXNew(cfg *config.Config, ctx context.Context) (*pgxpool.Pool, error) {
 	var dsn string
-	switch env {
+	switch cfg.Env {
 	case "development":
 		dsn = fmt.Sprintf(
 			"postgresql://postgres:postgres@localhost:5435/test",

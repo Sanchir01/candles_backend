@@ -10,4 +10,13 @@ union AllCategoryResult =
 
 type AllCandlesOk {
     candles: [Candles!]!
+    totalCount(estimate:UInt! = 1000):TotalCountResolvingResult! @goField(forceResolver: true)
 }
+
+type TotalCountResolvingOk{
+    totalCount: UInt!
+}
+union TotalCountResolvingResult =
+    | TotalCountResolvingOk
+    | VersionMismatchProblem
+    | InternalErrorProblem

@@ -85,6 +85,12 @@ models:
       - github.com/99designs/gqlgen/graphql.Int
       - github.com/99designs/gqlgen/graphql.Int64
       - github.com/99designs/gqlgen/graphql.Int32
+  PageNumber:
+    model:
+      - github.com/Sanchir01/candles_backend/internal/gql/model.PageNumber
+  PageSize:
+    model:
+      - github.com/Sanchir01/candles_backend/internal/gql/model.PageSize
   DateTime:
     model:
       - github.com/Sanchir01/candles_backend/internal/gql/model.Rfc3339Date

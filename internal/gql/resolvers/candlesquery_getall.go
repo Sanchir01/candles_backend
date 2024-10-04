@@ -6,23 +6,30 @@ package resolver
 
 import (
 	"context"
-
-	featurecandles "github.com/Sanchir01/candles_backend/internal/feature/candles"
+	"fmt"
+	runtime "github.com/Sanchir01/candles_backend/internal/gql/generated"
 	"github.com/Sanchir01/candles_backend/internal/gql/model"
 	responseErr "github.com/Sanchir01/candles_backend/pkg/lib/api/response"
 )
 
+// TotalCount is the resolver for the totalCount field.
+func (r *allCandlesOkResolver) TotalCount(ctx context.Context, obj *model.AllCandlesOk, estimate uint) (model.TotalCountResolvingResult, error) {
+	panic(fmt.Errorf("not implemented: TotalCount - totalCount"))
+	//filter := graphql.GetFieldContext(ctx).Parent.Args["filter"].(*model)
+}
+
 // AllCandles is the resolver for the allCandles field.
 func (r *candlesQueryResolver) AllCandles(ctx context.Context, obj *model.CandlesQuery) (model.AllCategoryResult, error) {
-	allCandles, err := r.candlesStr.AllCandles(ctx)
-	if err != nil {
-		r.lg.Error(err.Error())
-		return responseErr.NewInternalErrorProblem("такая категория уже есть"), err
-	}
-	gqlCandles, err := featurecandles.MapCandlesToGql(allCandles)
+	allCandles, err := r.env.Services.CandlesService.AllCandles(ctx)
 
 	if err != nil {
-		return responseErr.NewInternalErrorProblem("не удалось выполнить операцию по превращению в gql model"), err
+		r.env.Logger.Error(err.Error())
+		return responseErr.NewInternalErrorProblem("не удалось получить товары"), err
 	}
-	return model.AllCandlesOk{Candles: gqlCandles}, nil
+	return model.AllCandlesOk{Candles: allCandles}, nil
 }
+
+// AllCandlesOk returns runtime.AllCandlesOkResolver implementation.
+func (r *Resolver) AllCandlesOk() runtime.AllCandlesOkResolver { return &allCandlesOkResolver{r} }
+
+type allCandlesOkResolver struct{ *Resolver }

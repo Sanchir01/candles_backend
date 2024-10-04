@@ -46,8 +46,7 @@ func New(
 func (r *HttpRouter) StartHttpServer() http.Handler {
 	r.newChiCors()
 	r.chiRouter.Use(middleware.RequestID)
-	r.chiRouter.Use(customMiddleware.WithResponseWriter)
-	r.chiRouter.Use(customMiddleware.AuthMiddleware())
+	r.chiRouter.Use(customMiddleware.WithResponseWriter, customMiddleware.NewDataLoadersMiddleware(r.env), customMiddleware.AuthMiddleware())
 	r.chiRouter.Handle("/graphql", playground.ApolloSandboxHandler("Candles", "/"))
 	r.chiRouter.Handle("/", r.NewGraphQLHandler())
 	return r.chiRouter

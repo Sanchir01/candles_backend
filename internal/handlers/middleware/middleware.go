@@ -3,6 +3,7 @@ package customMiddleware
 import (
 	"context"
 	"errors"
+	"github.com/Sanchir01/candles_backend/internal/app"
 	userFeature "github.com/Sanchir01/candles_backend/internal/feature/user"
 	"net/http"
 )
@@ -70,16 +71,16 @@ func AuthMiddleware() func(http.Handler) http.Handler {
 	}
 }
 
-//func DataLoaderMiddleware(next http.Handler) http.Handler {
-//	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-//		ctx := context.WithValue(r.Context(), Loaders{}, &Loaders{
-//			UserLoader: dataloadgen.NewLoader(),
-//		})
-//		next.ServeHTTP(w, r.WithContext(ctx))
-//	})
-//}
+func NewDataLoadersMiddleware(env *app.Env) func(next http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			ctx := context.WithValue(
+				r.Context(),
+				app.DataLoadersContextKey,
+				app.NewDataLoaders(env.Repositories),
+			)
 
-// Функция для получения DataLoader из контекста
-//func For(ctx context.Context) *Loaders {
-//	return ctx.Value(loadersKey{}).(*Loaders)
-//}
+			next.ServeHTTP(w, r.WithContext(ctx))
+		})
+	}
+}

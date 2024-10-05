@@ -3,7 +3,7 @@ module github.com/Sanchir01/candles_backend
 go 1.23.0
 
 require (
-	github.com/99designs/gqlgen v0.17.54
+	github.com/99designs/gqlgen v0.17.55
 	github.com/aws/aws-sdk-go-v2 v1.30.5
 	github.com/aws/aws-sdk-go-v2/config v1.27.33
 	github.com/aws/aws-sdk-go-v2/credentials v1.17.33
@@ -19,7 +19,7 @@ require (
 	github.com/ilyakaznacheev/cleanenv v1.5.0
 	github.com/jackc/pgx/v5 v5.6.0
 	github.com/joho/godotenv v1.5.1
-	github.com/vektah/gqlparser/v2 v2.5.16
+	github.com/vektah/gqlparser/v2 v2.5.17
 	github.com/vikstrous/dataloadgen v0.0.6
 	golang.org/x/crypto v0.27.0
 	golang.org/x/exp v0.0.0-20240823005443-9b4947da3948

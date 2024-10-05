@@ -1,0 +1,12 @@
+extend type ColorQuery {
+    categoryByManyIds(input: ColorByIdsInput!): ColorByIdsResult! @goField(forceResolver: true)
+}
+
+input ColorByIdsInput {
+    id: Uuid!
+}
+
+type ColorByIdsOk  {
+    colors: [Color!]!
+}
+union ColorByIdsResult = ColorByIdsOk | InternalErrorProblem | VersionMismatchProblem

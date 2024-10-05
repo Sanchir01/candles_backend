@@ -55,13 +55,36 @@ func (r *Repository) CreateColor(ctx context.Context, title, slug string) (uuid.
 	return id, nil
 }
 
-func (r *Repository) ColorById(ctx context.Context, id uuid.UUID) (*model.Color, error) {
+func (r *Repository) ColorByManyId(ctx context.Context, ids []uuid.UUID) ([]*model.Color, error) {
 	conn, err := r.primartDB.Acquire(ctx)
 	if err != nil {
 		return nil, err
 	}
 	defer conn.Release()
 
+	query := "SELECT id, title, slug, version, created_at updated_at FROM public.color WHERE id IN ($1)"
+
+	rows, err := conn.Query(ctx, query, ids)
+	if err != nil {
+		return nil, err
+	}
+	var colors []*model.Color
+	for rows.Next() {
+		var color model.Color
+		if err := rows.Scan(&color.ID, &color.Title, &color.Slug, &color.Version, &color.CreatedAt, &color.UpdatedAt); err != nil {
+			return nil, err
+		}
+		colors = append(colors, &color)
+	}
+	return colors, nil
+}
+
+func (r *Repository) ColorByTitle(ctx context.Context, id uuid.UUID) (*model.Color, error) {
+	conn, err := r.primartDB.Acquire(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer conn.Release()
 	query := "SELECT id, title, slug, version, created_at updated_at FROM public.color WHERE id = $1"
 
 	var color DBColor
@@ -73,8 +96,8 @@ func (r *Repository) ColorById(ctx context.Context, id uuid.UUID) (*model.Color,
 	}
 
 	return (*model.Color)(&color), nil
-}
 
+}
 func (r *Repository) ColorBySlug(ctx context.Context, slug string) (*model.Color, error) {
 	conn, err := r.primartDB.Acquire(ctx)
 	if err != nil {

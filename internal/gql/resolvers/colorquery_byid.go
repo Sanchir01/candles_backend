@@ -6,13 +6,11 @@ package resolver
 
 import (
 	"context"
-	"fmt"
-
 	"github.com/Sanchir01/candles_backend/internal/gql/model"
-	"github.com/google/uuid"
 )
 
-// Profile is the resolver for the profile field.
-func (r *userQueryResolver) Profile(ctx context.Context, obj *model.UserQuery, id uuid.UUID) (model.UserProfileResult, error) {
-	panic(fmt.Errorf("not implemented: Profile - profile"))
+// CategoryByManyIds is the resolver for the categoryByManyIds field.
+func (r *colorQueryResolver) CategoryByManyIds(ctx context.Context, obj *model.ColorQuery, input model.ColorByIdsInput) (model.ColorByIdsResult, error) {
+
+	return model.ColorByIdsOk{Colors: nil}, nil
 }

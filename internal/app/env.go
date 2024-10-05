@@ -31,6 +31,7 @@ func NewEnv() (*Env, error) {
 	}
 	repos := NewRepositories(pgxdb)
 	servises := NewServices(repos, s3client)
+
 	env := Env{
 		Logger:       lg,
 		DataBase:     pgxdb,

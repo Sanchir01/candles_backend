@@ -12,6 +12,16 @@ import (
 type Repository struct {
 	primaryDB *pgxpool.Pool
 }
+type CandlesSortEnum int
+
+const (
+	CREATED_AT_ASC CandlesSortEnum = iota
+	CREATED_AT_DESC
+	SORT_RANK_ASC
+	SORT_RANK_DESC
+	PRICE_ASC
+	PRICE_DESC
+)
 
 func NewRepository(primaryDB *pgxpool.Pool) *Repository {
 	return &Repository{
@@ -19,24 +29,34 @@ func NewRepository(primaryDB *pgxpool.Pool) *Repository {
 	}
 }
 func (r *Repository) AllCandles(ctx context.Context, sort *model.CandlesSortEnum) ([]model.Candles, error) {
-
 	conn, err := r.primaryDB.Acquire(ctx)
-
 	if err != nil {
 		return nil, err
 	}
 	defer conn.Release()
 
-	var sorting model.CandlesSortEnum
-	switch sorting {
-
+	// Проверяем, не равен ли указатель nil
+	var orders string
+	if sort != nil {
+		orders = BuildSortQuery(*sort) // Разыменовываем указатель
 	}
-	query, _, err := sq.Select("id ,title,slug, price, images, version, category_id, created_at, updated_at").From("public.candles").OrderBy("price ASC").ToSql()
 
-	//query := "SELECT id ,title,slug, price, images, version, category_id, created_at, updated_at FROM public.candles ORDER BY price DESC"
+	// Создаем SQL-запрос с возможной сортировкой
+	queryBuilder := sq.Select("id, title, slug, price, images, version, category_id, created_at, updated_at").
+		From("public.candles")
 
+	if orders != "" {
+		queryBuilder = queryBuilder.OrderBy(orders)
+	}
+
+	query, _, err := queryBuilder.ToSql()
+	if err != nil {
+		return nil, err
+	}
+
+	// Выполняем запрос
 	rows, err := conn.Query(ctx, query)
-	if rows.Err(); err != nil {
+	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
@@ -50,11 +70,12 @@ func (r *Repository) AllCandles(ctx context.Context, sort *model.CandlesSortEnum
 		}
 		candles = append(candles, candle)
 	}
+
 	if err = rows.Err(); err != nil {
 		return nil, err
 	}
-	return candles, nil
 
+	return candles, nil
 }
 
 func (r *Repository) CreateCandles(
@@ -125,12 +146,17 @@ func (r *Repository) CandlesById(ctx context.Context, id uuid.UUID) (*model.Cand
 	return (*model.Candles)(&candle), nil
 }
 
-func SwitchSotring(sort *model.CandlesSortEnum) string {
+func BuildSortQuery(sort model.CandlesSortEnum) string {
 	switch sort {
-	case model.A:
-		return "id DESC"
+	case model.CandlesSortEnumCreatedAtAsc:
+		return "ORDER BY created_at ASC"
+	case model.CandlesSortEnumCreatedAtDesc:
+		return "ORDER BY created_at DESC"
+	case model.CandlesSortEnumPriceAsc:
+		return "ORDER BY price ASC"
+	case model.CandlesSortEnumPriceDesc:
+		return "ORDER BY price DESC"
 	default:
 		return ""
 	}
-
 }

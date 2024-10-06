@@ -2,6 +2,7 @@ package candles
 
 import (
 	"context"
+	sq "github.com/Masterminds/squirrel"
 	"github.com/Sanchir01/candles_backend/internal/gql/model"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -17,13 +18,22 @@ func NewRepository(primaryDB *pgxpool.Pool) *Repository {
 		primaryDB,
 	}
 }
-func (r *Repository) AllCandles(ctx context.Context) ([]model.Candles, error) {
+func (r *Repository) AllCandles(ctx context.Context, sort *model.CandlesSortEnum) ([]model.Candles, error) {
+
 	conn, err := r.primaryDB.Acquire(ctx)
+
 	if err != nil {
 		return nil, err
 	}
 	defer conn.Release()
-	query := "SELECT id ,title,slug, price, images, version, category_id, created_at, updated_at FROM public.candles"
+
+	var sorting model.CandlesSortEnum
+	switch sorting {
+
+	}
+	query, _, err := sq.Select("id ,title,slug, price, images, version, category_id, created_at, updated_at").From("public.candles").OrderBy("price ASC").ToSql()
+
+	//query := "SELECT id ,title,slug, price, images, version, category_id, created_at, updated_at FROM public.candles ORDER BY price DESC"
 
 	rows, err := conn.Query(ctx, query)
 	if rows.Err(); err != nil {
@@ -111,6 +121,16 @@ func (r *Repository) CandlesById(ctx context.Context, id uuid.UUID) (*model.Cand
 	); err != nil {
 		return nil, err
 	}
-	
+
 	return (*model.Candles)(&candle), nil
+}
+
+func SwitchSotring(sort *model.CandlesSortEnum) string {
+	switch sort {
+	case model.A:
+		return "id DESC"
+	default:
+		return ""
+	}
+
 }

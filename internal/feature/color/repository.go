@@ -5,6 +5,7 @@ import (
 	"github.com/Sanchir01/candles_backend/internal/gql/model"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"log"
 )
 
 type Repository struct {
@@ -56,13 +57,14 @@ func (r *Repository) CreateColor(ctx context.Context, title, slug string) (uuid.
 }
 
 func (r *Repository) ColorByManyId(ctx context.Context, ids []uuid.UUID) ([]*model.Color, error) {
+	log.Printf("DataLoader keys many load sanchir  test: %v", ids)
 	conn, err := r.primartDB.Acquire(ctx)
 	if err != nil {
 		return nil, err
 	}
 	defer conn.Release()
 
-	query := "SELECT id, title, slug, version, created_at updated_at FROM public.color WHERE id IN ($1)"
+	query := "SELECT id, title, slug, version, created_at, updated_at FROM public.color WHERE id = ANY($1)"
 
 	rows, err := conn.Query(ctx, query, ids)
 	if err != nil {
@@ -79,13 +81,13 @@ func (r *Repository) ColorByManyId(ctx context.Context, ids []uuid.UUID) ([]*mod
 	return colors, nil
 }
 
-func (r *Repository) ColorByTitle(ctx context.Context, id uuid.UUID) (*model.Color, error) {
+func (r *Repository) ColorById(ctx context.Context, id uuid.UUID) (*model.Color, error) {
 	conn, err := r.primartDB.Acquire(ctx)
 	if err != nil {
 		return nil, err
 	}
 	defer conn.Release()
-	query := "SELECT id, title, slug, version, created_at updated_at FROM public.color WHERE id = $1"
+	query := "SELECT id, title, slug, version, created_at ,updated_at FROM public.color WHERE id = $1"
 
 	var color DBColor
 
@@ -105,7 +107,7 @@ func (r *Repository) ColorBySlug(ctx context.Context, slug string) (*model.Color
 	}
 	defer conn.Release()
 
-	query := "SELECT id, title, slug, version, created_at updated_at FROM public.color WHERE slug = $1"
+	query := "SELECT id, title, slug, version, created_at, updated_at FROM public.color WHERE slug = $1"
 
 	var color DBColor
 

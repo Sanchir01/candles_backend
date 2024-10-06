@@ -74,12 +74,12 @@ func AuthMiddleware() func(http.Handler) http.Handler {
 func NewDataLoadersMiddleware(env *app.Env) func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			ctx := context.WithValue(
-				r.Context(),
-				app.DataLoadersContextKey,
-				app.NewDataLoaders(env.Repositories),
-			)
+			loaders := app.NewDataLoaders(env.Repositories)
 
+			// Добавляем DataLoaders в контекст запроса
+			ctx := context.WithValue(r.Context(), app.DataLoadersContextKey, loaders)
+
+			// Передаем контекст дальше по цепочке
 			next.ServeHTTP(w, r.WithContext(ctx))
 		})
 	}

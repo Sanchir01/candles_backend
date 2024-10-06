@@ -48,8 +48,8 @@ type CategoryGetAllResult interface {
 	IsCategoryGetAllResult()
 }
 
-type ColorByIdsResult interface {
-	IsColorByIdsResult()
+type ColorByIDResult interface {
+	IsColorByIDResult()
 }
 
 type ColorCreateResult interface {
@@ -143,6 +143,11 @@ type CandlesCreateOk struct {
 
 func (CandlesCreateOk) IsCandlesMutationResult() {}
 
+type CandlesFilterInput struct {
+	CategoryID []uuid.UUID `json:"categoryId,omitempty"`
+	ColorID    []uuid.UUID `json:"colorId,omitempty"`
+}
+
 type CandlesMutation struct {
 	CreateCandle CandlesMutationResult `json:"createCandle"`
 }
@@ -217,15 +222,15 @@ type Color struct {
 	Version   uint      `json:"version"`
 }
 
-type ColorByIdsInput struct {
+type ColorByIDInput struct {
 	ID uuid.UUID `json:"id"`
 }
 
-type ColorByIdsOk struct {
-	Colors []*Color `json:"colors"`
+type ColorByIDOk struct {
+	Colors *Color `json:"colors"`
 }
 
-func (ColorByIdsOk) IsColorByIdsResult() {}
+func (ColorByIDOk) IsColorByIDResult() {}
 
 type ColorCreateOk struct {
 	ID uuid.UUID `json:"id"`
@@ -238,8 +243,8 @@ type ColorMutation struct {
 }
 
 type ColorQuery struct {
-	AllColor          AllColorResult   `json:"allColor"`
-	CategoryByManyIds ColorByIdsResult `json:"categoryByManyIds"`
+	AllColor         AllColorResult  `json:"allColor"`
+	CategoryByManyID ColorByIDResult `json:"categoryByManyId"`
 }
 
 type CreateCandleInput struct {
@@ -290,7 +295,7 @@ func (InternalErrorProblem) IsColorCreateResult() {}
 
 func (InternalErrorProblem) IsAllColorResult() {}
 
-func (InternalErrorProblem) IsColorByIdsResult() {}
+func (InternalErrorProblem) IsColorByIDResult() {}
 
 func (InternalErrorProblem) IsProblemInterface()     {}
 func (this InternalErrorProblem) GetMessage() string { return this.Message }
@@ -423,12 +428,61 @@ func (VersionMismatchProblem) IsColorCreateResult() {}
 
 func (VersionMismatchProblem) IsAllColorResult() {}
 
-func (VersionMismatchProblem) IsColorByIdsResult() {}
+func (VersionMismatchProblem) IsColorByIDResult() {}
 
 func (VersionMismatchProblem) IsUserProfileResult() {}
 
 func (VersionMismatchProblem) IsProblemInterface()     {}
 func (this VersionMismatchProblem) GetMessage() string { return this.Message }
+
+type CandlesSortEnum string
+
+const (
+	CandlesSortEnumCreatedAtAsc  CandlesSortEnum = "CREATED_AT_ASC"
+	CandlesSortEnumCreatedAtDesc CandlesSortEnum = "CREATED_AT_DESC"
+	CandlesSortEnumSortRankAsc   CandlesSortEnum = "SORT_RANK_ASC"
+	CandlesSortEnumSortRankDesc  CandlesSortEnum = "SORT_RANK_DESC"
+	CandlesSortEnumPriceAsc      CandlesSortEnum = "PRICE_ASC"
+	CandlesSortEnumPriceDesc     CandlesSortEnum = "PRICE_DESC"
+)
+
+var AllCandlesSortEnum = []CandlesSortEnum{
+	CandlesSortEnumCreatedAtAsc,
+	CandlesSortEnumCreatedAtDesc,
+	CandlesSortEnumSortRankAsc,
+	CandlesSortEnumSortRankDesc,
+	CandlesSortEnumPriceAsc,
+	CandlesSortEnumPriceDesc,
+}
+
+func (e CandlesSortEnum) IsValid() bool {
+	switch e {
+	case CandlesSortEnumCreatedAtAsc, CandlesSortEnumCreatedAtDesc, CandlesSortEnumSortRankAsc, CandlesSortEnumSortRankDesc, CandlesSortEnumPriceAsc, CandlesSortEnumPriceDesc:
+		return true
+	}
+	return false
+}
+
+func (e CandlesSortEnum) String() string {
+	return string(e)
+}
+
+func (e *CandlesSortEnum) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = CandlesSortEnum(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid CandlesSortEnum", str)
+	}
+	return nil
+}
+
+func (e CandlesSortEnum) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
 
 type Role string
 

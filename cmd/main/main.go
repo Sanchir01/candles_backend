@@ -3,17 +3,14 @@ package main
 import (
 	"context"
 	"errors"
-	"fmt"
 	"github.com/Sanchir01/candles_backend/internal/app"
 	telegrambot "github.com/Sanchir01/candles_backend/internal/bot"
 	httphandlers "github.com/Sanchir01/candles_backend/internal/handlers"
+	customMiddleware "github.com/Sanchir01/candles_backend/internal/handlers/middleware"
 	httpserver "github.com/Sanchir01/candles_backend/internal/server/http"
 	"github.com/go-chi/chi/v5"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
-	"github.com/vikstrous/dataloadgen"
 	"log"
-	"time"
-
 	"log/slog"
 	"os"
 	"os/signal"
@@ -38,9 +35,11 @@ func main() {
 	}
 	serve := httpserver.NewHttpServer(env.Config)
 	rout := chi.NewRouter()
+	rout.Use(customMiddleware.NewDataLoadersMiddleware(env))
 	var (
 		handlers = httphandlers.New(rout, env)
 	)
+	env.Logger.Info("start server", slog.String("port", env.Config.Port))
 
 	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGTERM, syscall.SIGINT, os.Interrupt)
 	defer cancel()
@@ -54,29 +53,11 @@ func main() {
 			env.Logger.Error("Listen server error", slog.String("error", err.Error()))
 		}
 	}(ctx)
-	loader := dataloadgen.NewLoader(func(ctx context.Context, keys []string) ([]string, []error) {
-		items := make([]string, len(keys))
-		errs := make([]error, len(keys))
 
-		for i, key := range keys {
-			items[i] = key
-			if key == "errorKey" {
-				errs[i] = fmt.Errorf("произошла ошибка с ключом: %s", key)
-			} else {
-				errs[i] = nil
-			}
-		}
-		return items, errs
-	},
-		dataloadgen.WithBatchCapacity(10),
-		dataloadgen.WithWait(2*time.Second),
-	)
-	myStrings := []string{"123", "213123"}
-	one, err := loader.LoadAll(ctx, myStrings)
 	if err != nil {
 		panic(err)
 	}
-	env.Logger.Warn("loader user", one)
+
 	bot, err := tgbotapi.NewBotAPI(os.Getenv("TELEGRAM_BOT_TOKEN"))
 	if err != nil {
 		log.Panic(err)

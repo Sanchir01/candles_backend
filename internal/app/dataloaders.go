@@ -10,11 +10,11 @@ const (
 )
 
 type DataLoaders struct {
-	ColorDataLoaderById *featurecolor.ColorDataLoader
+	ColorDataLoader *featurecolor.ColorDataLoader
 }
 
 func NewDataLoaders(repos *Repositories) *DataLoaders {
 	return &DataLoaders{
-		ColorDataLoaderById: featurecolor.NewDataLoader(repos.ColorRepository, colorLoaderByIDMaxBatch),
+		ColorDataLoader: featurecolor.NewDataLoader(repos.ColorRepository, colorLoaderByIDMaxBatch),
 	}
 }

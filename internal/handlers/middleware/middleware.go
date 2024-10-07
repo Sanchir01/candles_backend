@@ -3,6 +3,7 @@ package customMiddleware
 import (
 	"context"
 	"errors"
+	"github.com/Sanchir01/candles_backend/internal/app"
 	userFeature "github.com/Sanchir01/candles_backend/internal/feature/user"
 	"net/http"
 )
@@ -10,7 +11,7 @@ import (
 const responseWriterKey = "responseWriter"
 
 func GetJWTClaimsFromCtx(ctx context.Context) (*userFeature.Claims, error) {
-	claims, ok := ctx.Value("user").(*userFeature.Claims)
+	claims, ok := ctx.Value(app.AccessTokenContextKey).(*userFeature.Claims)
 	if !ok {
 		return nil, errors.New("no JWT claims found in context")
 	}
@@ -59,27 +60,26 @@ func AuthMiddleware() func(http.Handler) http.Handler {
 			// Проверка валидности токена
 			validAccessToken, err := userFeature.ParseToken(access.Value)
 			if err != nil {
-
 				next.ServeHTTP(w, r)
 				return
 			}
-			ctx := context.WithValue(r.Context(), "user", validAccessToken)
+			ctx := context.WithValue(r.Context(), app.AccessTokenContextKey, validAccessToken)
 
 			next.ServeHTTP(w, r.WithContext(ctx))
 		})
 	}
 }
 
-//func DataLoaderMiddleware(next http.Handler) http.Handler {
-//	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-//		ctx := context.WithValue(r.Context(), Loaders{}, &Loaders{
-//			UserLoader: dataloadgen.NewLoader(),
-//		})
-//		next.ServeHTTP(w, r.WithContext(ctx))
-//	})
-//}
+func NewDataLoadersMiddleware(env *app.Env) func(next http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			loaders := app.NewDataLoaders(env.Repositories)
 
-// Функция для получения DataLoader из контекста
-//func For(ctx context.Context) *Loaders {
-//	return ctx.Value(loadersKey{}).(*Loaders)
-//}
+			// Добавляем DataLoaders в контекст запроса
+			ctx := context.WithValue(r.Context(), app.DataLoadersContextKey, loaders)
+
+			// Передаем контекст дальше по цепочке
+			next.ServeHTTP(w, r.WithContext(ctx))
+		})
+	}
+}

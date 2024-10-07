@@ -12,14 +12,14 @@ import (
 )
 
 type Claims struct {
-	Id   uuid.UUID  `json:"id"`
+	ID   uuid.UUID  `json:"id"`
 	Role model.Role `json:"role"`
 	jwt.RegisteredClaims
 }
 
 func GenerateJwtToken(id uuid.UUID, role model.Role, expire time.Time) (string, error) {
 	claim := &Claims{
-		Id:   id,
+		ID:   id,
 		Role: role,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(expire),
@@ -92,7 +92,7 @@ func NewAccessToken(tokenString string, threshold time.Duration, w http.Response
 
 	// Генерация нового токена с обновленным временем истечения
 	newExpire := time.Now().Add(1 * time.Hour) // Задайте желаемое время жизни нового токена
-	newToken, err := GenerateJwtToken(claims.Id, claims.Role, newExpire)
+	newToken, err := GenerateJwtToken(claims.ID, claims.Role, newExpire)
 	if err != nil {
 		return "", err
 	}

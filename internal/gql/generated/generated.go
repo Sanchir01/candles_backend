@@ -104,7 +104,7 @@ type ComplexityRoot struct {
 	}
 
 	CandlesQuery struct {
-		AllCandles   func(childComplexity int) int
+		AllCandles   func(childComplexity int, filter *model.CandlesFilterInput, sort *model.CandlesSortEnum, pageSize uint, pageNumber uint) int
 		CandleByID   func(childComplexity int, input model.CandlesByIDInput) int
 		CandleBySlug func(childComplexity int, input model.CandlesBySlugInput) int
 	}
@@ -154,6 +154,14 @@ type ComplexityRoot struct {
 		Version   func(childComplexity int) int
 	}
 
+	ColorByIdOk struct {
+		Colors func(childComplexity int) int
+	}
+
+	ColorBySlugOk struct {
+		Colors func(childComplexity int) int
+	}
+
 	ColorCreateOk struct {
 		ID func(childComplexity int) int
 	}
@@ -163,7 +171,9 @@ type ComplexityRoot struct {
 	}
 
 	ColorQuery struct {
-		AllColor func(childComplexity int) int
+		AllColor      func(childComplexity int) int
+		ColorByManyID func(childComplexity int, input model.ColorByIDInput) int
+		ColorBySlug   func(childComplexity int, input model.ColorBySlugInput) int
 	}
 
 	InternalErrorProblem struct {
@@ -251,7 +261,7 @@ type CandlesMutationResolver interface {
 type CandlesQueryResolver interface {
 	CandleByID(ctx context.Context, obj *model.CandlesQuery, input model.CandlesByIDInput) (model.CandlesByIDResult, error)
 	CandleBySlug(ctx context.Context, obj *model.CandlesQuery, input model.CandlesBySlugInput) (model.CandlesBySlugResult, error)
-	AllCandles(ctx context.Context, obj *model.CandlesQuery) (model.AllCategoryResult, error)
+	AllCandles(ctx context.Context, obj *model.CandlesQuery, filter *model.CandlesFilterInput, sort *model.CandlesSortEnum, pageSize uint, pageNumber uint) (model.AllCategoryResult, error)
 }
 type CategoryMutationResolver interface {
 	CreateCategory(ctx context.Context, obj *model.CategoryMutation, input *model.CreateCategoryInput) (model.CategoryCreateResult, error)
@@ -267,6 +277,8 @@ type ColorMutationResolver interface {
 }
 type ColorQueryResolver interface {
 	AllColor(ctx context.Context, obj *model.ColorQuery) (model.AllColorResult, error)
+	ColorByManyID(ctx context.Context, obj *model.ColorQuery, input model.ColorByIDInput) (model.ColorByIDResult, error)
+	ColorBySlug(ctx context.Context, obj *model.ColorQuery, input model.ColorBySlugInput) (model.ColorBySlugResult, error)
 }
 type MutationResolver interface {
 	Auth(ctx context.Context) (*model.AuthMutations, error)
@@ -461,7 +473,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			break
 		}
 
-		return e.complexity.CandlesQuery.AllCandles(childComplexity), true
+		args, err := ec.field_CandlesQuery_allCandles_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.CandlesQuery.AllCandles(childComplexity, args["filter"].(*model.CandlesFilterInput), args["sort"].(*model.CandlesSortEnum), args["pageSize"].(uint), args["pageNumber"].(uint)), true
 
 	case "CandlesQuery.candleById":
 		if e.complexity.CandlesQuery.CandleByID == nil {
@@ -654,6 +671,20 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Color.Version(childComplexity), true
 
+	case "ColorByIdOk.colors":
+		if e.complexity.ColorByIdOk.Colors == nil {
+			break
+		}
+
+		return e.complexity.ColorByIdOk.Colors(childComplexity), true
+
+	case "ColorBySlugOk.colors":
+		if e.complexity.ColorBySlugOk.Colors == nil {
+			break
+		}
+
+		return e.complexity.ColorBySlugOk.Colors(childComplexity), true
+
 	case "ColorCreateOk.id":
 		if e.complexity.ColorCreateOk.ID == nil {
 			break
@@ -679,6 +710,30 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.ColorQuery.AllColor(childComplexity), true
+
+	case "ColorQuery.colorByManyId":
+		if e.complexity.ColorQuery.ColorByManyID == nil {
+			break
+		}
+
+		args, err := ec.field_ColorQuery_colorByManyId_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.ColorQuery.ColorByManyID(childComplexity, args["input"].(model.ColorByIDInput)), true
+
+	case "ColorQuery.colorBySlug":
+		if e.complexity.ColorQuery.ColorBySlug == nil {
+			break
+		}
+
+		args, err := ec.field_ColorQuery_colorBySlug_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.ColorQuery.ColorBySlug(childComplexity, args["input"].(model.ColorBySlugInput)), true
 
 	case "InternalErrorProblem.message":
 		if e.complexity.InternalErrorProblem.Message == nil {
@@ -919,8 +974,11 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 	inputUnmarshalMap := graphql.BuildUnmarshalerMap(
 		ec.unmarshalInputCandlesByIdInput,
 		ec.unmarshalInputCandlesBySlugInput,
+		ec.unmarshalInputCandlesFilterInput,
 		ec.unmarshalInputCategoryByIdInput,
 		ec.unmarshalInputCategoryBySlugInput,
+		ec.unmarshalInputColorByIdInput,
+		ec.unmarshalInputColorBySlugInput,
 		ec.unmarshalInputCreateCandleInput,
 		ec.unmarshalInputCreateCategoryInput,
 		ec.unmarshalInputCreateColorInput,
@@ -1174,9 +1232,26 @@ union CandlesBySlugResult =
     | InternalErrorProblem
     | CandlesBySlugOk`, BuiltIn: false},
 	{Name: "../api/candles/candlesquery_getall.graphqls", Input: `extend type CandlesQuery {
-    allCandles: AllCategoryResult! @goField(forceResolver: true)
+    allCandles(
+        filter: CandlesFilterInput,
+        sort:CandlesSortEnum,
+        pageSize: PageSize! = 20
+        pageNumber: PageNumber! = 1,
+    ): AllCategoryResult! @goField(forceResolver: true)
+}
+enum CandlesSortEnum {
+    CREATED_AT_ASC
+    CREATED_AT_DESC
+    SORT_RANK_ASC
+    SORT_RANK_DESC
+    PRICE_ASC
+    PRICE_DESC
 }
 
+input CandlesFilterInput {
+    categoryId: [Uuid!]
+    colorId: [Uuid!]
+}
 
 union AllCategoryResult =
     | AllCandlesOk
@@ -1191,6 +1266,7 @@ type AllCandlesOk {
 type TotalCountResolvingOk{
     totalCount: UInt!
 }
+
 union TotalCountResolvingResult =
     | TotalCountResolvingOk
     | VersionMismatchProblem
@@ -1296,9 +1372,7 @@ union CategoryGetAllResult =
     updated_at: DateTime!
     version:UInt!
 }`, BuiltIn: false},
-	{Name: "../api/color/colormutaion_create.graphqls", Input: `
-
-extend type ColorMutation {
+	{Name: "../api/color/colormutaion_create.graphqls", Input: `extend type ColorMutation {
     createColor(input:CreateColorInput!): ColorCreateResult! @goField(forceResolver: true) 
 }
 
@@ -1339,6 +1413,30 @@ union AllColorResult =
 type AllColorOk {
     colors: [Color!]!
 }`, BuiltIn: false},
+	{Name: "../api/color/colorquery_byid.graphqls", Input: `extend type ColorQuery {
+    colorByManyId(input: ColorByIdInput!): ColorByIdResult! @goField(forceResolver: true)
+}
+
+input ColorByIdInput {
+    id: Uuid!
+}
+
+type ColorByIdOk  {
+    colors: Color!
+}
+union ColorByIdResult = ColorByIdOk | InternalErrorProblem | VersionMismatchProblem`, BuiltIn: false},
+	{Name: "../api/color/colorquery_byslug.graphqls", Input: `extend type ColorQuery {
+    colorBySlug(input: ColorBySlugInput!): ColorBySlugResult! @goField(forceResolver: true)
+}
+
+input ColorBySlugInput {
+    slug: String!
+}
+
+type ColorBySlugOk  {
+    colors: Color!
+}
+union ColorBySlugResult = ColorBySlugOk | InternalErrorProblem | VersionMismatchProblem`, BuiltIn: false},
 	{Name: "../api/mutation.graphqls", Input: `type Mutation`, BuiltIn: false},
 	{Name: "../api/order/order.graphqls", Input: ``, BuiltIn: false},
 	{Name: "../api/problem.graphqls", Input: `interface ProblemInterface {
@@ -1564,6 +1662,119 @@ func (ec *executionContext) field_CandlesMutation_createCandle_argsInput(
 	return zeroVal, nil
 }
 
+func (ec *executionContext) field_CandlesQuery_allCandles_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	arg0, err := ec.field_CandlesQuery_allCandles_argsFilter(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["filter"] = arg0
+	arg1, err := ec.field_CandlesQuery_allCandles_argsSort(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["sort"] = arg1
+	arg2, err := ec.field_CandlesQuery_allCandles_argsPageSize(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["pageSize"] = arg2
+	arg3, err := ec.field_CandlesQuery_allCandles_argsPageNumber(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["pageNumber"] = arg3
+	return args, nil
+}
+func (ec *executionContext) field_CandlesQuery_allCandles_argsFilter(
+	ctx context.Context,
+	rawArgs map[string]interface{},
+) (*model.CandlesFilterInput, error) {
+	// We won't call the directive if the argument is null.
+	// Set call_argument_directives_with_null to true to call directives
+	// even if the argument is null.
+	_, ok := rawArgs["filter"]
+	if !ok {
+		var zeroVal *model.CandlesFilterInput
+		return zeroVal, nil
+	}
+
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("filter"))
+	if tmp, ok := rawArgs["filter"]; ok {
+		return ec.unmarshalOCandlesFilterInput2ᚖgithubᚗcomᚋSanchir01ᚋcandles_backendᚋinternalᚋgqlᚋmodelᚐCandlesFilterInput(ctx, tmp)
+	}
+
+	var zeroVal *model.CandlesFilterInput
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_CandlesQuery_allCandles_argsSort(
+	ctx context.Context,
+	rawArgs map[string]interface{},
+) (*model.CandlesSortEnum, error) {
+	// We won't call the directive if the argument is null.
+	// Set call_argument_directives_with_null to true to call directives
+	// even if the argument is null.
+	_, ok := rawArgs["sort"]
+	if !ok {
+		var zeroVal *model.CandlesSortEnum
+		return zeroVal, nil
+	}
+
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("sort"))
+	if tmp, ok := rawArgs["sort"]; ok {
+		return ec.unmarshalOCandlesSortEnum2ᚖgithubᚗcomᚋSanchir01ᚋcandles_backendᚋinternalᚋgqlᚋmodelᚐCandlesSortEnum(ctx, tmp)
+	}
+
+	var zeroVal *model.CandlesSortEnum
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_CandlesQuery_allCandles_argsPageSize(
+	ctx context.Context,
+	rawArgs map[string]interface{},
+) (uint, error) {
+	// We won't call the directive if the argument is null.
+	// Set call_argument_directives_with_null to true to call directives
+	// even if the argument is null.
+	_, ok := rawArgs["pageSize"]
+	if !ok {
+		var zeroVal uint
+		return zeroVal, nil
+	}
+
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("pageSize"))
+	if tmp, ok := rawArgs["pageSize"]; ok {
+		return ec.unmarshalNPageSize2uint(ctx, tmp)
+	}
+
+	var zeroVal uint
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_CandlesQuery_allCandles_argsPageNumber(
+	ctx context.Context,
+	rawArgs map[string]interface{},
+) (uint, error) {
+	// We won't call the directive if the argument is null.
+	// Set call_argument_directives_with_null to true to call directives
+	// even if the argument is null.
+	_, ok := rawArgs["pageNumber"]
+	if !ok {
+		var zeroVal uint
+		return zeroVal, nil
+	}
+
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("pageNumber"))
+	if tmp, ok := rawArgs["pageNumber"]; ok {
+		return ec.unmarshalNPageNumber2uint(ctx, tmp)
+	}
+
+	var zeroVal uint
+	return zeroVal, nil
+}
+
 func (ec *executionContext) field_CandlesQuery_candleById_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -1785,6 +1996,70 @@ func (ec *executionContext) field_ColorMutation_createColor_argsInput(
 	}
 
 	var zeroVal model.CreateColorInput
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_ColorQuery_colorByManyId_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	arg0, err := ec.field_ColorQuery_colorByManyId_argsInput(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["input"] = arg0
+	return args, nil
+}
+func (ec *executionContext) field_ColorQuery_colorByManyId_argsInput(
+	ctx context.Context,
+	rawArgs map[string]interface{},
+) (model.ColorByIDInput, error) {
+	// We won't call the directive if the argument is null.
+	// Set call_argument_directives_with_null to true to call directives
+	// even if the argument is null.
+	_, ok := rawArgs["input"]
+	if !ok {
+		var zeroVal model.ColorByIDInput
+		return zeroVal, nil
+	}
+
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+	if tmp, ok := rawArgs["input"]; ok {
+		return ec.unmarshalNColorByIdInput2githubᚗcomᚋSanchir01ᚋcandles_backendᚋinternalᚋgqlᚋmodelᚐColorByIDInput(ctx, tmp)
+	}
+
+	var zeroVal model.ColorByIDInput
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_ColorQuery_colorBySlug_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	arg0, err := ec.field_ColorQuery_colorBySlug_argsInput(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["input"] = arg0
+	return args, nil
+}
+func (ec *executionContext) field_ColorQuery_colorBySlug_argsInput(
+	ctx context.Context,
+	rawArgs map[string]interface{},
+) (model.ColorBySlugInput, error) {
+	// We won't call the directive if the argument is null.
+	// Set call_argument_directives_with_null to true to call directives
+	// even if the argument is null.
+	_, ok := rawArgs["input"]
+	if !ok {
+		var zeroVal model.ColorBySlugInput
+		return zeroVal, nil
+	}
+
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+	if tmp, ok := rawArgs["input"]; ok {
+		return ec.unmarshalNColorBySlugInput2githubᚗcomᚋSanchir01ᚋcandles_backendᚋinternalᚋgqlᚋmodelᚐColorBySlugInput(ctx, tmp)
+	}
+
+	var zeroVal model.ColorBySlugInput
 	return zeroVal, nil
 }
 
@@ -3008,7 +3283,7 @@ func (ec *executionContext) _CandlesQuery_allCandles(ctx context.Context, field 
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.CandlesQuery().AllCandles(rctx, obj)
+		return ec.resolvers.CandlesQuery().AllCandles(rctx, obj, fc.Args["filter"].(*model.CandlesFilterInput), fc.Args["sort"].(*model.CandlesSortEnum), fc.Args["pageSize"].(uint), fc.Args["pageNumber"].(uint))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -3025,7 +3300,7 @@ func (ec *executionContext) _CandlesQuery_allCandles(ctx context.Context, field 
 	return ec.marshalNAllCategoryResult2githubᚗcomᚋSanchir01ᚋcandles_backendᚋinternalᚋgqlᚋmodelᚐAllCategoryResult(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_CandlesQuery_allCandles(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_CandlesQuery_allCandles(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "CandlesQuery",
 		Field:      field,
@@ -3034,6 +3309,17 @@ func (ec *executionContext) fieldContext_CandlesQuery_allCandles(_ context.Conte
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type AllCategoryResult does not have child fields")
 		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_CandlesQuery_allCandles_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
 	}
 	return fc, nil
 }
@@ -4042,6 +4328,122 @@ func (ec *executionContext) fieldContext_Color_version(_ context.Context, field 
 	return fc, nil
 }
 
+func (ec *executionContext) _ColorByIdOk_colors(ctx context.Context, field graphql.CollectedField, obj *model.ColorByIDOk) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ColorByIdOk_colors(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Colors, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.Color)
+	fc.Result = res
+	return ec.marshalNColor2ᚖgithubᚗcomᚋSanchir01ᚋcandles_backendᚋinternalᚋgqlᚋmodelᚐColor(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_ColorByIdOk_colors(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ColorByIdOk",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Color_id(ctx, field)
+			case "title":
+				return ec.fieldContext_Color_title(ctx, field)
+			case "slug":
+				return ec.fieldContext_Color_slug(ctx, field)
+			case "created_at":
+				return ec.fieldContext_Color_created_at(ctx, field)
+			case "updated_at":
+				return ec.fieldContext_Color_updated_at(ctx, field)
+			case "version":
+				return ec.fieldContext_Color_version(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Color", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ColorBySlugOk_colors(ctx context.Context, field graphql.CollectedField, obj *model.ColorBySlugOk) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ColorBySlugOk_colors(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Colors, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.Color)
+	fc.Result = res
+	return ec.marshalNColor2ᚖgithubᚗcomᚋSanchir01ᚋcandles_backendᚋinternalᚋgqlᚋmodelᚐColor(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_ColorBySlugOk_colors(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ColorBySlugOk",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Color_id(ctx, field)
+			case "title":
+				return ec.fieldContext_Color_title(ctx, field)
+			case "slug":
+				return ec.fieldContext_Color_slug(ctx, field)
+			case "created_at":
+				return ec.fieldContext_Color_created_at(ctx, field)
+			case "updated_at":
+				return ec.fieldContext_Color_updated_at(ctx, field)
+			case "version":
+				return ec.fieldContext_Color_version(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Color", field.Name)
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _ColorCreateOk_id(ctx context.Context, field graphql.CollectedField, obj *model.ColorCreateOk) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_ColorCreateOk_id(ctx, field)
 	if err != nil {
@@ -4181,6 +4583,116 @@ func (ec *executionContext) fieldContext_ColorQuery_allColor(_ context.Context, 
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type AllColorResult does not have child fields")
 		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ColorQuery_colorByManyId(ctx context.Context, field graphql.CollectedField, obj *model.ColorQuery) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ColorQuery_colorByManyId(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.ColorQuery().ColorByManyID(rctx, obj, fc.Args["input"].(model.ColorByIDInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(model.ColorByIDResult)
+	fc.Result = res
+	return ec.marshalNColorByIdResult2githubᚗcomᚋSanchir01ᚋcandles_backendᚋinternalᚋgqlᚋmodelᚐColorByIDResult(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_ColorQuery_colorByManyId(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ColorQuery",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type ColorByIdResult does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_ColorQuery_colorByManyId_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ColorQuery_colorBySlug(ctx context.Context, field graphql.CollectedField, obj *model.ColorQuery) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ColorQuery_colorBySlug(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.ColorQuery().ColorBySlug(rctx, obj, fc.Args["input"].(model.ColorBySlugInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(model.ColorBySlugResult)
+	fc.Result = res
+	return ec.marshalNColorBySlugResult2githubᚗcomᚋSanchir01ᚋcandles_backendᚋinternalᚋgqlᚋmodelᚐColorBySlugResult(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_ColorQuery_colorBySlug(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ColorQuery",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type ColorBySlugResult does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_ColorQuery_colorBySlug_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
 	}
 	return fc, nil
 }
@@ -4784,6 +5296,10 @@ func (ec *executionContext) fieldContext_Query_color(_ context.Context, field gr
 			switch field.Name {
 			case "allColor":
 				return ec.fieldContext_ColorQuery_allColor(ctx, field)
+			case "colorByManyId":
+				return ec.fieldContext_ColorQuery_colorByManyId(ctx, field)
+			case "colorBySlug":
+				return ec.fieldContext_ColorQuery_colorBySlug(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type ColorQuery", field.Name)
 		},
@@ -7640,6 +8156,40 @@ func (ec *executionContext) unmarshalInputCandlesBySlugInput(ctx context.Context
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputCandlesFilterInput(ctx context.Context, obj interface{}) (model.CandlesFilterInput, error) {
+	var it model.CandlesFilterInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"categoryId", "colorId"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "categoryId":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("categoryId"))
+			data, err := ec.unmarshalOUuid2ᚕgithubᚗcomᚋgoogleᚋuuidᚐUUIDᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CategoryID = data
+		case "colorId":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("colorId"))
+			data, err := ec.unmarshalOUuid2ᚕgithubᚗcomᚋgoogleᚋuuidᚐUUIDᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ColorID = data
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputCategoryByIdInput(ctx context.Context, obj interface{}) (model.CategoryByIDInput, error) {
 	var it model.CategoryByIDInput
 	asMap := map[string]interface{}{}
@@ -7669,6 +8219,60 @@ func (ec *executionContext) unmarshalInputCategoryByIdInput(ctx context.Context,
 
 func (ec *executionContext) unmarshalInputCategoryBySlugInput(ctx context.Context, obj interface{}) (model.CategoryBySlugInput, error) {
 	var it model.CategoryBySlugInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"slug"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "slug":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("slug"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Slug = data
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputColorByIdInput(ctx context.Context, obj interface{}) (model.ColorByIDInput, error) {
+	var it model.ColorByIDInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"id"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "id":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+			data, err := ec.unmarshalNUuid2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ID = data
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputColorBySlugInput(ctx context.Context, obj interface{}) (model.ColorBySlugInput, error) {
+	var it model.ColorBySlugInput
 	asMap := map[string]interface{}{}
 	for k, v := range obj.(map[string]interface{}) {
 		asMap[k] = v
@@ -8215,6 +8819,66 @@ func (ec *executionContext) _CategoryGetAllResult(ctx context.Context, sel ast.S
 			return graphql.Null
 		}
 		return ec._CategoryGetAllOk(ctx, sel, obj)
+	default:
+		panic(fmt.Errorf("unexpected type %T", obj))
+	}
+}
+
+func (ec *executionContext) _ColorByIdResult(ctx context.Context, sel ast.SelectionSet, obj model.ColorByIDResult) graphql.Marshaler {
+	switch obj := (obj).(type) {
+	case nil:
+		return graphql.Null
+	case model.InternalErrorProblem:
+		return ec._InternalErrorProblem(ctx, sel, &obj)
+	case *model.InternalErrorProblem:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._InternalErrorProblem(ctx, sel, obj)
+	case model.VersionMismatchProblem:
+		return ec._VersionMismatchProblem(ctx, sel, &obj)
+	case *model.VersionMismatchProblem:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._VersionMismatchProblem(ctx, sel, obj)
+	case model.ColorByIDOk:
+		return ec._ColorByIdOk(ctx, sel, &obj)
+	case *model.ColorByIDOk:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._ColorByIdOk(ctx, sel, obj)
+	default:
+		panic(fmt.Errorf("unexpected type %T", obj))
+	}
+}
+
+func (ec *executionContext) _ColorBySlugResult(ctx context.Context, sel ast.SelectionSet, obj model.ColorBySlugResult) graphql.Marshaler {
+	switch obj := (obj).(type) {
+	case nil:
+		return graphql.Null
+	case model.InternalErrorProblem:
+		return ec._InternalErrorProblem(ctx, sel, &obj)
+	case *model.InternalErrorProblem:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._InternalErrorProblem(ctx, sel, obj)
+	case model.VersionMismatchProblem:
+		return ec._VersionMismatchProblem(ctx, sel, &obj)
+	case *model.VersionMismatchProblem:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._VersionMismatchProblem(ctx, sel, obj)
+	case model.ColorBySlugOk:
+		return ec._ColorBySlugOk(ctx, sel, &obj)
+	case *model.ColorBySlugOk:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._ColorBySlugOk(ctx, sel, obj)
 	default:
 		panic(fmt.Errorf("unexpected type %T", obj))
 	}
@@ -9623,6 +10287,84 @@ func (ec *executionContext) _Color(ctx context.Context, sel ast.SelectionSet, ob
 	return out
 }
 
+var colorByIdOkImplementors = []string{"ColorByIdOk", "ColorByIdResult"}
+
+func (ec *executionContext) _ColorByIdOk(ctx context.Context, sel ast.SelectionSet, obj *model.ColorByIDOk) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, colorByIdOkImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("ColorByIdOk")
+		case "colors":
+			out.Values[i] = ec._ColorByIdOk_colors(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var colorBySlugOkImplementors = []string{"ColorBySlugOk", "ColorBySlugResult"}
+
+func (ec *executionContext) _ColorBySlugOk(ctx context.Context, sel ast.SelectionSet, obj *model.ColorBySlugOk) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, colorBySlugOkImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("ColorBySlugOk")
+		case "colors":
+			out.Values[i] = ec._ColorBySlugOk_colors(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
 var colorCreateOkImplementors = []string{"ColorCreateOk", "ColorCreateResult"}
 
 func (ec *executionContext) _ColorCreateOk(ctx context.Context, sel ast.SelectionSet, obj *model.ColorCreateOk) graphql.Marshaler {
@@ -9779,6 +10521,78 @@ func (ec *executionContext) _ColorQuery(ctx context.Context, sel ast.SelectionSe
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "colorByManyId":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._ColorQuery_colorByManyId(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "colorBySlug":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._ColorQuery_colorBySlug(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -9802,7 +10616,7 @@ func (ec *executionContext) _ColorQuery(ctx context.Context, sel ast.SelectionSe
 	return out
 }
 
-var internalErrorProblemImplementors = []string{"InternalErrorProblem", "LoginResult", "RegistrationsResult", "CandlesMutationResult", "CandlesByIdResult", "CandlesBySlugResult", "AllCategoryResult", "TotalCountResolvingResult", "CategoryCreateResult", "UpdateCategoryResult", "CategoryBySlugResult", "CategoryByIdResult", "CategoryGetAllResult", "ColorCreateResult", "AllColorResult", "ProblemInterface", "UserProfileResult"}
+var internalErrorProblemImplementors = []string{"InternalErrorProblem", "LoginResult", "RegistrationsResult", "CandlesMutationResult", "CandlesByIdResult", "CandlesBySlugResult", "AllCategoryResult", "TotalCountResolvingResult", "CategoryCreateResult", "UpdateCategoryResult", "CategoryBySlugResult", "CategoryByIdResult", "CategoryGetAllResult", "ColorCreateResult", "AllColorResult", "ColorByIdResult", "ColorBySlugResult", "ProblemInterface", "UserProfileResult"}
 
 func (ec *executionContext) _InternalErrorProblem(ctx context.Context, sel ast.SelectionSet, obj *model.InternalErrorProblem) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, internalErrorProblemImplementors)
@@ -10487,7 +11301,7 @@ func (ec *executionContext) _UserQuery(ctx context.Context, sel ast.SelectionSet
 	return out
 }
 
-var versionMismatchProblemImplementors = []string{"VersionMismatchProblem", "LoginResult", "RegistrationsResult", "CandlesMutationResult", "CandlesByIdResult", "CandlesBySlugResult", "AllCategoryResult", "TotalCountResolvingResult", "CategoryCreateResult", "UpdateCategoryResult", "CategoryBySlugResult", "CategoryByIdResult", "ColorCreateResult", "AllColorResult", "UserProfileResult", "ProblemInterface"}
+var versionMismatchProblemImplementors = []string{"VersionMismatchProblem", "LoginResult", "RegistrationsResult", "CandlesMutationResult", "CandlesByIdResult", "CandlesBySlugResult", "AllCategoryResult", "TotalCountResolvingResult", "CategoryCreateResult", "UpdateCategoryResult", "CategoryBySlugResult", "CategoryByIdResult", "ColorCreateResult", "AllColorResult", "ColorByIdResult", "ColorBySlugResult", "UserProfileResult", "ProblemInterface"}
 
 func (ec *executionContext) _VersionMismatchProblem(ctx context.Context, sel ast.SelectionSet, obj *model.VersionMismatchProblem) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, versionMismatchProblemImplementors)
@@ -11181,6 +11995,36 @@ func (ec *executionContext) marshalNColor2ᚖgithubᚗcomᚋSanchir01ᚋcandles_
 	return ec._Color(ctx, sel, v)
 }
 
+func (ec *executionContext) unmarshalNColorByIdInput2githubᚗcomᚋSanchir01ᚋcandles_backendᚋinternalᚋgqlᚋmodelᚐColorByIDInput(ctx context.Context, v interface{}) (model.ColorByIDInput, error) {
+	res, err := ec.unmarshalInputColorByIdInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNColorByIdResult2githubᚗcomᚋSanchir01ᚋcandles_backendᚋinternalᚋgqlᚋmodelᚐColorByIDResult(ctx context.Context, sel ast.SelectionSet, v model.ColorByIDResult) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._ColorByIdResult(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNColorBySlugInput2githubᚗcomᚋSanchir01ᚋcandles_backendᚋinternalᚋgqlᚋmodelᚐColorBySlugInput(ctx context.Context, v interface{}) (model.ColorBySlugInput, error) {
+	res, err := ec.unmarshalInputColorBySlugInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNColorBySlugResult2githubᚗcomᚋSanchir01ᚋcandles_backendᚋinternalᚋgqlᚋmodelᚐColorBySlugResult(ctx context.Context, sel ast.SelectionSet, v model.ColorBySlugResult) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._ColorBySlugResult(ctx, sel, v)
+}
+
 func (ec *executionContext) marshalNColorCreateResult2githubᚗcomᚋSanchir01ᚋcandles_backendᚋinternalᚋgqlᚋmodelᚐColorCreateResult(ctx context.Context, sel ast.SelectionSet, v model.ColorCreateResult) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
@@ -11272,6 +12116,36 @@ func (ec *executionContext) marshalNLoginResult2githubᚗcomᚋSanchir01ᚋcandl
 		return graphql.Null
 	}
 	return ec._LoginResult(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNPageNumber2uint(ctx context.Context, v interface{}) (uint, error) {
+	res, err := model.UnmarshalPageNumber(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNPageNumber2uint(ctx context.Context, sel ast.SelectionSet, v uint) graphql.Marshaler {
+	res := model.MarshalPageNumber(v)
+	if res == graphql.Null {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+	}
+	return res
+}
+
+func (ec *executionContext) unmarshalNPageSize2uint(ctx context.Context, v interface{}) (uint, error) {
+	res, err := model.UnmarshalPageSize(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNPageSize2uint(ctx context.Context, sel ast.SelectionSet, v uint) graphql.Marshaler {
+	res := model.MarshalPageSize(v)
+	if res == graphql.Null {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+	}
+	return res
 }
 
 func (ec *executionContext) unmarshalNRegistrationsInput2githubᚗcomᚋSanchir01ᚋcandles_backendᚋinternalᚋgqlᚋmodelᚐRegistrationsInput(ctx context.Context, v interface{}) (model.RegistrationsInput, error) {
@@ -11753,11 +12627,35 @@ func (ec *executionContext) marshalOBoolean2ᚖbool(ctx context.Context, sel ast
 	return res
 }
 
+func (ec *executionContext) unmarshalOCandlesFilterInput2ᚖgithubᚗcomᚋSanchir01ᚋcandles_backendᚋinternalᚋgqlᚋmodelᚐCandlesFilterInput(ctx context.Context, v interface{}) (*model.CandlesFilterInput, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputCandlesFilterInput(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
 func (ec *executionContext) marshalOCandlesQuery2ᚖgithubᚗcomᚋSanchir01ᚋcandles_backendᚋinternalᚋgqlᚋmodelᚐCandlesQuery(ctx context.Context, sel ast.SelectionSet, v *model.CandlesQuery) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	return ec._CandlesQuery(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalOCandlesSortEnum2ᚖgithubᚗcomᚋSanchir01ᚋcandles_backendᚋinternalᚋgqlᚋmodelᚐCandlesSortEnum(ctx context.Context, v interface{}) (*model.CandlesSortEnum, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var res = new(model.CandlesSortEnum)
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOCandlesSortEnum2ᚖgithubᚗcomᚋSanchir01ᚋcandles_backendᚋinternalᚋgqlᚋmodelᚐCandlesSortEnum(ctx context.Context, sel ast.SelectionSet, v *model.CandlesSortEnum) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return v
 }
 
 func (ec *executionContext) marshalOCategory2ᚖgithubᚗcomᚋSanchir01ᚋcandles_backendᚋinternalᚋgqlᚋmodelᚐCategory(ctx context.Context, sel ast.SelectionSet, v *model.Category) graphql.Marshaler {
@@ -11857,6 +12755,44 @@ func (ec *executionContext) marshalOUserQuery2ᚖgithubᚗcomᚋSanchir01ᚋcand
 		return graphql.Null
 	}
 	return ec._UserQuery(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalOUuid2ᚕgithubᚗcomᚋgoogleᚋuuidᚐUUIDᚄ(ctx context.Context, v interface{}) ([]uuid.UUID, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var vSlice []interface{}
+	if v != nil {
+		vSlice = graphql.CoerceList(v)
+	}
+	var err error
+	res := make([]uuid.UUID, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNUuid2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) marshalOUuid2ᚕgithubᚗcomᚋgoogleᚋuuidᚐUUIDᚄ(ctx context.Context, sel ast.SelectionSet, v []uuid.UUID) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	for i := range v {
+		ret[i] = ec.marshalNUuid2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, sel, v[i])
+	}
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
 }
 
 func (ec *executionContext) marshalO__EnumValue2ᚕgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐEnumValueᚄ(ctx context.Context, sel ast.SelectionSet, v []introspection.EnumValue) graphql.Marshaler {

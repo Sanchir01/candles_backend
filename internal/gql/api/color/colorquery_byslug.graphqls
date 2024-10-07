@@ -1,0 +1,12 @@
+extend type ColorQuery {
+    colorBySlug(input: ColorBySlugInput!): ColorBySlugResult! @goField(forceResolver: true)
+}
+
+input ColorBySlugInput {
+    slug: String!
+}
+
+type ColorBySlugOk  {
+    colors: Color!
+}
+union ColorBySlugResult = ColorBySlugOk | InternalErrorProblem | VersionMismatchProblem

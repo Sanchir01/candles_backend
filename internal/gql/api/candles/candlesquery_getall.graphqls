@@ -1,7 +1,24 @@
 extend type CandlesQuery {
-    allCandles: AllCategoryResult! @goField(forceResolver: true)
+    allCandles(
+        filter: CandlesFilterInput,
+        sort:CandlesSortEnum,
+        pageSize: PageSize! = 20
+        pageNumber: PageNumber! = 1,
+    ): AllCategoryResult! @goField(forceResolver: true)
+}
+enum CandlesSortEnum {
+    CREATED_AT_ASC
+    CREATED_AT_DESC
+    SORT_RANK_ASC
+    SORT_RANK_DESC
+    PRICE_ASC
+    PRICE_DESC
 }
 
+input CandlesFilterInput {
+    categoryId: [Uuid!]
+    colorId: [Uuid!]
+}
 
 union AllCategoryResult =
     | AllCandlesOk
@@ -16,6 +33,7 @@ type AllCandlesOk {
 type TotalCountResolvingOk{
     totalCount: UInt!
 }
+
 union TotalCountResolvingResult =
     | TotalCountResolvingOk
     | VersionMismatchProblem

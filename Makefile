@@ -14,6 +14,9 @@ generate-dataloaders:
 gql:
 	go get github.com/99designs/gqlgen@latest && go run github.com/99designs/gqlgen generate
 
+dataloaden:
+	(cd internal/feature/color  && dataloaden  LoaderByID LoaderByIdColor \*github.com/Sanchir01/candles_backend/internal/feature/color.Color)
+
 run: build
 	./.bin/main
 

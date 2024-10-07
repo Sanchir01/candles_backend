@@ -21,9 +21,9 @@ func NewService(repository *Repository, storages *Storage) *Service {
 		storages,
 	}
 }
-func (s *Service) AllCandles(ctx context.Context) ([]*model.Candles, error) {
+func (s *Service) AllCandles(ctx context.Context, sort *model.CandlesSortEnum) ([]*model.Candles, error) {
 
-	candles, err := s.repository.AllCandles(ctx)
+	candles, err := s.repository.AllCandles(ctx, sort)
 	gqlCandles, err := MapCandlesToGql(candles)
 
 	return gqlCandles, err

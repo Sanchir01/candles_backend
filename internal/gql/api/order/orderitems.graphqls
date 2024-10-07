@@ -1,9 +1,13 @@
-
-type Orders {
+type OrderItems {
     id: Uuid!
     createdAt: DateTime!
     updatedAt: DateTime!
     status:String!
     userId: Uuid!
-    total_amount: Int!
+    price: Int!
+    orderId: Uuid!
+    quantity: Int!
+    product_id: Uuid!
 }
+
+

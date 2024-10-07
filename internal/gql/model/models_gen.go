@@ -342,6 +342,27 @@ func (LoginOk) IsLoginResult() {}
 type Mutation struct {
 }
 
+type OrderItems struct {
+	ID        uuid.UUID `json:"id"`
+	CreatedAt time.Time `json:"createdAt"`
+	UpdatedAt time.Time `json:"updatedAt"`
+	Status    string    `json:"status"`
+	UserID    uuid.UUID `json:"userId"`
+	Price     int       `json:"price"`
+	OrderID   uuid.UUID `json:"orderId"`
+	Quantity  int       `json:"quantity"`
+	ProductID uuid.UUID `json:"product_id"`
+}
+
+type Orders struct {
+	ID          uuid.UUID `json:"id"`
+	CreatedAt   time.Time `json:"createdAt"`
+	UpdatedAt   time.Time `json:"updatedAt"`
+	Status      string    `json:"status"`
+	UserID      uuid.UUID `json:"userId"`
+	TotalAmount int       `json:"total_amount"`
+}
+
 type Query struct {
 }
 

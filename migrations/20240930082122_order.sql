@@ -18,6 +18,19 @@ CREATE TABLE IF NOT EXISTS order_items (
   quantity INT NOT NULL,
   product_id UUID NOT NULL REFERENCES candles(id) ON DELETE SET NULL ON UPDATE CASCADE
 );
+
+CREATE OR REPLACE FUNCTION update_timestamp()
+    RETURNS TRIGGER AS $$
+BEGIN
+    NEW.updated_at = CURRENT_TIMESTAMP;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER set_timestamp
+    BEFORE UPDATE ON "orders"
+    FOR EACH ROW
+EXECUTE PROCEDURE update_timestamp();
 -- +goose StatementEnd
 
 

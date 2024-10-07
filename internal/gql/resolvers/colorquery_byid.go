@@ -11,7 +11,7 @@ import (
 	"github.com/Sanchir01/candles_backend/internal/gql/model"
 )
 
-// CategoryByManyID is the resolver for the categoryByManyId field.
-func (r *colorQueryResolver) CategoryByManyID(ctx context.Context, obj *model.ColorQuery, input model.ColorByIDInput) (model.ColorByIDResult, error) {
-	panic(fmt.Errorf("not implemented: CategoryByManyID - categoryByManyId"))
+// ColorByManyID is the resolver for the colorByManyId field.
+func (r *colorQueryResolver) ColorByManyID(ctx context.Context, obj *model.ColorQuery, input model.ColorByIDInput) (model.ColorByIDResult, error) {
+	panic(fmt.Errorf("not implemented: ColorByManyID - colorByManyId"))
 }

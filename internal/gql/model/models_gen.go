@@ -243,8 +243,8 @@ type ColorMutation struct {
 }
 
 type ColorQuery struct {
-	AllColor         AllColorResult  `json:"allColor"`
-	CategoryByManyID ColorByIDResult `json:"categoryByManyId"`
+	AllColor      AllColorResult  `json:"allColor"`
+	ColorByManyID ColorByIDResult `json:"colorByManyId"`
 }
 
 type CreateCandleInput struct {

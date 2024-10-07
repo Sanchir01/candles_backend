@@ -2,6 +2,7 @@ package category
 
 import (
 	"context"
+	sq "github.com/Masterminds/squirrel"
 	"github.com/Sanchir01/candles_backend/internal/gql/model"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -42,10 +43,13 @@ func (s *Repository) CategoryBySlug(ctx context.Context, slug string) (*model.Ca
 	}
 	defer conn.Release()
 
-	query := "SELECT id , title, slug, created_at, updated_at, version FROM public.category WHERE slug = $1"
+	query, args, err := sq.Select("id", "title", "slug", "created_at", "updated_at", "version").
+		From("public.category").
+		Where(sq.Eq{"slug": slug}).
+		ToSql()
 
 	var category DBCategory
-	err = conn.QueryRow(ctx, query, slug).Scan(&category.ID, &category.Title, category.Slug, &category.CreatedAt, &category.UpdatedAt, &category.Version)
+	err = conn.QueryRow(ctx, query, args...).Scan(&category.ID, &category.Title, category.Slug, &category.CreatedAt, &category.UpdatedAt, &category.Version)
 	if err != nil {
 		return nil, err
 	}

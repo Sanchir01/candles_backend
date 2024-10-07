@@ -43,7 +43,7 @@ func (r *Repository) AllCandles(ctx context.Context, sort *model.CandlesSortEnum
 
 	// Создаем SQL-запрос с возможной сортировкой
 	queryBuilder := sq.Select("id, title, slug, price, images, version, category_id, created_at, updated_at").
-		From("public.candles")
+		From("public.candles").OrderBy(orders)
 
 	if orders != "" {
 		queryBuilder = queryBuilder.OrderBy(orders)
@@ -97,11 +97,18 @@ func (r *Repository) CandlesBySlug(ctx context.Context, slug string) (*model.Can
 		return nil, err
 	}
 	defer conn.Release()
+	query, args, err := sq.Select("id, title, slug, price, images, version, category_id, created_at, updated_at, color_id").
+		From("public.candles").
+		Where(sq.Eq{"slug": slug}).
+		ToSql()
 
-	query := "SELECT id ,title,slug, price, images, version, category_id, created_at, updated_at, color_id FROM public.candles WHERE slug = $1"
+	if err != nil {
+		return nil, err
+	}
+	//query := "SELECT id ,title,slug, price, images, version, category_id, created_at, updated_at, color_id FROM public.candles WHERE slug = $1"
 
 	var candle DBCandles
-	if err := conn.QueryRow(ctx, query, slug).Scan(
+	if err := conn.QueryRow(ctx, query, args...).Scan(
 		&candle.ID,
 		&candle.Title,
 		&candle.Slug,
@@ -125,10 +132,15 @@ func (r *Repository) CandlesById(ctx context.Context, id uuid.UUID) (*model.Cand
 	}
 	defer conn.Release()
 
-	query := "SELECT id ,title,slug, price, images, version, category_id, created_at, updated_at ,color_id FROM public.candles WHERE id = $1"
-
+	query, args, err := sq.Select("id, title, slug, price, images, version, category_id, created_at, updated_at, color_id").
+		From("public.candles").
+		Where(sq.Eq{"id": id}).
+		ToSql()
+	if err != nil {
+		return nil, err
+	}
 	var candle DBCandles
-	if err := conn.QueryRow(ctx, query, id).Scan(
+	if err := conn.QueryRow(ctx, query, args...).Scan(
 		&candle.ID,
 		&candle.Title,
 		&candle.Slug,
@@ -149,13 +161,13 @@ func (r *Repository) CandlesById(ctx context.Context, id uuid.UUID) (*model.Cand
 func BuildSortQuery(sort model.CandlesSortEnum) string {
 	switch sort {
 	case model.CandlesSortEnumCreatedAtAsc:
-		return "ORDER BY created_at ASC"
+		return "created_at ASC"
 	case model.CandlesSortEnumCreatedAtDesc:
-		return "ORDER BY created_at DESC"
+		return "created_at DESC"
 	case model.CandlesSortEnumPriceAsc:
-		return "ORDER BY price ASC"
+		return "price ASC"
 	case model.CandlesSortEnumPriceDesc:
-		return "ORDER BY price DESC"
+		return "price DESC"
 	default:
 		return ""
 	}

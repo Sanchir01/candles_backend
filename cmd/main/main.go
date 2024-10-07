@@ -6,7 +6,6 @@ import (
 	"github.com/Sanchir01/candles_backend/internal/app"
 	telegrambot "github.com/Sanchir01/candles_backend/internal/bot"
 	httphandlers "github.com/Sanchir01/candles_backend/internal/handlers"
-	customMiddleware "github.com/Sanchir01/candles_backend/internal/handlers/middleware"
 	httpserver "github.com/Sanchir01/candles_backend/internal/server/http"
 	"github.com/go-chi/chi/v5"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
@@ -35,7 +34,7 @@ func main() {
 	}
 	serve := httpserver.NewHttpServer(env.Config)
 	rout := chi.NewRouter()
-	rout.Use(customMiddleware.NewDataLoadersMiddleware(env))
+
 	var (
 		handlers = httphandlers.New(rout, env)
 	)

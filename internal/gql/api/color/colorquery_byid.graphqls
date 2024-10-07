@@ -1,5 +1,5 @@
 extend type ColorQuery {
-    categoryByManyId(input: ColorByIdInput!): ColorByIdResult! @goField(forceResolver: true)
+    colorByManyId(input: ColorByIdInput!): ColorByIdResult! @goField(forceResolver: true)
 }
 
 input ColorByIdInput {

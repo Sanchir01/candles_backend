@@ -6,6 +6,7 @@ import (
 	"github.com/Sanchir01/candles_backend/pkg/lib/utils"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
+	"log/slog"
 )
 
 type Service struct {
@@ -40,6 +41,12 @@ func (s *Service) Registrations(ctx context.Context, title, phone, role string, 
 
 	slug, err := utils.Slugify(title)
 	if err != nil {
+		return nil, err
+	}
+	existUser, err := s.UserByPhone(ctx, phone)
+
+	if err == nil {
+		slog.Error("User with this phone already exists", existUser)
 		return nil, err
 	}
 	usersdb, err := s.repository.CreateUser(ctx, title, phone, slug, role, tx)

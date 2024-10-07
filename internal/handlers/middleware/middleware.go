@@ -11,7 +11,7 @@ import (
 const responseWriterKey = "responseWriter"
 
 func GetJWTClaimsFromCtx(ctx context.Context) (*userFeature.Claims, error) {
-	claims, ok := ctx.Value("user").(*userFeature.Claims)
+	claims, ok := ctx.Value(app.AccessTokenContextKey).(*userFeature.Claims)
 	if !ok {
 		return nil, errors.New("no JWT claims found in context")
 	}
@@ -60,11 +60,10 @@ func AuthMiddleware() func(http.Handler) http.Handler {
 			// Проверка валидности токена
 			validAccessToken, err := userFeature.ParseToken(access.Value)
 			if err != nil {
-
 				next.ServeHTTP(w, r)
 				return
 			}
-			ctx := context.WithValue(r.Context(), "user", validAccessToken)
+			ctx := context.WithValue(r.Context(), app.AccessTokenContextKey, validAccessToken)
 
 			next.ServeHTTP(w, r.WithContext(ctx))
 		})

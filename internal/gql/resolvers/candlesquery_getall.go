@@ -6,7 +6,6 @@ package resolver
 
 import (
 	"context"
-
 	runtime "github.com/Sanchir01/candles_backend/internal/gql/generated"
 	"github.com/Sanchir01/candles_backend/internal/gql/model"
 	responseErr "github.com/Sanchir01/candles_backend/pkg/lib/api/response"
@@ -21,7 +20,6 @@ func (r *allCandlesOkResolver) TotalCount(ctx context.Context, obj *model.AllCan
 
 // AllCandles is the resolver for the allCandles field.
 func (r *candlesQueryResolver) AllCandles(ctx context.Context, obj *model.CandlesQuery, filter *model.CandlesFilterInput, sort *model.CandlesSortEnum, pageSize uint, pageNumber uint) (model.AllCategoryResult, error) {
-	r.env.Logger.Warn("resolver sorting all candles", sort)
 	allCandles, err := r.env.Services.CandlesService.AllCandles(ctx, sort)
 
 	if err != nil {

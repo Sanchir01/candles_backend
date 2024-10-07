@@ -6,16 +6,16 @@ package resolver
 
 import (
 	"context"
-	responseErr "github.com/Sanchir01/candles_backend/pkg/lib/api/response"
 
 	"github.com/Sanchir01/candles_backend/internal/gql/model"
+	responseErr "github.com/Sanchir01/candles_backend/pkg/lib/api/response"
 )
 
 // ColorBySlug is the resolver for the colorBySlug field.
 func (r *colorQueryResolver) ColorBySlug(ctx context.Context, obj *model.ColorQuery, input model.ColorBySlugInput) (model.ColorBySlugResult, error) {
 	colors, err := r.env.Services.ColorService.ColorBySlug(ctx, input.Slug)
 	if err != nil {
-		return responseErr.NewInternalErrorProblem("error for mapping gql model"), err
+		return responseErr.NewInternalErrorProblem("error for getting color by slug"), err
 	}
 	return model.ColorBySlugOk{
 		Colors: colors,

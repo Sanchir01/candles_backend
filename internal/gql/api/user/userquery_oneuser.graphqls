@@ -1,5 +1,5 @@
 extend type UserQuery {
-    profile(id:Uuid!): UserProfileResult! @goField(forceResolver: true)  @hasRole(role: USER)
+    profile: UserProfileResult! @goField(forceResolver: true)  @hasRole(role: USER)
 }
 
 type UserProfileOk {

@@ -6,13 +6,20 @@ package resolver
 
 import (
 	"context"
-	"fmt"
+	customMiddleware "github.com/Sanchir01/candles_backend/internal/handlers/middleware"
+	responseErr "github.com/Sanchir01/candles_backend/pkg/lib/api/response"
 
 	"github.com/Sanchir01/candles_backend/internal/gql/model"
-	"github.com/google/uuid"
 )
 
 // Profile is the resolver for the profile field.
-func (r *userQueryResolver) Profile(ctx context.Context, obj *model.UserQuery, id uuid.UUID) (model.UserProfileResult, error) {
-	panic(fmt.Errorf("not implemented: Profile - profile"))
+func (r *userQueryResolver) Profile(ctx context.Context, obj *model.UserQuery) (model.UserProfileResult, error) {
+	userCookie, err := customMiddleware.GetJWTClaimsFromCtx(ctx)
+	if err != nil {
+		return responseErr.NewInternalErrorProblem("не удалось получить профиль"), err
+	}
+	user, err := r.env.Services.UserService.UserById(ctx, userCookie.ID)
+	return model.UserProfileOk{
+		Profile: user,
+	}, nil
 }

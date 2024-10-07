@@ -1372,9 +1372,7 @@ union CategoryGetAllResult =
     updated_at: DateTime!
     version:UInt!
 }`, BuiltIn: false},
-	{Name: "../api/color/colormutaion_create.graphqls", Input: `
-
-extend type ColorMutation {
+	{Name: "../api/color/colormutaion_create.graphqls", Input: `extend type ColorMutation {
     createColor(input:CreateColorInput!): ColorCreateResult! @goField(forceResolver: true) 
 }
 

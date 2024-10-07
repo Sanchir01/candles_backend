@@ -52,6 +52,10 @@ type ColorByIDResult interface {
 	IsColorByIDResult()
 }
 
+type ColorBySlugResult interface {
+	IsColorBySlugResult()
+}
+
 type ColorCreateResult interface {
 	IsColorCreateResult()
 }
@@ -232,6 +236,16 @@ type ColorByIDOk struct {
 
 func (ColorByIDOk) IsColorByIDResult() {}
 
+type ColorBySlugInput struct {
+	Slug string `json:"slug"`
+}
+
+type ColorBySlugOk struct {
+	Colors *Color `json:"colors"`
+}
+
+func (ColorBySlugOk) IsColorBySlugResult() {}
+
 type ColorCreateOk struct {
 	ID uuid.UUID `json:"id"`
 }
@@ -243,8 +257,9 @@ type ColorMutation struct {
 }
 
 type ColorQuery struct {
-	AllColor      AllColorResult  `json:"allColor"`
-	ColorByManyID ColorByIDResult `json:"colorByManyId"`
+	AllColor      AllColorResult    `json:"allColor"`
+	ColorByManyID ColorByIDResult   `json:"colorByManyId"`
+	ColorBySlug   ColorBySlugResult `json:"colorBySlug"`
 }
 
 type CreateCandleInput struct {
@@ -296,6 +311,8 @@ func (InternalErrorProblem) IsColorCreateResult() {}
 func (InternalErrorProblem) IsAllColorResult() {}
 
 func (InternalErrorProblem) IsColorByIDResult() {}
+
+func (InternalErrorProblem) IsColorBySlugResult() {}
 
 func (InternalErrorProblem) IsProblemInterface()     {}
 func (this InternalErrorProblem) GetMessage() string { return this.Message }
@@ -429,6 +446,8 @@ func (VersionMismatchProblem) IsColorCreateResult() {}
 func (VersionMismatchProblem) IsAllColorResult() {}
 
 func (VersionMismatchProblem) IsColorByIDResult() {}
+
+func (VersionMismatchProblem) IsColorBySlugResult() {}
 
 func (VersionMismatchProblem) IsUserProfileResult() {}
 

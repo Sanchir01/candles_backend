@@ -2,11 +2,13 @@ package candles
 
 import (
 	"context"
+	"fmt"
 	sq "github.com/Masterminds/squirrel"
 	"github.com/Sanchir01/candles_backend/internal/gql/model"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"log/slog"
 )
 
 type Repository struct {
@@ -134,11 +136,14 @@ func (r *Repository) CandlesById(ctx context.Context, id uuid.UUID) (*model.Cand
 
 	query, args, err := sq.Select("id, title, slug, price, images, version, category_id, created_at, updated_at, color_id").
 		From("public.candles").
-		Where(sq.Eq{"id": id}).
+		Where(sq.Eq{"id": id}).PlaceholderFormat(sq.Dollar).
 		ToSql()
+
 	if err != nil {
 		return nil, err
 	}
+	fmt.Printf("Generated SQL: %s\n", query)
+	fmt.Printf("Arguments: %v\n", args)
 	var candle DBCandles
 	if err := conn.QueryRow(ctx, query, args...).Scan(
 		&candle.ID,
@@ -152,6 +157,7 @@ func (r *Repository) CandlesById(ctx context.Context, id uuid.UUID) (*model.Cand
 		&candle.UpdatedAt,
 		&candle.ColorID,
 	); err != nil {
+		slog.Error("error db candle", err.Error())
 		return nil, err
 	}
 

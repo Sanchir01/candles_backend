@@ -1,5 +1,3 @@
-
-
 extend type ColorMutation {
     createColor(input:CreateColorInput!): ColorCreateResult! @goField(forceResolver: true) 
 }

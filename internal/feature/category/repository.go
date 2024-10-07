@@ -24,11 +24,12 @@ func (s *Repository) CategoryById(ctx context.Context, id uuid.UUID) (*model.Cat
 		return nil, err
 	}
 	defer conn.Release()
-
-	query := "SELECT id , title, slug, created_at, updated_at, version FROM public.category WHERE id = $1"
-
+	query, args, err := sq.Select("id", "title", "slug", "created_at", "updated_at", "version").
+		From("public.category").
+		Where(sq.Eq{"id": id}).PlaceholderFormat(sq.Dollar).
+		ToSql()
 	var category DBCategory
-	err = conn.QueryRow(ctx, query, id).Scan(&category.ID, &category.Title, category.Slug, &category.CreatedAt, &category.UpdatedAt, &category.Version)
+	err = conn.QueryRow(ctx, query, args...).Scan(&category.ID, &category.Title, category.Slug, &category.CreatedAt, &category.UpdatedAt, &category.Version)
 	if err != nil {
 		return nil, err
 	}
@@ -45,7 +46,7 @@ func (s *Repository) CategoryBySlug(ctx context.Context, slug string) (*model.Ca
 
 	query, args, err := sq.Select("id", "title", "slug", "created_at", "updated_at", "version").
 		From("public.category").
-		Where(sq.Eq{"slug": slug}).
+		Where(sq.Eq{"slug": slug}).PlaceholderFormat(sq.Dollar).
 		ToSql()
 
 	var category DBCategory
@@ -55,7 +56,6 @@ func (s *Repository) CategoryBySlug(ctx context.Context, slug string) (*model.Ca
 	}
 
 	return (*model.Category)(&category), nil
-
 }
 
 func (s *Repository) AllCategories(ctx context.Context) ([]model.Category, error) {
@@ -64,7 +64,12 @@ func (s *Repository) AllCategories(ctx context.Context) ([]model.Category, error
 		return nil, err
 	}
 	defer conn.Release()
-	query := "SELECT id , title, slug, created_at, updated_at, version FROM public.category"
+
+	query, _, err := sq.Select("id , title, slug, created_at, updated_at, version ").From("public.category").ToSql()
+	if err != nil {
+		return nil, err
+	}
+
 	rows, err := conn.Query(ctx, query)
 
 	if rows.Err(); err != nil {
@@ -88,16 +93,24 @@ func (s *Repository) AllCategories(ctx context.Context) ([]model.Category, error
 	return categories, nil
 }
 
-func (s *Repository) CreateCategory(ctx context.Context, name, slug string) (uuid.UUID, error) {
+func (s *Repository) CreateCategory(ctx context.Context, title, slug string) (uuid.UUID, error) {
 	conn, err := s.primaryDB.Acquire(ctx)
 	if err != nil {
 		return uuid.Nil, err
 	}
 	defer conn.Release()
-	query := "INSERT INTO category(title, slug) VALUES($1, $2) RETURNING id"
+	query, args, err := sq.Insert("color").
+		Columns("title", "slug").
+		Values(title, slug).
+		Suffix("RETURNING id").PlaceholderFormat(sq.Dollar).
+		ToSql()
+	if err != nil {
+		return uuid.Nil, err
+	}
+
 	var id uuid.UUID
 
-	row := conn.QueryRow(ctx, query, name, slug)
+	row := conn.QueryRow(ctx, query, args...)
 
 	if err := row.Scan(&id); err != nil {
 		return uuid.Nil, err

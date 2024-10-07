@@ -101,7 +101,7 @@ func (r *Repository) CandlesBySlug(ctx context.Context, slug string) (*model.Can
 	defer conn.Release()
 	query, args, err := sq.Select("id, title, slug, price, images, version, category_id, created_at, updated_at, color_id").
 		From("public.candles").
-		Where(sq.Eq{"slug": slug}).
+		Where(sq.Eq{"slug": slug}).PlaceholderFormat(sq.Dollar).
 		ToSql()
 
 	if err != nil {

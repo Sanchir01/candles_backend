@@ -2,6 +2,7 @@ package color
 
 import (
 	"context"
+	sq "github.com/Masterminds/squirrel"
 	"github.com/Sanchir01/candles_backend/internal/gql/model"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -24,7 +25,11 @@ func (r *Repository) AllColor(ctx context.Context) ([]model.Color, error) {
 		return nil, err
 	}
 	defer conn.Release()
-	query := "SELECT id , title, slug, created_at, updated_at,version version FROM public.color"
+	query, _, err := sq.Select("id , title, slug, created_at, updated_at,version version").From("public.color").ToSql()
+	if err != nil {
+		return nil, err
+	}
+
 	rows, err := conn.Query(ctx, query)
 	defer rows.Close()
 
@@ -46,11 +51,17 @@ func (r *Repository) CreateColor(ctx context.Context, title, slug string) (uuid.
 		return uuid.Nil, err
 	}
 	defer conn.Release()
-	query := `INSERT INTO color(title,slug) VALUES ($1,$2) RETURNING id`
+	query, args, err := sq.Insert("category").
+		Columns("title", "slug").
+		Values(title, slug).
+		Suffix("RETURNING id").PlaceholderFormat(sq.Dollar).
+		ToSql()
+	if err != nil {
+		return uuid.Nil, err
+	}
 
 	var id uuid.UUID
-
-	if err = conn.QueryRow(ctx, query, title, slug).Scan(&id); err != nil {
+	if err = conn.QueryRow(ctx, query, args...).Scan(&id); err != nil {
 		return uuid.Nil, err
 	}
 	return id, nil
@@ -87,7 +98,8 @@ func (r *Repository) ColorById(ctx context.Context, id uuid.UUID) (*model.Color,
 		return nil, err
 	}
 	defer conn.Release()
-	query := "SELECT id, title, slug, version, created_at ,updated_at FROM public.color WHERE id = $1"
+	query, _, err := sq.Select("id , title, slug, created_at, updated_at,version ").From("public.color").
+		Where(sq.Eq{"id": id}).PlaceholderFormat(sq.Dollar).ToSql()
 
 	var color DBColor
 
@@ -107,8 +119,8 @@ func (r *Repository) ColorBySlug(ctx context.Context, slug string) (*model.Color
 	}
 	defer conn.Release()
 
-	query := "SELECT id, title, slug, version, created_at, updated_at FROM public.color WHERE slug = $1"
-
+	query, _, err := sq.Select("id , title, slug, created_at, updated_at,version").From("public.color").
+		Where(sq.Eq{"slug": slug}).PlaceholderFormat(sq.Dollar).ToSql()
 	var color DBColor
 
 	if err := conn.QueryRow(ctx, query, slug).Scan(

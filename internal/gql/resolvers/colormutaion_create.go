@@ -15,6 +15,7 @@ import (
 func (r *colorMutationResolver) CreateColor(ctx context.Context, obj *model.ColorMutation, input model.CreateColorInput) (model.ColorCreateResult, error) {
 	id, err := r.env.Services.ColorService.CreateColor(ctx, input.Title)
 	if err != nil {
+		r.env.Logger.Error("error create color", err.Error())
 		return responseErr.NewInternalErrorProblem("error for create color"), err
 	}
 	return model.ColorCreateOk{ID: id}, nil

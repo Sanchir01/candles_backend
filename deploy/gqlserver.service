@@ -1,0 +1,16 @@
+[Unit]
+Description=Graphql Server
+After=network.target
+
+[Service]
+ExecStart=/home/admin/goproject/candles_backend/.bin/main
+WorkingDirectory=/home/admin/goproject/candles_backend
+Restart=always
+User=admin
+
+
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

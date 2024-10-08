@@ -240,7 +240,7 @@ type ComplexityRoot struct {
 	}
 
 	UserQuery struct {
-		Profile func(childComplexity int, id uuid.UUID) int
+		Profile func(childComplexity int) int
 	}
 
 	VersionMismatchProblem struct {
@@ -293,7 +293,7 @@ type QueryResolver interface {
 	User(ctx context.Context) (*model.UserQuery, error)
 }
 type UserQueryResolver interface {
-	Profile(ctx context.Context, obj *model.UserQuery, id uuid.UUID) (model.UserProfileResult, error)
+	Profile(ctx context.Context, obj *model.UserQuery) (model.UserProfileResult, error)
 }
 
 type executableSchema struct {
@@ -950,12 +950,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			break
 		}
 
-		args, err := ec.field_UserQuery_profile_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.UserQuery.Profile(childComplexity, args["id"].(uuid.UUID)), true
+		return e.complexity.UserQuery.Profile(childComplexity), true
 
 	case "VersionMismatchProblem.message":
 		if e.complexity.VersionMismatchProblem.Message == nil {
@@ -1477,7 +1472,7 @@ extend type Query {
     user:UserQuery
 }`, BuiltIn: false},
 	{Name: "../api/user/userquery_oneuser.graphqls", Input: `extend type UserQuery {
-    profile(id:Uuid!): UserProfileResult! @goField(forceResolver: true)  @hasRole(role: USER)
+    profile: UserProfileResult! @goField(forceResolver: true)  @hasRole(role: USER)
 }
 
 type UserProfileOk {
@@ -2092,38 +2087,6 @@ func (ec *executionContext) field_Query___type_argsName(
 	}
 
 	var zeroVal string
-	return zeroVal, nil
-}
-
-func (ec *executionContext) field_UserQuery_profile_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
-	arg0, err := ec.field_UserQuery_profile_argsID(ctx, rawArgs)
-	if err != nil {
-		return nil, err
-	}
-	args["id"] = arg0
-	return args, nil
-}
-func (ec *executionContext) field_UserQuery_profile_argsID(
-	ctx context.Context,
-	rawArgs map[string]interface{},
-) (uuid.UUID, error) {
-	// We won't call the directive if the argument is null.
-	// Set call_argument_directives_with_null to true to call directives
-	// even if the argument is null.
-	_, ok := rawArgs["id"]
-	if !ok {
-		var zeroVal uuid.UUID
-		return zeroVal, nil
-	}
-
-	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
-	if tmp, ok := rawArgs["id"]; ok {
-		return ec.unmarshalNUuid2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, tmp)
-	}
-
-	var zeroVal uuid.UUID
 	return zeroVal, nil
 }
 
@@ -6218,7 +6181,7 @@ func (ec *executionContext) _UserQuery_profile(ctx context.Context, field graphq
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		directive0 := func(rctx context.Context) (interface{}, error) {
 			ctx = rctx // use context from middleware stack in children
-			return ec.resolvers.UserQuery().Profile(rctx, obj, fc.Args["id"].(uuid.UUID))
+			return ec.resolvers.UserQuery().Profile(rctx, obj)
 		}
 
 		directive1 := func(ctx context.Context) (interface{}, error) {
@@ -6261,7 +6224,7 @@ func (ec *executionContext) _UserQuery_profile(ctx context.Context, field graphq
 	return ec.marshalNUserProfileResult2githubᚗcomᚋSanchir01ᚋcandles_backendᚋinternalᚋgqlᚋmodelᚐUserProfileResult(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_UserQuery_profile(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_UserQuery_profile(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "UserQuery",
 		Field:      field,
@@ -6270,17 +6233,6 @@ func (ec *executionContext) fieldContext_UserQuery_profile(ctx context.Context, 
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type UserProfileResult does not have child fields")
 		},
-	}
-	defer func() {
-		if r := recover(); r != nil {
-			err = ec.Recover(ctx, r)
-			ec.Error(ctx, err)
-		}
-	}()
-	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_UserQuery_profile_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
-		ec.Error(ctx, err)
-		return fc, err
 	}
 	return fc, nil
 }

@@ -6,7 +6,6 @@ package resolver
 
 import (
 	"context"
-	"fmt"
 
 	runtime "github.com/Sanchir01/candles_backend/internal/gql/generated"
 	"github.com/Sanchir01/candles_backend/internal/gql/model"
@@ -14,7 +13,7 @@ import (
 
 // User is the resolver for the user field.
 func (r *queryResolver) User(ctx context.Context) (*model.UserQuery, error) {
-	panic(fmt.Errorf("not implemented: User - user"))
+	return &model.UserQuery{}, nil
 }
 
 // UserQuery returns runtime.UserQueryResolver implementation.

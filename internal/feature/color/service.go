@@ -23,7 +23,7 @@ func (s *Service) AllColor(ctx context.Context) ([]*model.Color, error) {
 	if err != nil {
 		return nil, err
 	}
-	gqlcolors, err := MapColorToGql(colors)
+	gqlcolors, err := utils.MapToGql(colors)
 	if err != nil {
 		return nil, err
 	}

@@ -24,8 +24,15 @@ func NewService(repository *Repository, storages *Storage) *Service {
 func (s *Service) AllCandles(ctx context.Context, sort *model.CandlesSortEnum) ([]*model.Candles, error) {
 
 	candles, err := s.repository.AllCandles(ctx, sort)
+
+	if err != nil {
+		return nil, err
+	}
 	gqlCandles, err := MapCandlesToGql(candles)
 
+	if err != nil {
+		return nil, err
+	}
 	return gqlCandles, err
 }
 
@@ -72,9 +79,10 @@ func (s *Service) CreateCandles(ctx context.Context, categoryID, colorID uuid.UU
 	return id, nil
 }
 func (s *Service) CandlesById(ctx context.Context, id uuid.UUID) (*model.Candles, error) {
-
 	candles, err := s.repository.CandlesById(ctx, id)
-
+	if err != nil {
+		return nil, err
+	}
 	return candles, err
 }
 
@@ -84,6 +92,8 @@ func (s *Service) CandlesBySlug(ctx context.Context, title string) (*model.Candl
 		return nil, err
 	}
 	candles, err := s.repository.CandlesBySlug(ctx, slug)
-
+	if err != nil {
+		return nil, err
+	}
 	return candles, err
 }

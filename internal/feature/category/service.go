@@ -24,7 +24,7 @@ func (s *Service) AllCategory(ctx context.Context) ([]*model.Category, error) {
 
 		return nil, err
 	}
-	categories, err := MapCategoryToGql(allCategory)
+	categories, err := utils.MapToGql(allCategory)
 	if err != nil {
 
 		return nil, err

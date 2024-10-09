@@ -208,6 +208,7 @@ type ComplexityRoot struct {
 		Status    func(childComplexity int) int
 		UpdatedAt func(childComplexity int) int
 		UserID    func(childComplexity int) int
+		Version   func(childComplexity int) int
 	}
 
 	Orders struct {
@@ -217,6 +218,7 @@ type ComplexityRoot struct {
 		TotalAmount func(childComplexity int) int
 		UpdatedAt   func(childComplexity int) int
 		UserID      func(childComplexity int) int
+		Version     func(childComplexity int) int
 	}
 
 	Query struct {
@@ -889,6 +891,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.OrderItems.UserID(childComplexity), true
 
+	case "OrderItems.version":
+		if e.complexity.OrderItems.Version == nil {
+			break
+		}
+
+		return e.complexity.OrderItems.Version(childComplexity), true
+
 	case "Orders.createdAt":
 		if e.complexity.Orders.CreatedAt == nil {
 			break
@@ -930,6 +939,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Orders.UserID(childComplexity), true
+
+	case "Orders.version":
+		if e.complexity.Orders.Version == nil {
+			break
+		}
+
+		return e.complexity.Orders.Version(childComplexity), true
 
 	case "Query.candles":
 		if e.complexity.Query.Candles == nil {
@@ -1559,14 +1575,14 @@ type ColorBySlugOk  {
 }
 union ColorBySlugResult = ColorBySlugOk | InternalErrorProblem | VersionMismatchProblem`, BuiltIn: false},
 	{Name: "../api/mutation.graphqls", Input: `type Mutation`, BuiltIn: false},
-	{Name: "../api/order/order.graphqls", Input: `
-type Orders {
+	{Name: "../api/order/order.graphqls", Input: `type Orders {
     id: Uuid!
     createdAt: DateTime!
     updatedAt: DateTime!
     status:String!
     userId: Uuid!
     total_amount: Int!
+    version:UInt!
 }
 `, BuiltIn: false},
 	{Name: "../api/order/orderitems.graphqls", Input: `type OrderItems {
@@ -1579,6 +1595,7 @@ type Orders {
     orderId: Uuid!
     quantity: Int!
     product_id: Uuid!
+    version:UInt!
 }
 
 
@@ -5665,6 +5682,50 @@ func (ec *executionContext) fieldContext_OrderItems_product_id(_ context.Context
 	return fc, nil
 }
 
+func (ec *executionContext) _OrderItems_version(ctx context.Context, field graphql.CollectedField, obj *model.OrderItems) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_OrderItems_version(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Version, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(uint)
+	fc.Result = res
+	return ec.marshalNUInt2uint(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_OrderItems_version(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "OrderItems",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type UInt does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Orders_id(ctx context.Context, field graphql.CollectedField, obj *model.Orders) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Orders_id(ctx, field)
 	if err != nil {
@@ -5924,6 +5985,50 @@ func (ec *executionContext) fieldContext_Orders_total_amount(_ context.Context, 
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Orders_version(ctx context.Context, field graphql.CollectedField, obj *model.Orders) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Orders_version(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Version, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(uint)
+	fc.Result = res
+	return ec.marshalNUInt2uint(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Orders_version(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Orders",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type UInt does not have child fields")
 		},
 	}
 	return fc, nil
@@ -11635,6 +11740,11 @@ func (ec *executionContext) _OrderItems(ctx context.Context, sel ast.SelectionSe
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
+		case "version":
+			out.Values[i] = ec._OrderItems_version(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -11696,6 +11806,11 @@ func (ec *executionContext) _Orders(ctx context.Context, sel ast.SelectionSet, o
 			}
 		case "total_amount":
 			out.Values[i] = ec._Orders_total_amount(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "version":
+			out.Values[i] = ec._Orders_version(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}

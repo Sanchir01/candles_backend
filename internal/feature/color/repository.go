@@ -25,7 +25,7 @@ func (r *Repository) AllColor(ctx context.Context) ([]model.Color, error) {
 		return nil, err
 	}
 	defer conn.Release()
-	query, _, err := sq.Select("id , title, slug, created_at, updated_at,version version").From("public.color").ToSql()
+	query, _, err := sq.Select("id , title, slug, created_at, updated_at,version").From("public.color").ToSql()
 	if err != nil {
 		return nil, err
 	}

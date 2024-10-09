@@ -352,6 +352,7 @@ type OrderItems struct {
 	OrderID   uuid.UUID `json:"orderId"`
 	Quantity  int       `json:"quantity"`
 	ProductID uuid.UUID `json:"product_id"`
+	Version   uint      `json:"version"`
 }
 
 type Orders struct {
@@ -361,6 +362,7 @@ type Orders struct {
 	Status      string    `json:"status"`
 	UserID      uuid.UUID `json:"userId"`
 	TotalAmount int       `json:"total_amount"`
+	Version     uint      `json:"version"`
 }
 
 type Query struct {

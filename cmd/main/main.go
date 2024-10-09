@@ -16,17 +16,6 @@ import (
 	"syscall"
 )
 
-var (
-	development = "development"
-	production  = "production"
-)
-
-type ctxKey string
-
-const (
-	loadersKey = ctxKey("dataloaders")
-)
-
 func main() {
 	env, err := app.NewEnv()
 	if err != nil {
@@ -53,14 +42,11 @@ func main() {
 		}
 	}(ctx)
 
-	if err != nil {
-		panic(err)
-	}
-
 	bot, err := tgbotapi.NewBotAPI(os.Getenv("TELEGRAM_BOT_TOKEN"))
 	if err != nil {
 		log.Panic(err)
 	}
+
 	tgbot := telegrambot.New(bot, env.Logger)
 
 	if err := tgbot.Start(env.Config); err != nil {

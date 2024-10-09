@@ -8,6 +8,7 @@ type OrderItems {
     orderId: Uuid!
     quantity: Int!
     product_id: Uuid!
+    version:UInt!
 }
 
 

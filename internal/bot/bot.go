@@ -1,6 +1,7 @@
 package telegrambot
 
 import (
+	"context"
 	"github.com/Sanchir01/candles_backend/internal/config"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"log/slog"
@@ -10,6 +11,8 @@ type Bot struct {
 	bot *tgbotapi.BotAPI
 	lg  *slog.Logger
 }
+
+type ViewFunc func(ctx context.Context, bot *tgbotapi.BotAPI, update tgbotapi.Update) error
 
 func New(bot *tgbotapi.BotAPI, lg *slog.Logger) *Bot {
 	return &Bot{bot: bot, lg: lg}

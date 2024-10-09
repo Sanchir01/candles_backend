@@ -1,4 +1,3 @@
-
 type Orders {
     id: Uuid!
     createdAt: DateTime!
@@ -6,4 +5,5 @@ type Orders {
     status:String!
     userId: Uuid!
     total_amount: Int!
+    version:UInt!
 }

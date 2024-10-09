@@ -1,0 +1,5 @@
+type OrderMutations
+
+extend type Mutation {
+    orders:OrderMutations!
+}

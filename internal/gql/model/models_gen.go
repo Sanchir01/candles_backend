@@ -20,6 +20,10 @@ type AllColorResult interface {
 	IsAllColorResult()
 }
 
+type AllOrdersResult interface {
+	IsAllOrdersResult()
+}
+
 type CandlesByIDResult interface {
 	IsCandlesByIDResult()
 }
@@ -58,6 +62,10 @@ type ColorBySlugResult interface {
 
 type ColorCreateResult interface {
 	IsColorCreateResult()
+}
+
+type CreateOrderResult interface {
+	IsCreateOrderResult()
 }
 
 type LoginResult interface {
@@ -102,6 +110,12 @@ type AllColorOk struct {
 }
 
 func (AllColorOk) IsAllColorResult() {}
+
+type AllOrdersOk struct {
+	Orders []*Orders `json:"orders"`
+}
+
+func (AllOrdersOk) IsAllOrdersResult() {}
 
 type AuthMutations struct {
 	Login         LoginResult         `json:"login"`
@@ -278,6 +292,16 @@ type CreateColorInput struct {
 	Title string `json:"title"`
 }
 
+type CreateOrderInput struct {
+	ID *uuid.UUID `json:"id,omitempty"`
+}
+
+type CreateOrderOk struct {
+	Ok string `json:"ok"`
+}
+
+func (CreateOrderOk) IsCreateOrderResult() {}
+
 type InternalErrorProblem struct {
 	Message string `json:"message"`
 }
@@ -313,6 +337,10 @@ func (InternalErrorProblem) IsAllColorResult() {}
 func (InternalErrorProblem) IsColorByIDResult() {}
 
 func (InternalErrorProblem) IsColorBySlugResult() {}
+
+func (InternalErrorProblem) IsCreateOrderResult() {}
+
+func (InternalErrorProblem) IsAllOrdersResult() {}
 
 func (InternalErrorProblem) IsProblemInterface()     {}
 func (this InternalErrorProblem) GetMessage() string { return this.Message }
@@ -353,6 +381,14 @@ type OrderItems struct {
 	Quantity  int       `json:"quantity"`
 	ProductID uuid.UUID `json:"product_id"`
 	Version   uint      `json:"version"`
+}
+
+type OrderMutations struct {
+	CreateOrder CreateOrderResult `json:"createOrder"`
+}
+
+type OrderQuery struct {
+	AllOrders AllOrdersResult `json:"allOrders"`
 }
 
 type Orders struct {
@@ -403,6 +439,10 @@ func (UnauthorizedProblem) IsCandlesMutationResult() {}
 func (UnauthorizedProblem) IsCategoryCreateResult() {}
 
 func (UnauthorizedProblem) IsColorCreateResult() {}
+
+func (UnauthorizedProblem) IsCreateOrderResult() {}
+
+func (UnauthorizedProblem) IsAllOrdersResult() {}
 
 func (UnauthorizedProblem) IsProblemInterface()     {}
 func (this UnauthorizedProblem) GetMessage() string { return this.Message }

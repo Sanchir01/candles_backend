@@ -1,0 +1,5 @@
+type OrderQuery
+
+extend type Query {
+    orders:OrderQuery!
+}

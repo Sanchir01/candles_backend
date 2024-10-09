@@ -1,0 +1,15 @@
+extend type OrderMutations {
+    createOrder(input:CreateOrderInput!): CreateOrderResult!  @goField(forceResolver: true) @hasRole(role: USER)
+}
+
+input CreateOrderInput {
+    id:Uuid
+}
+type CreateOrderOk {
+    ok:String!
+}
+
+union CreateOrderResult =
+    | InternalErrorProblem
+    | UnauthorizedProblem
+    | CreateOrderOk

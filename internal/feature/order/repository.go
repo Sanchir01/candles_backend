@@ -3,6 +3,7 @@ package order
 import (
 	"context"
 	sq "github.com/Masterminds/squirrel"
+	"github.com/Sanchir01/candles_backend/internal/app"
 	"github.com/Sanchir01/candles_backend/internal/gql/model"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -60,4 +61,24 @@ func (r *Repository) OrderByUserId(ctx context.Context, id uuid.UUID) (*model.Or
 		return nil, err
 	}
 	return (*model.Orders)(&order), err
+}
+
+func (r *Repository) CreateOrder(ctx context.Context, id uuid.UUID) (uuid.UUID, error) {
+	conn, err := r.primaryDB.Acquire(ctx)
+	if err != nil {
+		return uuid.Nil, err
+	}
+	defer conn.Release()
+
+	query, args, err := sq.Insert("orders").Columns("status", "user_id").Values(app.EnumContextProcessingStatus, id).Suffix("RETURNING id").PlaceholderFormat(sq.Dollar).ToSql()
+	if err != nil {
+		return uuid.Nil, err
+	}
+
+	var orderID uuid.UUID
+	if err = conn.QueryRow(ctx, query, args...).Scan(&orderID); err != nil {
+		return uuid.Nil, err
+	}
+
+	return orderID, nil
 }

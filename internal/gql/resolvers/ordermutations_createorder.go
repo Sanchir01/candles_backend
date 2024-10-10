@@ -6,33 +6,47 @@ package resolver
 
 import (
 	"context"
-
+	"errors"
 	"github.com/Sanchir01/candles_backend/internal/gql/model"
+	customMiddleware "github.com/Sanchir01/candles_backend/internal/handlers/middleware"
+	responseErr "github.com/Sanchir01/candles_backend/pkg/lib/api/response"
+	"github.com/google/uuid"
+	pgx "github.com/jackc/pgx/v5"
 )
 
 // CreateOrder is the resolver for the createOrder field.
 func (r *orderMutationsResolver) CreateOrder(ctx context.Context, obj *model.OrderMutations, input model.CreateOrderInput) (model.CreateOrderResult, error) {
-	//conn, err := r.env.DataBase.PrimaryDB.Acquire(ctx)
-	//
-	//if err != nil {
-	//	return responseErr.NewInternalErrorProblem("Database connection error"), nil
-	//}
-	//tx, err := conn.BeginTx(ctx, pgx.TxOptions{})
-	//defer func() {
-	//	if err != nil {
-	//		rollbackErr := tx.Rollback(ctx)
-	//		if rollbackErr != nil {
-	//			err = errors.Join(err, rollbackErr)
-	//			return
-	//		}
-	//	}
-	//}()
-	//userCookie, err := customMiddleware.GetJWTClaimsFromCtx(ctx)
-	//if err != nil {
-	//	return responseErr.NewInternalErrorProblem("не удалось получить профиль"), err
-	//}
-	//
-	//orderId, err := r.env.Services.OrderService.CreateOrder(ctx, tx, userCookie, "processing")
+	conn, err := r.env.DataBase.PrimaryDB.Acquire(ctx)
+
+	if err != nil {
+		return responseErr.NewInternalErrorProblem("Database connection error"), nil
+	}
+	tx, err := conn.BeginTx(ctx, pgx.TxOptions{})
+	defer func() {
+		if err != nil {
+			rollbackErr := tx.Rollback(ctx)
+			if rollbackErr != nil {
+				err = errors.Join(err, rollbackErr)
+				return
+			}
+		}
+	}()
+	userCookie, err := customMiddleware.GetJWTClaimsFromCtx(ctx)
+	if err != nil {
+		return responseErr.NewInternalErrorProblem("не удалось получить профиль"), err
+	}
+
+	var productsId []uuid.UUID
+	var quantities []int
+	var prices []int
+
+	for _, product := range input.Items {
+		productsId = append(productsId, product.ProductsID)
+		quantities = append(quantities, product.Quantity)
+		prices = append(prices, product.Price)
+	}
+
+	_, err = r.env.Services.OrderService.CreateOrder(ctx, tx, userCookie.ID, "processing", productsId, quantities, prices)
 	return model.CreateOrderOk{
 		Ok: "",
 	}, nil

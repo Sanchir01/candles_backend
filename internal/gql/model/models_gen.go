@@ -299,6 +299,7 @@ type CreateOrderInput struct {
 type CreateOrderItem struct {
 	ProductsID uuid.UUID `json:"productsId"`
 	Quantity   int       `json:"quantity"`
+	Price      int       `json:"price"`
 }
 
 type CreateOrderOk struct {

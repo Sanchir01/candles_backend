@@ -1688,6 +1688,7 @@ extend type Mutation {
 input CreateOrderItem {
     productsId: Uuid!
     quantity: Int!
+    price: Int!
 }
 
 input CreateOrderInput {
@@ -9783,7 +9784,7 @@ func (ec *executionContext) unmarshalInputCreateOrderItem(ctx context.Context, o
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"productsId", "quantity"}
+	fieldsInOrder := [...]string{"productsId", "quantity", "price"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -9804,6 +9805,13 @@ func (ec *executionContext) unmarshalInputCreateOrderItem(ctx context.Context, o
 				return it, err
 			}
 			it.Quantity = data
+		case "price":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("price"))
+			data, err := ec.unmarshalNInt2int(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Price = data
 		}
 	}
 

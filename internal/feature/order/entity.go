@@ -17,3 +17,9 @@ type DBOrders struct {
 	TotalAmount int       `db:"total_amount"`
 	Version     uint      `db:"version"`
 }
+
+type OrderItemsInput struct {
+	ProductID string `json:"productId"`
+	Quantity  int    `json:"quantity"`
+	Price     int    `json:"price"`
+}

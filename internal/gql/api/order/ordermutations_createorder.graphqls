@@ -4,6 +4,7 @@ extend type OrderMutations {
 input CreateOrderItem {
     productsId: Uuid!
     quantity: Int!
+    price: Int!
 }
 
 input CreateOrderInput {

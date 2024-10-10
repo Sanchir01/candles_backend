@@ -32,7 +32,7 @@ func RoleDirective() RoleDirectiveFunc {
 			return nil, &gqlerror.Error{Message: "Role is nil"}
 		}
 		slog.Warn("this directive role", ctxUserID.Role)
-		slog.Warn("User role:", ctxUserID.Role, "Required role:", *role)
+
 		if ctxUserID.Role == *role {
 			return next(ctx)
 		}

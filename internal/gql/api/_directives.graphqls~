@@ -12,9 +12,9 @@ directive @goField(
 directive @hasRole(role:Role) on FIELD_DEFINITION
 
 enum Role {
-    admin
-    user
-    guest
+    ADMIN
+    USER
+    GUEST
 }
 directive @inputUnion on INPUT_FIELD_DEFINITION
 

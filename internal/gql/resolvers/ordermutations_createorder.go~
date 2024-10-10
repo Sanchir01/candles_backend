@@ -58,3 +58,4 @@ func (r *orderMutationsResolver) CreateOrder(ctx context.Context, obj *model.Ord
 		Ok: "",
 	}, nil
 }
+

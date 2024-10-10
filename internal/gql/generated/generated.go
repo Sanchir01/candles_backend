@@ -1311,9 +1311,9 @@ directive @goField(
 directive @hasRole(role:Role) on FIELD_DEFINITION
 
 enum Role {
-    ADMIN
-    USER
-    GUEST
+    admin
+    user
+    guest
 }
 directive @inputUnion on INPUT_FIELD_DEFINITION
 
@@ -1683,7 +1683,7 @@ extend type Mutation {
     orders:OrderMutations!
 }`, BuiltIn: false},
 	{Name: "../api/order/ordermutations_createorder.graphqls", Input: `extend type OrderMutations {
-    createOrder(input:CreateOrderInput!): CreateOrderResult!  @goField(forceResolver: true) @hasRole(role: USER)
+    createOrder(input:CreateOrderInput!): CreateOrderResult!  @goField(forceResolver: true) @hasRole(role: user)
 }
 input CreateOrderItem {
     productsId: Uuid!
@@ -6048,7 +6048,7 @@ func (ec *executionContext) _OrderMutations_createOrder(ctx context.Context, fie
 		}
 
 		directive1 := func(ctx context.Context) (interface{}, error) {
-			role, err := ec.unmarshalORole2ᚖgithubᚗcomᚋSanchir01ᚋcandles_backendᚋinternalᚋgqlᚋmodelᚐRole(ctx, "USER")
+			role, err := ec.unmarshalORole2ᚖgithubᚗcomᚋSanchir01ᚋcandles_backendᚋinternalᚋgqlᚋmodelᚐRole(ctx, "user")
 			if err != nil {
 				var zeroVal model.CreateOrderResult
 				return zeroVal, err

@@ -1,5 +1,5 @@
 extend type OrderMutations {
-    createOrder(input:CreateOrderInput!): CreateOrderResult!  @goField(forceResolver: true) @hasRole(role: user)
+    createOrder(input:CreateOrderInput!): CreateOrderResult!  @goField(forceResolver: true) @hasRole(role: USER)
 }
 input CreateOrderItem {
     productsId: Uuid!

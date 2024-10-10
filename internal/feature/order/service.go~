@@ -34,7 +34,7 @@ func (s *Service) CreateOrder(
 	for _, q := range quantity {
 		totalAmount += q
 	}
-	orderID, err := s.repo.CreateOrder(ctx, userID, status, totalAmount, tx)
+	orderID, err := s.repo.CreateOrder(ctx, userID, status,totalAmount, tx, )
 	if err != nil {
 		return nil, err
 	}

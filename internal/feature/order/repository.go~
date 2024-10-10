@@ -82,7 +82,7 @@ func (r *Repository) CreateOrder(ctx context.Context, id uuid.UUID, status strin
 	query, args, err := sq.
 		Insert("orders").
 		Columns("status", "user_id", "total_amount").
-		Values(status, id, totalAmount).
+		Values(status, id,totalAmount).
 		Suffix("RETURNING id").
 		PlaceholderFormat(sq.Dollar).
 		ToSql()

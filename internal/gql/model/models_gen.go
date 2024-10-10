@@ -575,9 +575,9 @@ func (e CandlesSortEnum) MarshalGQL(w io.Writer) {
 type Role string
 
 const (
-	RoleAdmin Role = "ADMIN"
-	RoleUser  Role = "USER"
-	RoleGuest Role = "GUEST"
+	RoleAdmin Role = "admin"
+	RoleUser  Role = "user"
+	RoleGuest Role = "guest"
 )
 
 var AllRole = []Role{

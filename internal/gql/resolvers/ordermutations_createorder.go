@@ -6,12 +6,34 @@ package resolver
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/Sanchir01/candles_backend/internal/gql/model"
 )
 
 // CreateOrder is the resolver for the createOrder field.
 func (r *orderMutationsResolver) CreateOrder(ctx context.Context, obj *model.OrderMutations, input model.CreateOrderInput) (model.CreateOrderResult, error) {
-	panic(fmt.Errorf("not implemented: CreateOrder - createOrder"))
+	//conn, err := r.env.DataBase.PrimaryDB.Acquire(ctx)
+	//
+	//if err != nil {
+	//	return responseErr.NewInternalErrorProblem("Database connection error"), nil
+	//}
+	//tx, err := conn.BeginTx(ctx, pgx.TxOptions{})
+	//defer func() {
+	//	if err != nil {
+	//		rollbackErr := tx.Rollback(ctx)
+	//		if rollbackErr != nil {
+	//			err = errors.Join(err, rollbackErr)
+	//			return
+	//		}
+	//	}
+	//}()
+	//userCookie, err := customMiddleware.GetJWTClaimsFromCtx(ctx)
+	//if err != nil {
+	//	return responseErr.NewInternalErrorProblem("не удалось получить профиль"), err
+	//}
+	//
+	//orderId, err := r.env.Services.OrderService.CreateOrder(ctx, tx, userCookie, "processing")
+	return model.CreateOrderOk{
+		Ok: "",
+	}, nil
 }

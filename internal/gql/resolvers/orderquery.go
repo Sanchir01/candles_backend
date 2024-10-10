@@ -6,7 +6,6 @@ package resolver
 
 import (
 	"context"
-	"fmt"
 
 	runtime "github.com/Sanchir01/candles_backend/internal/gql/generated"
 	"github.com/Sanchir01/candles_backend/internal/gql/model"
@@ -14,7 +13,7 @@ import (
 
 // Orders is the resolver for the orders field.
 func (r *queryResolver) Orders(ctx context.Context) (*model.OrderQuery, error) {
-	panic(fmt.Errorf("not implemented: Orders - orders"))
+	return &model.OrderQuery{}, nil
 }
 
 // OrderQuery returns runtime.OrderQueryResolver implementation.

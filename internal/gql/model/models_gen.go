@@ -293,7 +293,12 @@ type CreateColorInput struct {
 }
 
 type CreateOrderInput struct {
-	ID *uuid.UUID `json:"id,omitempty"`
+	Items []*CreateOrderItem `json:"items,omitempty"`
+}
+
+type CreateOrderItem struct {
+	ProductsID uuid.UUID `json:"productsId"`
+	Quantity   int       `json:"quantity"`
 }
 
 type CreateOrderOk struct {

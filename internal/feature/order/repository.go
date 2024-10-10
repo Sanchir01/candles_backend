@@ -5,6 +5,7 @@ import (
 	sq "github.com/Masterminds/squirrel"
 	"github.com/Sanchir01/candles_backend/internal/gql/model"
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -24,7 +25,7 @@ func (r *Repository) AllOrders(ctx context.Context) ([]model.Orders, error) {
 		return nil, err
 	}
 	defer conn.Release()
-	query, _, err := sq.Select("id, status,user_id,total_amount,crated_at,updated_at, version").From("public.orders").ToSql()
+	query, _, err := sq.Select("id, status,user_id,total_amount,created_at,updated_at, version").From("public.orders").ToSql()
 	if err != nil {
 		return nil, err
 	}
@@ -77,13 +78,7 @@ func (r *Repository) OrderById(ctx context.Context, id uuid.UUID) (*model.Orders
 	return (*model.Orders)(&order), err
 }
 
-func (r *Repository) CreateOrder(ctx context.Context, id uuid.UUID, status string) (uuid.UUID, error) {
-	conn, err := r.primaryDB.Acquire(ctx)
-	if err != nil {
-		return uuid.Nil, err
-	}
-	defer conn.Release()
-
+func (r *Repository) CreateOrder(ctx context.Context, id uuid.UUID, status string, tx pgx.Tx) (uuid.UUID, error) {
 	query, args, err := sq.
 		Insert("orders").
 		Columns("status", "user_id").
@@ -96,19 +91,14 @@ func (r *Repository) CreateOrder(ctx context.Context, id uuid.UUID, status strin
 	}
 
 	var orderID uuid.UUID
-	if err = conn.QueryRow(ctx, query, args...).Scan(&orderID); err != nil {
+	if err = tx.QueryRow(ctx, query, args...).Scan(&orderID); err != nil {
 		return uuid.Nil, err
 	}
 
 	return orderID, nil
 }
 
-func (r *Repository) CreateOrderItem(ctx context.Context, orderID uuid.UUID, productIDs []uuid.UUID, quantity []int, price []int) ([]uuid.UUID, error) {
-	conn, err := r.primaryDB.Acquire(ctx)
-	if err != nil {
-		return nil, err
-	}
-	defer conn.Release()
+func (r *Repository) CreateOrderItem(ctx context.Context, orderID uuid.UUID, productIDs []uuid.UUID, quantity []int, price []int, tx pgx.Tx) ([]uuid.UUID, error) {
 
 	queryBuilder := sq.Insert("order_items").Columns("order_id", "product_id", "quantity", "price")
 
@@ -122,7 +112,7 @@ func (r *Repository) CreateOrderItem(ctx context.Context, orderID uuid.UUID, pro
 	}
 	var ids []uuid.UUID
 
-	rows, err := conn.Query(ctx, query, args...)
+	rows, err := tx.Query(ctx, query, args...)
 	if err != nil {
 		return nil, err
 	}

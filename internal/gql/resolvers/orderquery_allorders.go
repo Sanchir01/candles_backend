@@ -6,18 +6,19 @@ package resolver
 
 import (
 	"context"
+
 	"github.com/Sanchir01/candles_backend/internal/gql/model"
 	responseErr "github.com/Sanchir01/candles_backend/pkg/lib/api/response"
 )
 
 // AllOrders is the resolver for the allOrders field.
 func (r *orderQueryResolver) AllOrders(ctx context.Context, obj *model.OrderQuery) (model.AllOrdersResult, error) {
-
 	orders, err := r.env.Services.OrderService.AllOrders(ctx)
 	if err != nil {
+		r.env.Logger.Error("failed to get orders", err.Error())
 		return responseErr.NewInternalErrorProblem("failed to get orders"), err
 	}
 	return model.AllOrdersOk{
 		Orders: orders,
-	}, err
+	}, nil
 }

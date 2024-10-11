@@ -1,7 +1,7 @@
 extend type CandlesMutation {
     createCandle(
         input: CreateCandleInput!
-    ): CandlesMutationResult! @goField(forceResolver: true)
+    ): CandlesMutationResult! @goField(forceResolver: true) @hasRole(role: [admin])
 }
 
 input CreateCandleInput {

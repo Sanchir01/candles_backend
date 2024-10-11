@@ -7,6 +7,7 @@ package resolver
 import (
 	"context"
 	"errors"
+
 	"github.com/Sanchir01/candles_backend/internal/gql/model"
 	customMiddleware "github.com/Sanchir01/candles_backend/internal/handlers/middleware"
 	responseErr "github.com/Sanchir01/candles_backend/pkg/lib/api/response"
@@ -22,15 +23,17 @@ func (r *orderMutationsResolver) CreateOrder(ctx context.Context, obj *model.Ord
 		return responseErr.NewInternalErrorProblem("Database connection error"), nil
 	}
 	tx, err := conn.BeginTx(ctx, pgx.TxOptions{})
-	defer func() {
+	defer func(ctx context.Context) {
 		if err != nil {
 			rollbackErr := tx.Rollback(ctx)
 			if rollbackErr != nil {
+
 				err = errors.Join(err, rollbackErr)
+				r.env.Logger.Warn("rollback transaction: %v", err.Error())
 				return
 			}
 		}
-	}()
+	}(ctx)
 	userCookie, err := customMiddleware.GetJWTClaimsFromCtx(ctx)
 	if err != nil {
 		return responseErr.NewInternalErrorProblem("не удалось получить профиль"), err
@@ -47,13 +50,17 @@ func (r *orderMutationsResolver) CreateOrder(ctx context.Context, obj *model.Ord
 
 	}
 
-	_, err = r.env.Services.OrderService.CreateOrder(ctx, tx, userCookie.ID, "processing", productsId, quantities, prices)
+	ids, err := r.env.Services.OrderService.CreateOrder(ctx, tx, userCookie.ID, "processing", productsId, quantities, prices)
 	if err != nil {
+		r.env.Logger.Warn("Failed to create order: %v", err.Error())
 		return responseErr.NewInternalErrorProblem("не удалось создать заказ"), err
 	}
+	r.env.Logger.Warn("order items ids", ids)
 	if err := tx.Commit(ctx); err != nil {
+		r.env.Logger.Warn("Failed to commit transaction: %v", err.Error())
 		return nil, err
 	}
+
 	return model.CreateOrderOk{
 		Ok: "",
 	}, nil

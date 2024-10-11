@@ -1,5 +1,5 @@
 extend type ColorMutation {
-    createColor(input:CreateColorInput!): ColorCreateResult! @goField(forceResolver: true) 
+    createColor(input:CreateColorInput!): ColorCreateResult! @goField(forceResolver: true)  @hasRole(role: [admin])
 }
 
 input  CreateColorInput{

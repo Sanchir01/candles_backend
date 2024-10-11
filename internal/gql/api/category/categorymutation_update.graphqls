@@ -1,5 +1,5 @@
 extend type CategoryMutation {
-  updateCategory(input:UpdateCategoryInput!):UpdateCategoryResult! @goField(forceResolver: true)
+  updateCategory(input:UpdateCategoryInput!):UpdateCategoryResult! @goField(forceResolver: true) @hasRole(role: [admin])
 }
 
 union UpdateCategoryResult=

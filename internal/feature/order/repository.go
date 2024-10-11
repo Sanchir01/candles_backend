@@ -7,6 +7,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"log"
 )
 
 type Repository struct {
@@ -102,12 +103,13 @@ func (r *Repository) CreateOrderItem(
 	ctx context.Context, orderID uuid.UUID, productIDs []uuid.UUID, quantity []int, price []int, tx pgx.Tx,
 ) ([]uuid.UUID, error) {
 
-	queryBuilder := sq.Insert("order_items").Columns("order_id", "product_id", "quantity", "price", "total_amount")
+	queryBuilder := sq.Insert("order_items").Columns("order_id", "product_id", "quantity", "price")
 
 	for i := 0; i < len(productIDs); i++ {
 		queryBuilder = queryBuilder.Values(orderID, productIDs[i], quantity[i], price[i])
 	}
 	query, args, err := queryBuilder.Suffix("RETURNING id").PlaceholderFormat(sq.Dollar).ToSql()
+
 	if err != nil {
 		return nil, err
 	}
@@ -115,6 +117,7 @@ func (r *Repository) CreateOrderItem(
 
 	rows, err := tx.Query(ctx, query, args...)
 	if err != nil {
+		log.Printf("Error executing query: %v", err.Error())
 		return nil, err
 	}
 	for rows.Next() {
@@ -124,5 +127,6 @@ func (r *Repository) CreateOrderItem(
 		}
 		ids = append(ids, id)
 	}
+	log.Printf("ids items", ids)
 	return ids, err
 }

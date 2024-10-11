@@ -29,7 +29,7 @@ func (s *Service) AllOrders(ctx context.Context) ([]*model.Orders, error) {
 
 func (s *Service) CreateOrder(
 	ctx context.Context, tx pgx.Tx, userID uuid.UUID, status string, productsId []uuid.UUID, quantity []int, price []int,
-) (*uuid.UUID, error) {
+) ([]uuid.UUID, error) {
 	totalAmount := 0
 	for _, q := range quantity {
 		totalAmount += q
@@ -39,10 +39,10 @@ func (s *Service) CreateOrder(
 		return nil, err
 	}
 
-	_, err = s.repo.CreateOrderItem(ctx, orderID, productsId, quantity, price, tx)
+	uuids, err := s.repo.CreateOrderItem(ctx, orderID, productsId, quantity, price, tx)
 	if err != nil {
 		return nil, err
 	}
 
-	return &orderID, err
+	return uuids, err
 }

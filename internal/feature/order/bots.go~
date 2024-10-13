@@ -1,0 +1,11 @@
+package order
+
+import "github.com/Sanchir01/candles_backend/internal/app"
+
+type OrdersBot struct {
+	repo *app.Bot
+}
+
+func NewOrdersBot(repo *app.Bot) *OrdersBot {
+	return &OrdersBot{repo: repo}
+}

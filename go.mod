@@ -1,6 +1,6 @@
 module github.com/Sanchir01/candles_backend
 
-go 1.23.0
+go 1.23.2
 
 require (
 	github.com/99designs/gqlgen v0.17.55

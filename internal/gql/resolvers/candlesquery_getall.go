@@ -27,6 +27,7 @@ func (r *candlesQueryResolver) AllCandles(ctx context.Context, obj *model.Candle
 		r.env.Logger.Error(err.Error())
 		return responseErr.NewInternalErrorProblem("не удалось получить товары"), err
 	}
+
 	return model.AllCandlesOk{Candles: allCandles}, nil
 }
 

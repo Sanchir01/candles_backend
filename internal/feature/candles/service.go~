@@ -13,12 +13,14 @@ import (
 type Service struct {
 	repository *Repository
 	storages   *Storage
+
 }
 
 func NewService(repository *Repository, storages *Storage) *Service {
 	return &Service{
 		repository,
 		storages,
+
 	}
 }
 func (s *Service) AllCandles(ctx context.Context, sort *model.CandlesSortEnum) ([]*model.Candles, error) {
@@ -79,7 +81,6 @@ func (s *Service) CreateCandles(ctx context.Context, categoryID, colorID uuid.UU
 	return id, nil
 }
 func (s *Service) CandlesById(ctx context.Context, id uuid.UUID) (*model.Candles, error) {
-
 	candles, err := s.repository.CandlesById(ctx, id)
 	if err != nil {
 		return nil, err

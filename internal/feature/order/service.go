@@ -2,6 +2,7 @@ package order
 
 import (
 	"context"
+	"github.com/Sanchir01/candles_backend/internal/bot"
 	"github.com/Sanchir01/candles_backend/internal/gql/model"
 	"github.com/Sanchir01/candles_backend/pkg/lib/utils"
 	"github.com/google/uuid"
@@ -10,11 +11,13 @@ import (
 
 type Service struct {
 	repo *Repository
+	bot  *bot.Bot
 }
 
-func NewService(repo *Repository) *Service {
+func NewService(repo *Repository, bot *bot.Bot) *Service {
 	return &Service{
 		repo,
+		bot,
 	}
 }
 

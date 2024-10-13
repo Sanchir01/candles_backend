@@ -1,0 +1,46 @@
+env: "development"
+
+database:
+  host: 92.118.114.96
+  port: "5432"
+  user: "postgres"
+  dbname: "default_db"
+  max_attempts: 10
+
+
+http_server:
+  host: 0.0.0.0
+  port: 5000
+  timeout: 4s
+  debug: true
+  idle_timeout: 60s
+
+s3store:
+  key: "44YEJC1KE8L28V73VF43" 
+  url: "https://s3.timeweb.cloud"
+  region: "ru-1"
+  bucketname: "14e29e5b-46a00c68-6e30-4d39-ae5e-35075eefe000"
+
+gql_server:
+    port: "5000"
+    host: 0.0.0.0
+    timeout: 5s
+    debug: true
+    idle_timeout: 60s
+    max_attempts: 10
+
+errors:
+  bad_request:
+    message: "не правильный запрос"
+    code: 400
+  unauthorized:
+    message: "unauthorized"
+    code: 401
+  not_found:
+    message: "не правильно введены данные"
+    code: 404
+  not_implemented:
+    message: "not implemented"
+    code: 500
+
+

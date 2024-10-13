@@ -1,0 +1,47 @@
+package connect
+
+import (
+	"context"
+	"fmt"
+	"github.com/Sanchir01/candles_backend/internal/config"
+	"github.com/Sanchir01/candles_backend/pkg/lib/utils"
+	"github.com/jackc/pgx/v5/pgxpool"
+	"os"
+	"time"
+)
+
+func PGXNew(cfg *config.Config, ctx context.Context) (*pgxpool.Pool, error) {
+	var dsn string
+	switch cfg.Env {
+	case "development":
+		dsn = fmt.Sprintf(
+			"postgresql://postgres:postgres@localhost:5435/test",
+		)
+	case "production":
+		dsn = fmt.Sprintf(
+			"postgresql://%s:%s@%s:%s/%s",
+			cfg.DB.User, os.Getenv("PASSWORD_POSTGRES"),
+			cfg.DB.Host, cfg.DB.Port, cfg.DB.Database,
+		)
+	}
+
+	var pool *pgxpool.Pool
+	var err error
+
+	err = utils.DoWithTries(func() error {
+		ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+		defer cancel()
+		var err error
+		pool, err = pgxpool.New(ctx, "postgres://postgres:ML34oCM18aGBA2d2Ri2cseGMKnVbUK455M0P6b0zM1Kv6fGSIUmojOLXlqGqr5Jo@b00wwg4c804k8okgs4w04448:5432/postgres")
+		if err != nil {
+			return err
+		}
+		return nil
+	}, cfg.DB.MaxAttempts, 5*time.Second)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return pool, nil
+}

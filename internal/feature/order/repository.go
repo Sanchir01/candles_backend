@@ -55,7 +55,7 @@ func (r *Repository) OrderByUserId(ctx context.Context, id uuid.UUID) (*model.Or
 		return nil, err
 	}
 	defer conn.Release()
-	query, arg, err := sq.Select("id, status,user_id,total_amount,crated_at,updated_at, version").From("public.orders").Where(sq.Eq{"user_id": id}).ToSql()
+	query, arg, err := sq.Select("id, status,user_id,total_amount,crated_at,updated_at, version").From("public.orders").Where(sq.Eq{"user_id": id}).PlaceholderFormat(sq.Dollar).ToSql()
 	var order DBOrders
 	if err := conn.QueryRow(ctx, query, arg...).
 		Scan(&order.ID, &order.Status, &order.UserID, &order.TotalAmount, &order.CreatedAt, &order.UpdatedAt, &order.Version); err != nil {
@@ -70,7 +70,7 @@ func (r *Repository) OrderById(ctx context.Context, id uuid.UUID) (*model.Orders
 		return nil, err
 	}
 	defer conn.Release()
-	query, arg, err := sq.Select("id, status,user_id,total_amount,crated_at,updated_at, version").From("public.orders").Where(sq.Eq{"id": id}).ToSql()
+	query, arg, err := sq.Select("id, status,user_id,total_amount,crated_at,updated_at, version").From("public.orders").Where(sq.Eq{"id": id}).PlaceholderFormat(sq.Dollar).ToSql()
 	var order DBOrders
 	if err := conn.QueryRow(ctx, query, arg...).
 		Scan(&order.ID, &order.Status, &order.UserID, &order.TotalAmount, &order.CreatedAt, &order.UpdatedAt, &order.Version); err != nil {

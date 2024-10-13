@@ -3,6 +3,7 @@ package user
 import (
 	"context"
 	"fmt"
+	sq "github.com/Masterminds/squirrel"
 	"github.com/Sanchir01/candles_backend/internal/gql/model"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -40,9 +41,9 @@ func (r *Repository) GetByEmail(ctx context.Context, email string) (*model.User,
 	}
 	defer conn.Release()
 
-	query := `SELECT id ,title,slug, phone, created_at, updated_at, version, role FROM public.users WHERE email = $1`
+	query, arg, err := sq.Select("id ,title,slug, phone, created_at, updated_at, version, role").From("public.users").Where(sq.Eq{"email": email}).PlaceholderFormat(sq.Dollar).ToSql()
 	var user DBUser
-	if err := conn.QueryRow(ctx, query, email).Scan(
+	if err := conn.QueryRow(ctx, query, arg...).Scan(
 		&user.ID, &user.Title, &user.Slug, &user.Phone, &user.CreatedAt, &user.UpdatedAt, &user.Version, &user.Role); err != nil {
 		return nil, err
 	}
@@ -66,13 +67,22 @@ func (r *Repository) GetById(ctx context.Context, userid uuid.UUID) (*model.User
 }
 
 func (r *Repository) CreateUser(ctx context.Context, title, phone, slug, email, role string, password []byte, tx pgx.Tx) (*model.User, error) {
-	query := `INSERT INTO users (title, slug, phone, email,role,password)
-	     VALUES ($1, $2, $3,$4 $5, $6)
-	     RETURNING id, phone, role,email`
+	//query := `INSERT INTO users (title, slug, phone, email,role,password)
+	//     VALUES ($1, $2, $3, $4, $5, $6)
+	//     RETURNING id, phone, role,email`
 
+	query, arg, err := sq.
+		Insert("users").
+		Columns("title", "slug", "phone", "email", "role", "password").
+		Values(title, slug, phone, email, role, password).
+		Suffix("RETURNING id, phone, role, email").PlaceholderFormat(sq.Dollar).ToSql()
+
+	if err != nil {
+		return nil, err
+	}
 	var users DBUser
 
-	if err := tx.QueryRow(ctx, query, title, slug, phone, email, role, password).Scan(&users.ID, &users.Phone, &users.Role); err != nil {
+	if err := tx.QueryRow(ctx, query, arg...).Scan(&users.ID, &users.Phone, &users.Role, &users.Email); err != nil {
 		if err == pgx.ErrTxCommitRollback {
 			return nil, fmt.Errorf("ошибка при создании пользователя")
 		}

@@ -249,8 +249,8 @@ type ComplexityRoot struct {
 	}
 
 	RegistrationsOk struct {
+		Email      func(childComplexity int) int
 		ID         func(childComplexity int) int
-		Phone      func(childComplexity int) int
 		Role       func(childComplexity int) int
 		VerifyCode func(childComplexity int) int
 	}
@@ -1052,19 +1052,19 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.User(childComplexity), true
 
+	case "RegistrationsOk.email":
+		if e.complexity.RegistrationsOk.Email == nil {
+			break
+		}
+
+		return e.complexity.RegistrationsOk.Email(childComplexity), true
+
 	case "RegistrationsOk.id":
 		if e.complexity.RegistrationsOk.ID == nil {
 			break
 		}
 
 		return e.complexity.RegistrationsOk.ID(childComplexity), true
-
-	case "RegistrationsOk.phone":
-		if e.complexity.RegistrationsOk.Phone == nil {
-			break
-		}
-
-		return e.complexity.RegistrationsOk.Phone(childComplexity), true
 
 	case "RegistrationsOk.role":
 		if e.complexity.RegistrationsOk.Role == nil {
@@ -1376,6 +1376,7 @@ input  RegistrationsInput {
     phone:String!
     email:String!
     password:String!
+    title:String!
 }
 
 union RegistrationsResult =
@@ -1386,7 +1387,7 @@ union RegistrationsResult =
 type RegistrationsOk {
     id:Uuid!
     verify_code:String!
-    phone:String!
+    email:String!
     role:Role!
 }`, BuiltIn: false},
 	{Name: "../api/candles/candles.graphqls", Input: `type Candles {
@@ -7050,8 +7051,8 @@ func (ec *executionContext) fieldContext_RegistrationsOk_verify_code(_ context.C
 	return fc, nil
 }
 
-func (ec *executionContext) _RegistrationsOk_phone(ctx context.Context, field graphql.CollectedField, obj *model.RegistrationsOk) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_RegistrationsOk_phone(ctx, field)
+func (ec *executionContext) _RegistrationsOk_email(ctx context.Context, field graphql.CollectedField, obj *model.RegistrationsOk) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_RegistrationsOk_email(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -7064,7 +7065,7 @@ func (ec *executionContext) _RegistrationsOk_phone(ctx context.Context, field gr
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Phone, nil
+		return obj.Email, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -7081,7 +7082,7 @@ func (ec *executionContext) _RegistrationsOk_phone(ctx context.Context, field gr
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_RegistrationsOk_phone(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_RegistrationsOk_email(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "RegistrationsOk",
 		Field:      field,
@@ -10078,7 +10079,7 @@ func (ec *executionContext) unmarshalInputRegistrationsInput(ctx context.Context
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"phone", "email", "password"}
+	fieldsInOrder := [...]string{"phone", "email", "password", "title"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -10106,6 +10107,13 @@ func (ec *executionContext) unmarshalInputRegistrationsInput(ctx context.Context
 				return it, err
 			}
 			it.Password = data
+		case "title":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("title"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Title = data
 		}
 	}
 
@@ -13065,8 +13073,8 @@ func (ec *executionContext) _RegistrationsOk(ctx context.Context, sel ast.Select
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
-		case "phone":
-			out.Values[i] = ec._RegistrationsOk_phone(ctx, field, obj)
+		case "email":
+			out.Values[i] = ec._RegistrationsOk_email(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}

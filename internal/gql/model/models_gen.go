@@ -415,12 +415,13 @@ type RegistrationsInput struct {
 	Phone    string `json:"phone"`
 	Email    string `json:"email"`
 	Password string `json:"password"`
+	Title    string `json:"title"`
 }
 
 type RegistrationsOk struct {
 	ID         uuid.UUID `json:"id"`
 	VerifyCode string    `json:"verify_code"`
-	Phone      string    `json:"phone"`
+	Email      string    `json:"email"`
 	Role       Role      `json:"role"`
 }
 

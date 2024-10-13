@@ -6,7 +6,6 @@ input  RegistrationsInput {
     phone:String!
     email:String!
     password:String!
-    title:String!
 }
 
 union RegistrationsResult =
@@ -17,6 +16,6 @@ union RegistrationsResult =
 type RegistrationsOk {
     id:Uuid!
     verify_code:String!
-    phone:String!
+    email:String!
     role:Role!
 }

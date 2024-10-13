@@ -6,7 +6,7 @@ import (
 )
 
 func GeneratePasswordHash(password string) ([]byte, error) {
-	passHash, err := bcrypt.GenerateFromPassword([]byte(password), 20)
+	passHash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
 		return nil, err
 	}

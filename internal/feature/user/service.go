@@ -2,6 +2,7 @@ package user
 
 import (
 	"context"
+	"errors"
 	"github.com/Sanchir01/candles_backend/internal/gql/model"
 	"github.com/Sanchir01/candles_backend/pkg/lib/utils"
 	"github.com/google/uuid"
@@ -45,30 +46,33 @@ func (s *Service) UserByPhone(ctx context.Context, phone string) (*model.User, e
 	return usersdb, nil
 }
 
-func (s *Service) Registrations(ctx context.Context, password, phone, email string, tx pgx.Tx) (*model.User, error) {
-
-	slug, err := utils.Slugify("user")
+func (s *Service) Registrations(ctx context.Context, password, phone, title, email string, tx pgx.Tx) (*model.User, error) {
+	// Генерация slug
+	slug, err := utils.Slugify(title)
 	if err != nil {
 		return nil, err
 	}
+
+	// Проверка существующего пользователя по телефону
 	existUser, err := s.UserByPhone(ctx, phone)
-
-	if err == nil {
+	if err != pgx.ErrNoRows {
 		slog.Error("User with this phone already exists", existUser)
-		return nil, err
+		return nil, errors.New("user with this phone already exists")
 	}
+
 	existUserByEmail, err := s.repository.GetByEmail(ctx, email)
-	if err == nil {
+	if err != pgx.ErrNoRows {
 		slog.Error("User with this email already exists", existUserByEmail)
-		return nil, err
+		return nil, errors.New("user with this email already exists")
 	}
+
 	hashedPassword, err := GeneratePasswordHash(password)
-	if err == nil {
-		slog.Error("password hash", err.Error())
+	if err != nil {
+		slog.Error("password hash error", err.Error())
 		return nil, err
 	}
 
-	usersdb, err := s.repository.CreateUser(ctx, "user", email, slug, email, "user", hashedPassword, tx)
+	usersdb, err := s.repository.CreateUser(ctx, title, phone, slug, email, "user", hashedPassword, tx)
 	if err != nil {
 		return nil, err
 	}

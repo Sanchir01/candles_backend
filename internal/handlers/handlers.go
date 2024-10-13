@@ -70,7 +70,7 @@ func (r *HttpRouter) NewGraphQLHandler() *gqlhandler.Server {
 	srv.SetRecoverFunc(
 		func(ctx context.Context, err interface{}) error {
 			buf := make([]byte, 1024)
-			n := runtime.Stack(buf, false)
+			n := runtime.Stack(buf, true)
 			log.Printf("Panic: %v\nStack: %s\n", err, buf[:n])
 
 			return gqlerror.Errorf("internal server error graphql обработка паники")

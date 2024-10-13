@@ -26,6 +26,7 @@ func (s *Service) AllOrders(ctx context.Context) ([]*model.Orders, error) {
 	if err != nil {
 		return nil, err
 	}
+	
 	items, err := utils.MapToGql(orders)
 	return items, nil
 }

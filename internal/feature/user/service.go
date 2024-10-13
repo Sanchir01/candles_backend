@@ -26,7 +26,15 @@ func (s *Service) UserById(ctx context.Context, id uuid.UUID) (*model.User, erro
 	}
 	return user, nil
 }
+func (s *Service) UserByEmail(ctx context.Context, email string) (*model.User, error) {
+	usersdb, err := s.repository.GetByEmail(ctx, email)
+	if err != nil {
 
+		return nil, err
+	}
+
+	return usersdb, nil
+}
 func (s *Service) UserByPhone(ctx context.Context, phone string) (*model.User, error) {
 	usersdb, err := s.repository.GetByPhone(ctx, phone)
 	if err != nil {
@@ -37,9 +45,9 @@ func (s *Service) UserByPhone(ctx context.Context, phone string) (*model.User, e
 	return usersdb, nil
 }
 
-func (s *Service) Registrations(ctx context.Context, title, phone, role string, tx pgx.Tx) (*model.User, error) {
+func (s *Service) Registrations(ctx context.Context, password, phone, email string, tx pgx.Tx) (*model.User, error) {
 
-	slug, err := utils.Slugify(title)
+	slug, err := utils.Slugify("user")
 	if err != nil {
 		return nil, err
 	}
@@ -49,7 +57,18 @@ func (s *Service) Registrations(ctx context.Context, title, phone, role string, 
 		slog.Error("User with this phone already exists", existUser)
 		return nil, err
 	}
-	usersdb, err := s.repository.CreateUser(ctx, title, phone, slug, role, tx)
+	existUserByEmail, err := s.repository.GetByEmail(ctx, email)
+	if err == nil {
+		slog.Error("User with this email already exists", existUserByEmail)
+		return nil, err
+	}
+	hashedPassword, err := GeneratePasswordHash(password)
+	if err == nil {
+		slog.Error("password hash", err.Error())
+		return nil, err
+	}
+
+	usersdb, err := s.repository.CreateUser(ctx, "user", email, slug, email, "user", hashedPassword, tx)
 	if err != nil {
 		return nil, err
 	}

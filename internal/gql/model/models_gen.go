@@ -361,7 +361,8 @@ func (InvalidSortRankProblem) IsProblemInterface()     {}
 func (this InvalidSortRankProblem) GetMessage() string { return this.Message }
 
 type LoginInput struct {
-	Phone string `json:"phone"`
+	Email    string `json:"email"`
+	Password string `json:"password"`
 }
 
 type LoginOk struct {
@@ -411,9 +412,9 @@ type Query struct {
 }
 
 type RegistrationsInput struct {
-	Phone string `json:"phone"`
-	Role  string `json:"role"`
-	Title string `json:"title"`
+	Phone    string `json:"phone"`
+	Email    string `json:"email"`
+	Password string `json:"password"`
 }
 
 type RegistrationsOk struct {
@@ -471,6 +472,8 @@ type User struct {
 	Slug      string    `json:"slug"`
 	Version   uint      `json:"version"`
 	Phone     string    `json:"phone"`
+	Email     string    `json:"email"`
+	Password  string    `json:"password"`
 	Role      Role      `json:"role"`
 }
 

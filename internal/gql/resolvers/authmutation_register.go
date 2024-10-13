@@ -36,7 +36,7 @@ func (r *authMutationsResolver) Registrations(ctx context.Context, obj *model.Au
 		}
 	}()
 
-	usersdb, err := r.env.Services.UserService.Registrations(ctx, input.Title, input.Phone, input.Role, tx)
+	usersdb, err := r.env.Services.UserService.Registrations(ctx, input.Phone, input.Email, input.Password, tx)
 
 	w := customMiddleware.GetResponseWriter(ctx)
 	if err = user.AddCookieTokens(usersdb.ID, usersdb.Role, w); err != nil {

@@ -2,17 +2,21 @@ package user
 
 import (
 	"crypto/subtle"
-	"encoding/base64"
-	"golang.org/x/crypto/argon2"
+	"golang.org/x/crypto/bcrypt"
 )
 
-func GeneratePasswordHash(password string) string {
-	salt := make([]byte, 16)
-	hash := argon2.IDKey([]byte(password), salt, 1, 64*1024, 4, 32)
-	return base64.RawStdEncoding.EncodeToString(hash)
+func GeneratePasswordHash(password string) ([]byte, error) {
+	passHash, err := bcrypt.GenerateFromPassword([]byte(password), 20)
+	if err != nil {
+		return nil, err
+	}
+	return passHash, nil
 }
 
 func VerifyPassword(password, hash string) bool {
-	hashedPassword := GeneratePasswordHash(password)
+	hashedPassword, err := GeneratePasswordHash(password)
+	if err != nil {
+		return false
+	}
 	return subtle.ConstantTimeCompare([]byte(hashedPassword), []byte(hash)) == 1
 }

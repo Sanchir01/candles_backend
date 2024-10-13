@@ -6,5 +6,7 @@ type User {
   slug: String!
   version:UInt!
   phone:String!
+  email:String!
+  password:String!
   role:Role!
 }

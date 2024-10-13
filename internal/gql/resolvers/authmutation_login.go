@@ -15,7 +15,7 @@ import (
 
 // Login is the resolver for the login field.
 func (r *authMutationsResolver) Login(ctx context.Context, obj *model.AuthMutations, input model.LoginInput) (model.LoginResult, error) {
-	userdb, err := r.env.Services.UserService.UserByPhone(ctx, input.Phone)
+	userdb, err := r.env.Services.UserService.UserByEmail(ctx, input.Email)
 	if err != nil {
 		r.env.Logger.Error("login error", err.Error())
 		return responseErr.NewInternalErrorProblem("не удалось залогининться"), err

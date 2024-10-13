@@ -14,5 +14,7 @@ type DBUser struct {
 	Slug      string     `db:"slug"`
 	Version   uint       `db:"version"`
 	Phone     string     `db:"phone"`
+	Email     string     `json:"email"`
+	Password  string     `db:"password"`
 	Role      model.Role `db:"role"`
 }

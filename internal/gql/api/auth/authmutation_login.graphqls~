@@ -1,0 +1,20 @@
+
+extend type AuthMutations {
+    login(input:LoginInput!):LoginResult! @goField(forceResolver: true)
+}
+
+input LoginInput{
+    phone:String!
+}
+
+union LoginResult =
+    | LoginOk
+    | InternalErrorProblem
+    | VersionMismatchProblem
+
+type LoginOk {
+    id:Uuid!
+    verify_code:String!
+    phone:String!
+    role:Role!
+}

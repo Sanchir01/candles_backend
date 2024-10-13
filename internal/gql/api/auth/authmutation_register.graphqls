@@ -4,8 +4,8 @@ extend type AuthMutations {
 
 input  RegistrationsInput {
     phone:String!
-    role:String!
-    title:String!
+    email:String!
+    password:String!
 }
 
 union RegistrationsResult =

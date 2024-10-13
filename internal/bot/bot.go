@@ -36,8 +36,11 @@ func (b *Bot) Start(ctx context.Context) error {
 	for {
 		select {
 		case update := <-updates:
+			if !update.Message.IsCommand() {
+				continue
+			}
 			updateCtx, updateCanndel := context.WithTimeout(ctx, 5*time.Second)
-			b.handleUpdate(updateCtx, update)
+			b.handleUpdateCommand(updateCtx, update)
 			updateCanndel()
 		case <-ctx.Done():
 			return ctx.Err()
@@ -45,9 +48,6 @@ func (b *Bot) Start(ctx context.Context) error {
 	}
 }
 
-func (b *Bot) Send() {
-
-}
 func (b *Bot) RegisterCmdView(cmd string, view ViewFunc) {
 	if b.cmdView == nil {
 		b.cmdView = make(map[string]ViewFunc)
@@ -55,7 +55,7 @@ func (b *Bot) RegisterCmdView(cmd string, view ViewFunc) {
 	b.cmdView[cmd] = view
 }
 
-func (b *Bot) handleUpdate(ctx context.Context, update tgbotapi.Update) {
+func (b *Bot) handleUpdateCommand(ctx context.Context, update tgbotapi.Update) {
 	defer func() {
 		if p := recover(); p != nil {
 			log.Printf("panic recoverL: %v\n%s", p, string(debug.Stack()))

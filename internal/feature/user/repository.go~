@@ -41,10 +41,13 @@ func (r *Repository) GetByEmail(ctx context.Context, email string) (*model.User,
 	}
 	defer conn.Release()
 
-	query, arg, err := sq.Select("id ,title,slug, phone, created_at, updated_at, version, role").From("public.users").Where(sq.Eq{"email": email}).PlaceholderFormat(sq.Dollar).ToSql()
+	query, arg, err := sq.Select("id ,title,slug, phone, created_at, updated_at, version, role, password").From("public.users").Where(sq.Eq{"email": email}).PlaceholderFormat(sq.Dollar).ToSql()
 	var user DBUser
 	if err := conn.QueryRow(ctx, query, arg...).Scan(
-		&user.ID, &user.Title, &user.Slug, &user.Phone, &user.CreatedAt, &user.UpdatedAt, &user.Version, &user.Role); err != nil {
+		&user.ID, &user.Title, &user.Slug, &user.Phone, &user.CreatedAt, &user.UpdatedAt, &user.Version, &user.Role, &user.Password); err != nil {
+		if err == pgx.ErrNoRows {
+			return nil, fmt.Errorf("Пользователь не найден")
+		}
 		return nil, err
 	}
 	return (*model.User)(&user), nil
@@ -67,10 +70,6 @@ func (r *Repository) GetById(ctx context.Context, userid uuid.UUID) (*model.User
 }
 
 func (r *Repository) CreateUser(ctx context.Context, title, phone, slug, email, role string, password []byte, tx pgx.Tx) (*model.User, error) {
-	//query := `INSERT INTO users (title, slug, phone, email,role,password)
-	//     VALUES ($1, $2, $3, $4, $5, $6)
-	//     RETURNING id, phone, role,email`
-
 	query, arg, err := sq.
 		Insert("users").
 		Columns("title", "slug", "phone", "email", "role", "password").
@@ -82,7 +81,7 @@ func (r *Repository) CreateUser(ctx context.Context, title, phone, slug, email, 
 	}
 	var users DBUser
 
-	if err := tx.QueryRow(ctx, query, arg...).Scan(&users.ID, &users.Phone, &users.Role, &users.Email,); err != nil {
+	if err := tx.QueryRow(ctx, query, arg...).Scan(&users.ID, &users.Phone, &users.Role, &users.Email); err != nil {
 		if err == pgx.ErrTxCommitRollback {
 			return nil, fmt.Errorf("ошибка при создании пользователя")
 		}

@@ -6,7 +6,6 @@ package resolver
 
 import (
 	"context"
-
 	"github.com/Sanchir01/candles_backend/internal/feature/user"
 	"github.com/Sanchir01/candles_backend/internal/gql/model"
 	customMiddleware "github.com/Sanchir01/candles_backend/internal/handlers/middleware"
@@ -15,7 +14,7 @@ import (
 
 // Login is the resolver for the login field.
 func (r *authMutationsResolver) Login(ctx context.Context, obj *model.AuthMutations, input model.LoginInput) (model.LoginResult, error) {
-	userdb, err := r.env.Services.UserService.UserByEmail(ctx, input.Email)
+	userdb, err := r.env.Services.UserService.UserByEmail(ctx, input.Email, input.Password)
 	if err != nil {
 		r.env.Logger.Error("login error", err.Error())
 		return responseErr.NewInternalErrorProblem("не удалось залогининться"), err
@@ -23,8 +22,9 @@ func (r *authMutationsResolver) Login(ctx context.Context, obj *model.AuthMutati
 
 	w := customMiddleware.GetResponseWriter(ctx)
 	if err = user.AddCookieTokens(userdb.ID, userdb.Role, w); err != nil {
-		return nil, err
+		r.env.Logger.Error("login error", err.Error())
+		return nil, nil
 	}
 
-	return model.LoginOk{ID: userdb.ID, Phone: userdb.Phone, VerifyCode: "sdaddw21", Role: userdb.Role}, nil
+	return model.LoginOk{Phone: userdb.Phone, Email: userdb.Email, Title: userdb.Title, Role: userdb.Role}, nil
 }

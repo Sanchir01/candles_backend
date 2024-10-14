@@ -2,10 +2,11 @@ extend type AuthMutations {
     registrations(input:RegistrationsInput!): RegistrationsResult! @goField(forceResolver: true)
 }
 
-input  RegistrationsInput {
+input RegistrationsInput {
     phone:String!
     email:String!
     password:String!
+    title:String!
 }
 
 union RegistrationsResult =
@@ -14,8 +15,8 @@ union RegistrationsResult =
     | VersionMismatchProblem
 
 type RegistrationsOk {
-    id:Uuid!
-    verify_code:String!
     email:String!
-    role:Role!
+    phone:String!
+    title:String!
+    role:String!
 }

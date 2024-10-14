@@ -366,10 +366,10 @@ type LoginInput struct {
 }
 
 type LoginOk struct {
-	ID         uuid.UUID `json:"id"`
-	VerifyCode string    `json:"verify_code"`
-	Phone      string    `json:"phone"`
-	Role       Role      `json:"role"`
+	Email string `json:"email"`
+	Phone string `json:"phone"`
+	Title string `json:"title"`
+	Role  Role   `json:"role"`
 }
 
 func (LoginOk) IsLoginResult() {}
@@ -419,10 +419,10 @@ type RegistrationsInput struct {
 }
 
 type RegistrationsOk struct {
-	ID         uuid.UUID `json:"id"`
-	VerifyCode string    `json:"verify_code"`
-	Email      string    `json:"email"`
-	Role       Role      `json:"role"`
+	Email string `json:"email"`
+	Phone string `json:"phone"`
+	Title string `json:"title"`
+	Role  Role   `json:"role"`
 }
 
 func (RegistrationsOk) IsRegistrationsResult() {}

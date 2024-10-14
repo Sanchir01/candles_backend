@@ -1,7 +1,6 @@
 package user
 
 import (
-	"crypto/subtle"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -13,10 +12,9 @@ func GeneratePasswordHash(password string) ([]byte, error) {
 	return passHash, nil
 }
 
-func VerifyPassword(password, hash string) bool {
-	hashedPassword, err := GeneratePasswordHash(password)
-	if err != nil {
+func VerifyPassword(dbpass []byte, hash string) bool {
+	if err := bcrypt.CompareHashAndPassword(dbpass, []byte(hash)); err != nil {
 		return false
 	}
-	return subtle.ConstantTimeCompare([]byte(hashedPassword), []byte(hash)) == 1
+	return true
 }

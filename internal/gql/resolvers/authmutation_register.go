@@ -50,5 +50,5 @@ func (r *authMutationsResolver) Registrations(ctx context.Context, obj *model.Au
 	if err := tx.Commit(ctx); err != nil {
 		return nil, err
 	}
-	return model.RegistrationsOk{ID: usersdb.ID, Email: usersdb.Email, VerifyCode: "sdad"}, err
+	return model.RegistrationsOk{Email: usersdb.Email, Phone: usersdb.Phone, Title: usersdb.Title, Role: usersdb.Role}, err
 }

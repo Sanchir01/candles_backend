@@ -4,7 +4,8 @@ extend type AuthMutations {
 }
 
 input LoginInput{
-    phone:String!
+    email:String!
+    password:String!
 }
 
 union LoginResult =
@@ -13,8 +14,8 @@ union LoginResult =
     | VersionMismatchProblem
 
 type LoginOk {
-    id:Uuid!
-    verify_code:String!
+    email:String!
     phone:String!
-    role:Role!
+    title:String!
+    role:String!
 }

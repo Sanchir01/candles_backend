@@ -14,8 +14,8 @@ union LoginResult =
     | VersionMismatchProblem
 
 type LoginOk {
-    id:Uuid!
-    verify_code:String!
+    email:String!
     phone:String!
+    title:String!
     role:Role!
 }

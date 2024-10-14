@@ -195,10 +195,10 @@ type ComplexityRoot struct {
 	}
 
 	LoginOk struct {
-		ID         func(childComplexity int) int
-		Phone      func(childComplexity int) int
-		Role       func(childComplexity int) int
-		VerifyCode func(childComplexity int) int
+		Email func(childComplexity int) int
+		Phone func(childComplexity int) int
+		Role  func(childComplexity int) int
+		Title func(childComplexity int) int
 	}
 
 	Mutation struct {
@@ -249,10 +249,10 @@ type ComplexityRoot struct {
 	}
 
 	RegistrationsOk struct {
-		Email      func(childComplexity int) int
-		ID         func(childComplexity int) int
-		Role       func(childComplexity int) int
-		VerifyCode func(childComplexity int) int
+		Email func(childComplexity int) int
+		Phone func(childComplexity int) int
+		Role  func(childComplexity int) int
+		Title func(childComplexity int) int
 	}
 
 	TotalCountResolvingOk struct {
@@ -816,12 +816,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.InvalidSortRankProblem.Message(childComplexity), true
 
-	case "LoginOk.id":
-		if e.complexity.LoginOk.ID == nil {
+	case "LoginOk.email":
+		if e.complexity.LoginOk.Email == nil {
 			break
 		}
 
-		return e.complexity.LoginOk.ID(childComplexity), true
+		return e.complexity.LoginOk.Email(childComplexity), true
 
 	case "LoginOk.phone":
 		if e.complexity.LoginOk.Phone == nil {
@@ -837,12 +837,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.LoginOk.Role(childComplexity), true
 
-	case "LoginOk.verify_code":
-		if e.complexity.LoginOk.VerifyCode == nil {
+	case "LoginOk.title":
+		if e.complexity.LoginOk.Title == nil {
 			break
 		}
 
-		return e.complexity.LoginOk.VerifyCode(childComplexity), true
+		return e.complexity.LoginOk.Title(childComplexity), true
 
 	case "Mutation.auth":
 		if e.complexity.Mutation.Auth == nil {
@@ -1059,12 +1059,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.RegistrationsOk.Email(childComplexity), true
 
-	case "RegistrationsOk.id":
-		if e.complexity.RegistrationsOk.ID == nil {
+	case "RegistrationsOk.phone":
+		if e.complexity.RegistrationsOk.Phone == nil {
 			break
 		}
 
-		return e.complexity.RegistrationsOk.ID(childComplexity), true
+		return e.complexity.RegistrationsOk.Phone(childComplexity), true
 
 	case "RegistrationsOk.role":
 		if e.complexity.RegistrationsOk.Role == nil {
@@ -1073,12 +1073,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.RegistrationsOk.Role(childComplexity), true
 
-	case "RegistrationsOk.verify_code":
-		if e.complexity.RegistrationsOk.VerifyCode == nil {
+	case "RegistrationsOk.title":
+		if e.complexity.RegistrationsOk.Title == nil {
 			break
 		}
 
-		return e.complexity.RegistrationsOk.VerifyCode(childComplexity), true
+		return e.complexity.RegistrationsOk.Title(childComplexity), true
 
 	case "TotalCountResolvingOk.totalCount":
 		if e.complexity.TotalCountResolvingOk.TotalCount == nil {
@@ -1363,16 +1363,16 @@ union LoginResult =
     | VersionMismatchProblem
 
 type LoginOk {
-    id:Uuid!
-    verify_code:String!
+    email:String!
     phone:String!
+    title:String!
     role:Role!
 }`, BuiltIn: false},
 	{Name: "../api/auth/authmutation_register.graphqls", Input: `extend type AuthMutations {
     registrations(input:RegistrationsInput!): RegistrationsResult! @goField(forceResolver: true)
 }
 
-input  RegistrationsInput {
+input RegistrationsInput {
     phone:String!
     email:String!
     password:String!
@@ -1385,9 +1385,9 @@ union RegistrationsResult =
     | VersionMismatchProblem
 
 type RegistrationsOk {
-    id:Uuid!
-    verify_code:String!
     email:String!
+    phone:String!
+    title:String!
     role:Role!
 }`, BuiltIn: false},
 	{Name: "../api/candles/candles.graphqls", Input: `type Candles {
@@ -5297,8 +5297,8 @@ func (ec *executionContext) fieldContext_InvalidSortRankProblem_message(_ contex
 	return fc, nil
 }
 
-func (ec *executionContext) _LoginOk_id(ctx context.Context, field graphql.CollectedField, obj *model.LoginOk) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_LoginOk_id(ctx, field)
+func (ec *executionContext) _LoginOk_email(ctx context.Context, field graphql.CollectedField, obj *model.LoginOk) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_LoginOk_email(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -5311,51 +5311,7 @@ func (ec *executionContext) _LoginOk_id(ctx context.Context, field graphql.Colle
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.ID, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(uuid.UUID)
-	fc.Result = res
-	return ec.marshalNUuid2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_LoginOk_id(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "LoginOk",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Uuid does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _LoginOk_verify_code(ctx context.Context, field graphql.CollectedField, obj *model.LoginOk) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_LoginOk_verify_code(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.VerifyCode, nil
+		return obj.Email, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -5372,7 +5328,7 @@ func (ec *executionContext) _LoginOk_verify_code(ctx context.Context, field grap
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_LoginOk_verify_code(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_LoginOk_email(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "LoginOk",
 		Field:      field,
@@ -5417,6 +5373,50 @@ func (ec *executionContext) _LoginOk_phone(ctx context.Context, field graphql.Co
 }
 
 func (ec *executionContext) fieldContext_LoginOk_phone(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "LoginOk",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _LoginOk_title(ctx context.Context, field graphql.CollectedField, obj *model.LoginOk) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_LoginOk_title(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Title, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_LoginOk_title(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "LoginOk",
 		Field:      field,
@@ -6963,94 +6963,6 @@ func (ec *executionContext) fieldContext_Query___schema(_ context.Context, field
 	return fc, nil
 }
 
-func (ec *executionContext) _RegistrationsOk_id(ctx context.Context, field graphql.CollectedField, obj *model.RegistrationsOk) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_RegistrationsOk_id(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.ID, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(uuid.UUID)
-	fc.Result = res
-	return ec.marshalNUuid2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_RegistrationsOk_id(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "RegistrationsOk",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Uuid does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _RegistrationsOk_verify_code(ctx context.Context, field graphql.CollectedField, obj *model.RegistrationsOk) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_RegistrationsOk_verify_code(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.VerifyCode, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(string)
-	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_RegistrationsOk_verify_code(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "RegistrationsOk",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
 func (ec *executionContext) _RegistrationsOk_email(ctx context.Context, field graphql.CollectedField, obj *model.RegistrationsOk) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_RegistrationsOk_email(ctx, field)
 	if err != nil {
@@ -7083,6 +6995,94 @@ func (ec *executionContext) _RegistrationsOk_email(ctx context.Context, field gr
 }
 
 func (ec *executionContext) fieldContext_RegistrationsOk_email(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "RegistrationsOk",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _RegistrationsOk_phone(ctx context.Context, field graphql.CollectedField, obj *model.RegistrationsOk) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_RegistrationsOk_phone(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Phone, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_RegistrationsOk_phone(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "RegistrationsOk",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _RegistrationsOk_title(ctx context.Context, field graphql.CollectedField, obj *model.RegistrationsOk) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_RegistrationsOk_title(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Title, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_RegistrationsOk_title(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "RegistrationsOk",
 		Field:      field,
@@ -12488,18 +12488,18 @@ func (ec *executionContext) _LoginOk(ctx context.Context, sel ast.SelectionSet, 
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("LoginOk")
-		case "id":
-			out.Values[i] = ec._LoginOk_id(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
-			}
-		case "verify_code":
-			out.Values[i] = ec._LoginOk_verify_code(ctx, field, obj)
+		case "email":
+			out.Values[i] = ec._LoginOk_email(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
 		case "phone":
 			out.Values[i] = ec._LoginOk_phone(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "title":
+			out.Values[i] = ec._LoginOk_title(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
@@ -13063,18 +13063,18 @@ func (ec *executionContext) _RegistrationsOk(ctx context.Context, sel ast.Select
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("RegistrationsOk")
-		case "id":
-			out.Values[i] = ec._RegistrationsOk_id(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
-			}
-		case "verify_code":
-			out.Values[i] = ec._RegistrationsOk_verify_code(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
-			}
 		case "email":
 			out.Values[i] = ec._RegistrationsOk_email(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "phone":
+			out.Values[i] = ec._RegistrationsOk_phone(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "title":
+			out.Values[i] = ec._RegistrationsOk_title(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}

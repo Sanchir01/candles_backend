@@ -52,7 +52,26 @@ func (r *Repository) GetByEmail(ctx context.Context, email string) (*model.User,
 	}
 	return (*model.User)(&user), nil
 }
+func (r *Repository) GetBySlug(ctx context.Context, slug string) (*model.User, error) {
+	conn, err := r.primartDB.Acquire(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer conn.Release()
 
+	query, arg, err := sq.
+		Select("id ,title,slug, phone, created_at, updated_at, version, role, password").
+		From("public.users").
+		Where(sq.Eq{"slug": slug}).
+		PlaceholderFormat(sq.Dollar).ToSql()
+	var user DBUser
+	
+	if err := conn.QueryRow(ctx, query, arg...).Scan(
+		&user.ID, &user.Title, &user.Slug, &user.Phone, &user.CreatedAt, &user.UpdatedAt, &user.Version, &user.Role, &user.Password); err != nil {
+		return nil, err
+	}
+	return (*model.User)(&user), nil
+}
 func (r *Repository) GetById(ctx context.Context, userid uuid.UUID) (*model.User, error) {
 	conn, err := r.primartDB.Acquire(ctx)
 	if err != nil {

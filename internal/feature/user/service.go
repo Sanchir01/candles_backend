@@ -50,22 +50,27 @@ func (s *Service) UserByPhone(ctx context.Context, phone string) (*model.User, e
 }
 
 func (s *Service) Registrations(ctx context.Context, password, phone, title, email string, tx pgx.Tx) (*model.User, error) {
-
 	slug, err := utils.Slugify(title)
 	if err != nil {
 		return nil, err
 	}
 
-	existUser, err := s.UserByPhone(ctx, phone)
-	if err != pgx.ErrNoRows {
-		slog.Error("User with this phone already exists", existUser)
+	_, err = s.repository.GetByPhone(ctx, phone)
+	if err == nil {
+		slog.Error("User with this phone already exists")
 		return nil, errors.New("user with this phone already exists")
 	}
 
-	existUserByEmail, err := s.repository.GetByEmail(ctx, email)
-	if err != pgx.ErrNoRows {
-		slog.Error("User with this email already exists", existUserByEmail)
-		return nil, errors.New("user with this email already exists")
+	_, err = s.repository.GetByEmail(ctx, email)
+	if err == nil {
+		slog.Error("User with this slug already exists")
+		return nil, errors.New("user with this slug already exists")
+	}
+
+	_, err = s.repository.GetBySlug(ctx, slug)
+	if err == nil {
+		slog.Error("User with this slug already exists")
+		return nil, errors.New("user with this slug already exists")
 	}
 
 	hashedPassword, err := GeneratePasswordHash(password)

@@ -2,6 +2,7 @@ package user
 
 import (
 	"context"
+	"encoding/base64"
 	"fmt"
 	sq "github.com/Masterminds/squirrel"
 	"github.com/Sanchir01/candles_backend/internal/gql/model"
@@ -32,7 +33,19 @@ func (r *Repository) GetByPhone(ctx context.Context, phone string) (*model.User,
 		&user.ID, &user.Title, &user.Slug, &user.Phone, &user.CreatedAt, &user.UpdatedAt, &user.Version, &user.Role); err != nil {
 		return nil, err
 	}
-	return (*model.User)(&user), nil
+	passwordBase64 := base64.StdEncoding.EncodeToString(user.Password)
+	return &model.User{
+		ID:        user.ID,
+		Title:     user.Title,
+		Slug:      user.Slug,
+		Phone:     user.Phone,
+		Role:      user.Role,
+		Email:     user.Email,
+		Version:   user.Version,
+		Password:  passwordBase64,
+		CreatedAt: user.CreatedAt,
+		UpdatedAt: user.UpdatedAt,
+	}, nil
 }
 func (r *Repository) GetByEmail(ctx context.Context, email string) (*model.User, error) {
 	conn, err := r.primartDB.Acquire(ctx)
@@ -41,7 +54,12 @@ func (r *Repository) GetByEmail(ctx context.Context, email string) (*model.User,
 	}
 	defer conn.Release()
 
-	query, arg, err := sq.Select("id ,title,slug, phone, created_at, updated_at, version, role, password").From("public.users").Where(sq.Eq{"email": email}).PlaceholderFormat(sq.Dollar).ToSql()
+	query, arg, err := sq.
+		Select("id ,title,slug, phone, created_at, updated_at, version, role, password").
+		From("public.users").
+		Where(sq.Eq{"email": email}).
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
 	var user DBUser
 	if err := conn.QueryRow(ctx, query, arg...).Scan(
 		&user.ID, &user.Title, &user.Slug, &user.Phone, &user.CreatedAt, &user.UpdatedAt, &user.Version, &user.Role, &user.Password); err != nil {
@@ -50,7 +68,19 @@ func (r *Repository) GetByEmail(ctx context.Context, email string) (*model.User,
 		}
 		return nil, err
 	}
-	return (*model.User)(&user), nil
+
+	return &model.User{
+		ID:        user.ID,
+		Title:     user.Title,
+		Slug:      user.Slug,
+		Phone:     user.Phone,
+		Role:      user.Role,
+		Email:     user.Email,
+		Version:   user.Version,
+		Password:  "",
+		CreatedAt: user.CreatedAt,
+		UpdatedAt: user.UpdatedAt,
+	}, nil
 }
 func (r *Repository) GetBySlug(ctx context.Context, slug string) (*model.User, error) {
 	conn, err := r.primartDB.Acquire(ctx)
@@ -65,12 +95,24 @@ func (r *Repository) GetBySlug(ctx context.Context, slug string) (*model.User, e
 		Where(sq.Eq{"slug": slug}).
 		PlaceholderFormat(sq.Dollar).ToSql()
 	var user DBUser
-	
+
 	if err := conn.QueryRow(ctx, query, arg...).Scan(
 		&user.ID, &user.Title, &user.Slug, &user.Phone, &user.CreatedAt, &user.UpdatedAt, &user.Version, &user.Role, &user.Password); err != nil {
 		return nil, err
 	}
-	return (*model.User)(&user), nil
+
+	return &model.User{
+		ID:        user.ID,
+		Title:     user.Title,
+		Slug:      user.Slug,
+		Phone:     user.Phone,
+		Role:      user.Role,
+		Email:     user.Email,
+		Version:   user.Version,
+		Password:  "",
+		CreatedAt: user.CreatedAt,
+		UpdatedAt: user.UpdatedAt,
+	}, nil
 }
 func (r *Repository) GetById(ctx context.Context, userid uuid.UUID) (*model.User, error) {
 	conn, err := r.primartDB.Acquire(ctx)
@@ -85,7 +127,19 @@ func (r *Repository) GetById(ctx context.Context, userid uuid.UUID) (*model.User
 		&user.ID, &user.Title, &user.Slug, &user.Phone, &user.CreatedAt, &user.UpdatedAt, &user.Version, &user.Role); err != nil {
 		return nil, err
 	}
-	return (*model.User)(&user), nil
+
+	return &model.User{
+		ID:        user.ID,
+		Title:     user.Title,
+		Slug:      user.Slug,
+		Phone:     user.Phone,
+		Role:      user.Role,
+		Email:     user.Email,
+		Version:   user.Version,
+		Password:  "",
+		CreatedAt: user.CreatedAt,
+		UpdatedAt: user.UpdatedAt,
+	}, nil
 }
 
 func (r *Repository) CreateUser(ctx context.Context, title, phone, slug, email, role string, password []byte, tx pgx.Tx) (*model.User, error) {
@@ -106,6 +160,17 @@ func (r *Repository) CreateUser(ctx context.Context, title, phone, slug, email, 
 		}
 		return nil, err
 	}
-
-	return (*model.User)(&users), nil
+	passwordBase64 := base64.StdEncoding.EncodeToString(users.Password)
+	return &model.User{
+		ID:        users.ID,
+		Title:     users.Title,
+		Slug:      users.Slug,
+		Phone:     users.Phone,
+		Role:      users.Role,
+		Email:     users.Email,
+		Version:   users.Version,
+		Password:  passwordBase64,
+		CreatedAt: users.CreatedAt,
+		UpdatedAt: users.UpdatedAt,
+	}, nil
 }

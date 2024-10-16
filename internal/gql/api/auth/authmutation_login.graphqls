@@ -13,6 +13,8 @@ union LoginResult =
     | InternalErrorProblem
     | VersionMismatchProblem
 
+
+
 type LoginOk {
     email:String!
     phone:String!

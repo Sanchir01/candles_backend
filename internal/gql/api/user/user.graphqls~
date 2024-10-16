@@ -7,5 +7,6 @@ type User {
   version:UInt!
   phone:String!
   email:String!
+  password:String!
   role:Role!
 }

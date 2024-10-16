@@ -15,6 +15,6 @@ type DBUser struct {
 	Version   uint       `db:"version"`
 	Phone     string     `db:"phone"`
 	Email     string     `json:"email"`
-	Password  string     `db:"password"`
+	Password  []byte     `db:"password"`
 	Role      model.Role `db:"role"`
 }

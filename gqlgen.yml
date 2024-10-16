@@ -100,3 +100,6 @@ models:
   Uuid:
     model:
       - github.com/Sanchir01/candles_backend/internal/gql/model.Uuid
+  Bytes:
+    model:
+      - github.com/99designs/gqlgen/graphql.Byte

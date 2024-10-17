@@ -40,7 +40,7 @@ func (s3str *Storage) PutObjects(ctx context.Context, folderpath string, images 
 		if err != nil {
 			return nil, err
 		}
-		imageURL := fmt.Sprintf("%s%s%s", s3str.url, s3str.bucketName, "/"+filekey)
+		imageURL := fmt.Sprintf("%s%s%s", s3str.url, "/"+s3str.bucketName, filekey)
 		imageURLs = append(imageURLs, imageURL)
 	}
 	return imageURLs, nil

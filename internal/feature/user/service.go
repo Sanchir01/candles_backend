@@ -2,7 +2,9 @@ package user
 
 import (
 	"context"
+	"encoding/base64"
 	"errors"
+	"fmt"
 	"github.com/Sanchir01/candles_backend/internal/gql/model"
 	"github.com/Sanchir01/candles_backend/pkg/lib/utils"
 	"github.com/google/uuid"
@@ -33,12 +35,21 @@ func (s *Service) UserByEmail(ctx context.Context, email string, password string
 
 		return nil, err
 	}
-	verifypass := VerifyPassword([]byte(usersdb.Password), password)
-	if !verifypass {
-		return nil, err
+	slog.Warn("password user by email", usersdb.Password)
+	decodepass, err := base64.StdEncoding.DecodeString(usersdb.Password)
+	if err != nil {
+		return nil, fmt.Errorf("Неправильный пароль")
+	}
+	verifypass := VerifyPassword(
+		decodepass,
+		password,
+	)
+	if verifypass == false {
+		return nil, fmt.Errorf("Неправильный пароль")
 	}
 	return usersdb, nil
 }
+
 func (s *Service) UserByPhone(ctx context.Context, phone string) (*model.User, error) {
 	usersdb, err := s.repository.GetByPhone(ctx, phone)
 	if err != nil {

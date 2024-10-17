@@ -40,7 +40,7 @@ func (r *authMutationsResolver) Registrations(ctx context.Context, obj *model.Au
 	usersdb, err := r.env.Services.UserService.Registrations(ctx, input.Password, input.Phone, input.Title, input.Email, tx)
 	if err != nil {
 		r.env.Logger.Error("register errors", err.Error())
-		return responseErr.NewInternalErrorProblem("не удалось зарегистрироваться"), fmt.Errorf("не удалось зарегистрироваться")
+		return responseErr.NewInternalErrorProblem("не удалось зарегистрироваться"), fmt.Errorf(err.Error())
 	}
 	r.env.Logger.Warn("register usersdb")
 	w := customMiddleware.GetResponseWriter(ctx)

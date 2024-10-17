@@ -1362,6 +1362,8 @@ union LoginResult =
     | InternalErrorProblem
     | VersionMismatchProblem
 
+
+
 type LoginOk {
     email:String!
     phone:String!
@@ -1770,6 +1772,7 @@ type InvalidSortRankProblem implements ProblemInterface {
   password:String!
   role:Role!
 }
+
 `, BuiltIn: false},
 	{Name: "../api/user/userquery.graphqls", Input: `type UserQuery
 

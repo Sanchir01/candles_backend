@@ -11,14 +11,3 @@ type User {
   role:Role!
 }
 
-type ReturningUserField   {
-  id: Uuid!
-  title: String!
-  createdAt: DateTime!
-  updatedAt: DateTime!
-  slug: String!
-  version:UInt!
-  phone:String!
-  email:String!
-  role:Role!
-}

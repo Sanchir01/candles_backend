@@ -33,41 +33,6 @@ func (r *Repository) GetByPhone(ctx context.Context, phone string) (*model.User,
 		&user.ID, &user.Title, &user.Slug, &user.Phone, &user.CreatedAt, &user.UpdatedAt, &user.Version, &user.Role); err != nil {
 		return nil, err
 	}
-	passwordBase64 := base64.StdEncoding.EncodeToString(user.Password)
-	return &model.User{
-		ID:        user.ID,
-		Title:     user.Title,
-		Slug:      user.Slug,
-		Phone:     user.Phone,
-		Role:      user.Role,
-		Email:     user.Email,
-		Version:   user.Version,
-		Password:  passwordBase64,
-		CreatedAt: user.CreatedAt,
-		UpdatedAt: user.UpdatedAt,
-	}, nil
-}
-func (r *Repository) GetByEmail(ctx context.Context, email string) (*model.User, error) {
-	conn, err := r.primartDB.Acquire(ctx)
-	if err != nil {
-		return nil, err
-	}
-	defer conn.Release()
-
-	query, arg, err := sq.
-		Select("id ,title,slug, phone, created_at, updated_at, version, role, password").
-		From("public.users").
-		Where(sq.Eq{"email": email}).
-		PlaceholderFormat(sq.Dollar).
-		ToSql()
-	var user DBUser
-	if err := conn.QueryRow(ctx, query, arg...).Scan(
-		&user.ID, &user.Title, &user.Slug, &user.Phone, &user.CreatedAt, &user.UpdatedAt, &user.Version, &user.Role, &user.Password); err != nil {
-		if err == pgx.ErrNoRows {
-			return nil, fmt.Errorf("Неправильный логин или пароль")
-		}
-		return nil, err
-	}
 
 	return &model.User{
 		ID:        user.ID,
@@ -82,6 +47,42 @@ func (r *Repository) GetByEmail(ctx context.Context, email string) (*model.User,
 		UpdatedAt: user.UpdatedAt,
 	}, nil
 }
+func (r *Repository) GetByEmail(ctx context.Context, email string) (*model.User, error) {
+	conn, err := r.primartDB.Acquire(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer conn.Release()
+
+	query, arg, err := sq.
+		Select("id, title, slug, phone, created_at, updated_at, version, role, password, email").
+		From("public.users").
+		Where(sq.Eq{"email": email}).
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
+	var user DBUser
+
+	if err := conn.QueryRow(ctx, query, arg...).Scan(
+		&user.ID, &user.Title, &user.Slug, &user.Phone, &user.CreatedAt, &user.UpdatedAt, &user.Version, &user.Role, &user.Password, &user.Email); err != nil {
+		if err == pgx.ErrNoRows {
+			return nil, fmt.Errorf("Неправильный логин или пароль")
+		}
+		return nil, err
+	}
+	pass := base64.StdEncoding.EncodeToString(user.Password)
+	return &model.User{
+		ID:        user.ID,
+		Title:     user.Title,
+		Slug:      user.Slug,
+		Phone:     user.Phone,
+		Role:      user.Role,
+		Email:     user.Email,
+		Version:   user.Version,
+		Password:  pass,
+		CreatedAt: user.CreatedAt,
+		UpdatedAt: user.UpdatedAt,
+	}, nil
+}
 func (r *Repository) GetBySlug(ctx context.Context, slug string) (*model.User, error) {
 	conn, err := r.primartDB.Acquire(ctx)
 	if err != nil {
@@ -90,14 +91,14 @@ func (r *Repository) GetBySlug(ctx context.Context, slug string) (*model.User, e
 	defer conn.Release()
 
 	query, arg, err := sq.
-		Select("id ,title,slug, phone, created_at, updated_at, version, role, password").
+		Select("id ,title,slug, phone, created_at, updated_at, version, role, password,email").
 		From("public.users").
 		Where(sq.Eq{"slug": slug}).
 		PlaceholderFormat(sq.Dollar).ToSql()
 	var user DBUser
 
 	if err := conn.QueryRow(ctx, query, arg...).Scan(
-		&user.ID, &user.Title, &user.Slug, &user.Phone, &user.CreatedAt, &user.UpdatedAt, &user.Version, &user.Role, &user.Password); err != nil {
+		&user.ID, &user.Title, &user.Slug, &user.Phone, &user.CreatedAt, &user.UpdatedAt, &user.Version, &user.Role, &user.Password, &user.Email); err != nil {
 		return nil, err
 	}
 
@@ -121,10 +122,10 @@ func (r *Repository) GetById(ctx context.Context, userid uuid.UUID) (*model.User
 	}
 	defer conn.Release()
 
-	query := `SELECT id ,title,slug, phone, created_at, updated_at, version, role FROM public.users WHERE id = $1`
+	query := `SELECT id ,title,slug, phone, created_at, updated_at, version, role, email FROM public.users WHERE id = $1`
 	var user DBUser
 	if err := conn.QueryRow(ctx, query, userid).Scan(
-		&user.ID, &user.Title, &user.Slug, &user.Phone, &user.CreatedAt, &user.UpdatedAt, &user.Version, &user.Role); err != nil {
+		&user.ID, &user.Title, &user.Slug, &user.Phone, &user.CreatedAt, &user.UpdatedAt, &user.Version, &user.Role, &user.Email); err != nil {
 		return nil, err
 	}
 
@@ -160,7 +161,7 @@ func (r *Repository) CreateUser(ctx context.Context, title, phone, slug, email, 
 		}
 		return nil, err
 	}
-	passwordBase64 := base64.StdEncoding.EncodeToString(users.Password)
+
 	return &model.User{
 		ID:        users.ID,
 		Title:     users.Title,
@@ -169,7 +170,7 @@ func (r *Repository) CreateUser(ctx context.Context, title, phone, slug, email, 
 		Role:      users.Role,
 		Email:     users.Email,
 		Version:   users.Version,
-		Password:  passwordBase64,
+		Password:  "",
 		CreatedAt: users.CreatedAt,
 		UpdatedAt: users.UpdatedAt,
 	}, nil

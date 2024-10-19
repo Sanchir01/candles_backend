@@ -31,9 +31,12 @@ func GetResponseWriter(ctx context.Context) http.ResponseWriter {
 func AuthMiddleware() func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			access, err := r.Cookie("accessToken")
+
+			access, err := r.Cookie("refreshToken")
+
 			if err != nil {
-				refresh, err := r.Cookie("refreshToken")
+				refresh, err := r.Cookie("accessToken")
+				
 				if err != nil {
 					next.ServeHTTP(w, r)
 					return

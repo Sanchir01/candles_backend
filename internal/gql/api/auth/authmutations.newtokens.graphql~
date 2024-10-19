@@ -1,0 +1,7 @@
+extend type AuthMutations {
+    newTokens: NewTokensResult! @goField(forceResolver: true) @hasRole(role: [user])
+}
+
+union NewTokensResult =
+    InternalErrorProblem
+    | NewTokensOk

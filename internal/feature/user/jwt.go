@@ -38,7 +38,7 @@ func GenerateJwtToken(id uuid.UUID, role model.Role, expire time.Time) (string, 
 }
 
 func AddCookieTokens(id uuid.UUID, Role model.Role, w http.ResponseWriter) error {
-	expirationTimeAccess := time.Now().Add(1 * time.Hour)
+	expirationTimeAccess := time.Now().Add(15 * time.Minute)
 	expirationTimeRefresh := time.Now().Add(14 * 24 * time.Hour)
 	refreshToken, err := GenerateJwtToken(id, Role, expirationTimeRefresh)
 	if err != nil {
@@ -51,7 +51,7 @@ func AddCookieTokens(id uuid.UUID, Role model.Role, w http.ResponseWriter) error
 
 	slog.Warn("tokens generated", slog.String("access_token", accessToken), slog.String("refresh_token", refreshToken))
 
-	http.SetCookie(w, GenerateCookie("accessToken", expirationTimeAccess, true, accessToken))
+	http.SetCookie(w, GenerateCookie("accessToken", expirationTimeAccess, false, accessToken))
 	http.SetCookie(w, GenerateCookie("refreshToken", expirationTimeRefresh, true, refreshToken))
 
 	return nil
@@ -97,7 +97,7 @@ func NewAccessToken(tokenString string, threshold time.Duration, w http.Response
 		return "", err
 	}
 
-	http.SetCookie(w, GenerateCookie("accessToken", newExpire, true, newToken))
+	http.SetCookie(w, GenerateCookie("accessToken", newExpire, false, newToken))
 	return newToken, nil
 }
 
@@ -111,4 +111,9 @@ func GenerateCookie(name string, expire time.Time, httpOnly bool, value string) 
 	}
 
 	return cookie
+}
+
+func DeleteCookie(w http.ResponseWriter) {
+	http.SetCookie(w, GenerateCookie("accessToken", time.Unix(0, 0), true, ""))
+	http.SetCookie(w, GenerateCookie("refreshToken", time.Unix(0, 0), true, ""))
 }

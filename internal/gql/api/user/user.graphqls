@@ -3,7 +3,6 @@ type User {
   title: String!
   createdAt: DateTime!
   updatedAt: DateTime!
-  slug: String!
   version:UInt!
   phone:String!
   email:String!

@@ -12,3 +12,8 @@ const (
 const (
 	EnumContextProcessingStatus EnumContextStatus = "in processing"
 )
+
+const (
+	RefreshToken = "refreshToken"
+	AccessToken  = "accessToken"
+)

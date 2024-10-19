@@ -7,7 +7,6 @@ package resolver
 import (
 	"context"
 	"errors"
-	"fmt"
 
 	"github.com/Sanchir01/candles_backend/internal/feature/user"
 	"github.com/Sanchir01/candles_backend/internal/gql/model"
@@ -40,13 +39,12 @@ func (r *authMutationsResolver) Registrations(ctx context.Context, obj *model.Au
 	usersdb, err := r.env.Services.UserService.Registrations(ctx, input.Password, input.Phone, input.Title, input.Email, tx)
 	if err != nil {
 		r.env.Logger.Error("register errors", err.Error())
-		return responseErr.NewInternalErrorProblem("не удалось зарегистрироваться"), fmt.Errorf(err.Error())
+		return responseErr.NewInternalErrorProblem("не удалось зарегистрироваться"), nil
 	}
-	r.env.Logger.Warn("register usersdb")
 	w := customMiddleware.GetResponseWriter(ctx)
 	if err = user.AddCookieTokens(usersdb.ID, usersdb.Role, w); err != nil {
-		r.env.Logger.Error("register errors", err)
-		return responseErr.NewInternalErrorProblem("Error for generating jwt tokens"), err
+		r.env.Logger.Error("register errors", err.Error())
+		return responseErr.NewInternalErrorProblem("Error for generating jwt tokens"), nil
 	}
 	if err := tx.Commit(ctx); err != nil {
 		return nil, err

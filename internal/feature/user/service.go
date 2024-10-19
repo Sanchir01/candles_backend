@@ -65,6 +65,7 @@ func (s *Service) Registrations(ctx context.Context, password, phone, title, ema
 	if err != nil {
 		return nil, err
 	}
+	slog.Warn("slug", slug)
 
 	_, err = s.repository.GetByPhone(ctx, phone)
 	if err == nil {
@@ -74,13 +75,7 @@ func (s *Service) Registrations(ctx context.Context, password, phone, title, ema
 
 	_, err = s.repository.GetByEmail(ctx, email)
 	if err == nil {
-		slog.Error("User with this slug already exists")
-		return nil, errors.New("user with this slug already exists")
-	}
-
-	_, err = s.repository.GetBySlug(ctx, slug)
-	if err == nil {
-		slog.Error("User with this slug already exists")
+		slog.Error("User with this email already exists")
 		return nil, errors.New("user with this slug already exists")
 	}
 
@@ -90,7 +85,7 @@ func (s *Service) Registrations(ctx context.Context, password, phone, title, ema
 		return nil, err
 	}
 
-	usersdb, err := s.repository.CreateUser(ctx, title, phone, slug, email, "user", hashedPassword, tx)
+	usersdb, err := s.repository.CreateUser(ctx, title, phone, email, "user", hashedPassword, tx)
 	if err != nil {
 		return nil, err
 	}

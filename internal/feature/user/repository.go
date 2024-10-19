@@ -27,17 +27,21 @@ func (r *Repository) GetByPhone(ctx context.Context, phone string) (*model.User,
 	}
 	defer conn.Release()
 
-	query := `SELECT id ,title,slug, phone, created_at, updated_at, version, role FROM public.users WHERE phone = $1`
+	query, arg, err := sq.
+		Select("id ,title, phone, created_at, updated_at, version, role, password,email").
+		From("public.users").
+		Where(sq.Eq{"phone": phone}).
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
 	var user DBUser
-	if err := conn.QueryRow(ctx, query, phone).Scan(
-		&user.ID, &user.Title, &user.Slug, &user.Phone, &user.CreatedAt, &user.UpdatedAt, &user.Version, &user.Role); err != nil {
+	if err := conn.QueryRow(ctx, query, arg...).Scan(
+		&user.ID, &user.Title, &user.Phone, &user.CreatedAt, &user.UpdatedAt, &user.Version, &user.Role); err != nil {
 		return nil, err
 	}
 
 	return &model.User{
 		ID:        user.ID,
 		Title:     user.Title,
-		Slug:      user.Slug,
 		Phone:     user.Phone,
 		Role:      user.Role,
 		Email:     user.Email,
@@ -55,7 +59,7 @@ func (r *Repository) GetByEmail(ctx context.Context, email string) (*model.User,
 	defer conn.Release()
 
 	query, arg, err := sq.
-		Select("id, title, slug, phone, created_at, updated_at, version, role, password, email").
+		Select("id ,title, phone, created_at, updated_at, version, role, password,email").
 		From("public.users").
 		Where(sq.Eq{"email": email}).
 		PlaceholderFormat(sq.Dollar).
@@ -63,7 +67,7 @@ func (r *Repository) GetByEmail(ctx context.Context, email string) (*model.User,
 	var user DBUser
 
 	if err := conn.QueryRow(ctx, query, arg...).Scan(
-		&user.ID, &user.Title, &user.Slug, &user.Phone, &user.CreatedAt, &user.UpdatedAt, &user.Version, &user.Role, &user.Password, &user.Email); err != nil {
+		&user.ID, &user.Title, &user.Phone, &user.CreatedAt, &user.UpdatedAt, &user.Version, &user.Role, &user.Password, &user.Email); err != nil {
 		if err == pgx.ErrNoRows {
 			return nil, fmt.Errorf("Неправильный логин или пароль")
 		}
@@ -71,9 +75,9 @@ func (r *Repository) GetByEmail(ctx context.Context, email string) (*model.User,
 	}
 	pass := base64.StdEncoding.EncodeToString(user.Password)
 	return &model.User{
-		ID:        user.ID,
-		Title:     user.Title,
-		Slug:      user.Slug,
+		ID:    user.ID,
+		Title: user.Title,
+
 		Phone:     user.Phone,
 		Role:      user.Role,
 		Email:     user.Email,
@@ -91,21 +95,20 @@ func (r *Repository) GetBySlug(ctx context.Context, slug string) (*model.User, e
 	defer conn.Release()
 
 	query, arg, err := sq.
-		Select("id ,title,slug, phone, created_at, updated_at, version, role, password,email").
+		Select("id ,title, phone, created_at, updated_at, version, role, password,email").
 		From("public.users").
 		Where(sq.Eq{"slug": slug}).
 		PlaceholderFormat(sq.Dollar).ToSql()
 	var user DBUser
 
 	if err := conn.QueryRow(ctx, query, arg...).Scan(
-		&user.ID, &user.Title, &user.Slug, &user.Phone, &user.CreatedAt, &user.UpdatedAt, &user.Version, &user.Role, &user.Password, &user.Email); err != nil {
+		&user.ID, &user.Title, &user.Phone, &user.CreatedAt, &user.UpdatedAt, &user.Version, &user.Role, &user.Password, &user.Email); err != nil {
 		return nil, err
 	}
 
 	return &model.User{
 		ID:        user.ID,
 		Title:     user.Title,
-		Slug:      user.Slug,
 		Phone:     user.Phone,
 		Role:      user.Role,
 		Email:     user.Email,
@@ -115,24 +118,27 @@ func (r *Repository) GetBySlug(ctx context.Context, slug string) (*model.User, e
 		UpdatedAt: user.UpdatedAt,
 	}, nil
 }
-func (r *Repository) GetById(ctx context.Context, userid uuid.UUID) (*model.User, error) {
+func (r *Repository) GetById(ctx context.Context, userId uuid.UUID) (*model.User, error) {
 	conn, err := r.primartDB.Acquire(ctx)
 	if err != nil {
 		return nil, err
 	}
 	defer conn.Release()
 
-	query := `SELECT id ,title,slug, phone, created_at, updated_at, version, role, email FROM public.users WHERE id = $1`
+	query, arg, err := sq.
+		Select("id ,title, phone, created_at, updated_at, version, role, password,email").
+		From("public.users").
+		Where(sq.Eq{"id": userId}).
+		PlaceholderFormat(sq.Dollar).ToSql()
 	var user DBUser
-	if err := conn.QueryRow(ctx, query, userid).Scan(
-		&user.ID, &user.Title, &user.Slug, &user.Phone, &user.CreatedAt, &user.UpdatedAt, &user.Version, &user.Role, &user.Email); err != nil {
+	if err := conn.QueryRow(ctx, query, arg...).Scan(
+		&user.ID, &user.Title, &user.Phone, &user.CreatedAt, &user.UpdatedAt, &user.Version, &user.Role, &user.Email); err != nil {
 		return nil, err
 	}
 
 	return &model.User{
 		ID:        user.ID,
 		Title:     user.Title,
-		Slug:      user.Slug,
 		Phone:     user.Phone,
 		Role:      user.Role,
 		Email:     user.Email,
@@ -143,11 +149,11 @@ func (r *Repository) GetById(ctx context.Context, userid uuid.UUID) (*model.User
 	}, nil
 }
 
-func (r *Repository) CreateUser(ctx context.Context, title, phone, slug, email, role string, password []byte, tx pgx.Tx) (*model.User, error) {
+func (r *Repository) CreateUser(ctx context.Context, title, phone, email, role string, password []byte, tx pgx.Tx) (*model.User, error) {
 	query, arg, err := sq.
 		Insert("users").
-		Columns("title", "slug", "phone", "email", "role", "password").
-		Values(title, slug, phone, email, role, password).
+		Columns("title", "phone", "email", "role", "password").
+		Values(title, phone, email, role, password).
 		Suffix("RETURNING id, phone, role, email").PlaceholderFormat(sq.Dollar).ToSql()
 
 	if err != nil {
@@ -165,7 +171,6 @@ func (r *Repository) CreateUser(ctx context.Context, title, phone, slug, email, 
 	return &model.User{
 		ID:        users.ID,
 		Title:     users.Title,
-		Slug:      users.Slug,
 		Phone:     users.Phone,
 		Role:      users.Role,
 		Email:     users.Email,

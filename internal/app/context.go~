@@ -2,6 +2,7 @@ package app
 
 type ContextKey int
 type AccessContextKey string
+type EnumContextStatus string
 
 const (
 	DataLoadersContextKey ContextKey       = iota
@@ -9,5 +10,10 @@ const (
 )
 
 const (
-	EnumContextProcessingStatus = "processing"
+	EnumContextProcessingStatus EnumContextStatus = "in processing"
+)
+
+const (
+	refreshToken = "refreshToken"
+	accessToken  = "accessToken"
 )

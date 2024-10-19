@@ -76,7 +76,9 @@ type ComplexityRoot struct {
 	}
 
 	AuthMutations struct {
+		DeleteCookie  func(childComplexity int) int
 		Login         func(childComplexity int, input model.LoginInput) int
+		NewTokens     func(childComplexity int) int
 		Registrations func(childComplexity int, input model.RegistrationsInput) int
 	}
 
@@ -186,6 +188,10 @@ type ComplexityRoot struct {
 		Ok func(childComplexity int) int
 	}
 
+	DeleteTokensOk struct {
+		Ok func(childComplexity int) int
+	}
+
 	InternalErrorProblem struct {
 		Message func(childComplexity int) int
 	}
@@ -207,6 +213,10 @@ type ComplexityRoot struct {
 		Category func(childComplexity int) int
 		Color    func(childComplexity int) int
 		Orders   func(childComplexity int) int
+	}
+
+	NewTokensOk struct {
+		Token func(childComplexity int) int
 	}
 
 	OrderItems struct {
@@ -274,7 +284,6 @@ type ComplexityRoot struct {
 		Password  func(childComplexity int) int
 		Phone     func(childComplexity int) int
 		Role      func(childComplexity int) int
-		Slug      func(childComplexity int) int
 		Title     func(childComplexity int) int
 		UpdatedAt func(childComplexity int) int
 		Version   func(childComplexity int) int
@@ -297,8 +306,10 @@ type AllCandlesOkResolver interface {
 	TotalCount(ctx context.Context, obj *model.AllCandlesOk, estimate uint) (model.TotalCountResolvingResult, error)
 }
 type AuthMutationsResolver interface {
+	DeleteCookie(ctx context.Context, obj *model.AuthMutations) (model.DeleteTokensResult, error)
 	Login(ctx context.Context, obj *model.AuthMutations, input model.LoginInput) (model.LoginResult, error)
 	Registrations(ctx context.Context, obj *model.AuthMutations, input model.RegistrationsInput) (model.RegistrationsResult, error)
+	NewTokens(ctx context.Context, obj *model.AuthMutations) (model.NewTokensResult, error)
 }
 type CandlesMutationResolver interface {
 	CreateCandle(ctx context.Context, obj *model.CandlesMutation, input model.CreateCandleInput) (model.CandlesMutationResult, error)
@@ -401,6 +412,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.AllOrdersOk.Orders(childComplexity), true
 
+	case "AuthMutations.deleteCookie":
+		if e.complexity.AuthMutations.DeleteCookie == nil {
+			break
+		}
+
+		return e.complexity.AuthMutations.DeleteCookie(childComplexity), true
+
 	case "AuthMutations.login":
 		if e.complexity.AuthMutations.Login == nil {
 			break
@@ -412,6 +430,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.AuthMutations.Login(childComplexity, args["input"].(model.LoginInput)), true
+
+	case "AuthMutations.newTokens":
+		if e.complexity.AuthMutations.NewTokens == nil {
+			break
+		}
+
+		return e.complexity.AuthMutations.NewTokens(childComplexity), true
 
 	case "AuthMutations.registrations":
 		if e.complexity.AuthMutations.Registrations == nil {
@@ -802,6 +827,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.CreateOrderOk.Ok(childComplexity), true
 
+	case "DeleteTokensOk.ok":
+		if e.complexity.DeleteTokensOk.Ok == nil {
+			break
+		}
+
+		return e.complexity.DeleteTokensOk.Ok(childComplexity), true
+
 	case "InternalErrorProblem.message":
 		if e.complexity.InternalErrorProblem.Message == nil {
 			break
@@ -878,6 +910,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.Orders(childComplexity), true
+
+	case "NewTokensOk.token":
+		if e.complexity.NewTokensOk.Token == nil {
+			break
+		}
+
+		return e.complexity.NewTokensOk.Token(childComplexity), true
 
 	case "OrderItems.createdAt":
 		if e.complexity.OrderItems.CreatedAt == nil {
@@ -1143,13 +1182,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.User.Role(childComplexity), true
 
-	case "User.slug":
-		if e.complexity.User.Slug == nil {
-			break
-		}
-
-		return e.complexity.User.Slug(childComplexity), true
-
 	case "User.title":
 		if e.complexity.User.Title == nil {
 			break
@@ -1342,6 +1374,17 @@ scalar UInt
 scalar Upload
 scalar Url
 scalar Uuid`, BuiltIn: false},
+	{Name: "../api/auth/authmutaions_deletecookie.graphqls", Input: `extend type AuthMutations {
+    deleteCookie: DeleteTokensResult! @goField(forceResolver: true)
+}
+
+union DeleteTokensResult =
+    | InternalErrorProblem
+    | DeleteTokensOk
+
+type DeleteTokensOk {
+    ok:String!
+}`, BuiltIn: false},
 	{Name: "../api/auth/authmutation.graphqls", Input: `type AuthMutations
 
 extend type Mutation {
@@ -1391,6 +1434,17 @@ type RegistrationsOk {
     phone:String!
     title:String!
     role:Role!
+}`, BuiltIn: false},
+	{Name: "../api/auth/authmutations_newtokens.graphqls", Input: `extend type AuthMutations {
+    newTokens: NewTokensResult! @goField(forceResolver: true) @hasRole(role: [user])
+}
+
+union NewTokensResult =
+    | InternalErrorProblem
+    | NewTokensOk
+
+type NewTokensOk {
+    token:String!
 }`, BuiltIn: false},
 	{Name: "../api/candles/candles.graphqls", Input: `type Candles {
     id: Uuid!
@@ -1765,7 +1819,6 @@ type InvalidSortRankProblem implements ProblemInterface {
   title: String!
   createdAt: DateTime!
   updatedAt: DateTime!
-  slug: String!
   version:UInt!
   phone:String!
   email:String!
@@ -2741,6 +2794,50 @@ func (ec *executionContext) fieldContext_AllOrdersOk_orders(_ context.Context, f
 	return fc, nil
 }
 
+func (ec *executionContext) _AuthMutations_deleteCookie(ctx context.Context, field graphql.CollectedField, obj *model.AuthMutations) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_AuthMutations_deleteCookie(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.AuthMutations().DeleteCookie(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(model.DeleteTokensResult)
+	fc.Result = res
+	return ec.marshalNDeleteTokensResult2githubᚗcomᚋSanchir01ᚋcandles_backendᚋinternalᚋgqlᚋmodelᚐDeleteTokensResult(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_AuthMutations_deleteCookie(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "AuthMutations",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type DeleteTokensResult does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _AuthMutations_login(ctx context.Context, field graphql.CollectedField, obj *model.AuthMutations) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_AuthMutations_login(ctx, field)
 	if err != nil {
@@ -2847,6 +2944,77 @@ func (ec *executionContext) fieldContext_AuthMutations_registrations(ctx context
 	if fc.Args, err = ec.field_AuthMutations_registrations_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _AuthMutations_newTokens(ctx context.Context, field graphql.CollectedField, obj *model.AuthMutations) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_AuthMutations_newTokens(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.AuthMutations().NewTokens(rctx, obj)
+		}
+
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			role, err := ec.unmarshalORole2ᚕᚖgithubᚗcomᚋSanchir01ᚋcandles_backendᚋinternalᚋgqlᚋmodelᚐRole(ctx, []interface{}{"user"})
+			if err != nil {
+				var zeroVal model.NewTokensResult
+				return zeroVal, err
+			}
+			if ec.directives.HasRole == nil {
+				var zeroVal model.NewTokensResult
+				return zeroVal, errors.New("directive hasRole is not implemented")
+			}
+			return ec.directives.HasRole(ctx, obj, directive0, role)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(model.NewTokensResult); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be github.com/Sanchir01/candles_backend/internal/gql/model.NewTokensResult`, tmp)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(model.NewTokensResult)
+	fc.Result = res
+	return ec.marshalNNewTokensResult2githubᚗcomᚋSanchir01ᚋcandles_backendᚋinternalᚋgqlᚋmodelᚐNewTokensResult(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_AuthMutations_newTokens(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "AuthMutations",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type NewTokensResult does not have child fields")
+		},
 	}
 	return fc, nil
 }
@@ -5212,6 +5380,50 @@ func (ec *executionContext) fieldContext_CreateOrderOk_ok(_ context.Context, fie
 	return fc, nil
 }
 
+func (ec *executionContext) _DeleteTokensOk_ok(ctx context.Context, field graphql.CollectedField, obj *model.DeleteTokensOk) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_DeleteTokensOk_ok(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Ok, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_DeleteTokensOk_ok(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "DeleteTokensOk",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _InternalErrorProblem_message(ctx context.Context, field graphql.CollectedField, obj *model.InternalErrorProblem) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_InternalErrorProblem_message(ctx, field)
 	if err != nil {
@@ -5515,10 +5727,14 @@ func (ec *executionContext) fieldContext_Mutation_auth(_ context.Context, field 
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
+			case "deleteCookie":
+				return ec.fieldContext_AuthMutations_deleteCookie(ctx, field)
 			case "login":
 				return ec.fieldContext_AuthMutations_login(ctx, field)
 			case "registrations":
 				return ec.fieldContext_AuthMutations_registrations(ctx, field)
+			case "newTokens":
+				return ec.fieldContext_AuthMutations_newTokens(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type AuthMutations", field.Name)
 		},
@@ -5715,6 +5931,50 @@ func (ec *executionContext) fieldContext_Mutation_orders(_ context.Context, fiel
 				return ec.fieldContext_OrderMutations_createOrder(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type OrderMutations", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _NewTokensOk_token(ctx context.Context, field graphql.CollectedField, obj *model.NewTokensOk) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_NewTokensOk_token(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Token, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_NewTokensOk_token(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "NewTokensOk",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
 		},
 	}
 	return fc, nil
@@ -7450,50 +7710,6 @@ func (ec *executionContext) fieldContext_User_updatedAt(_ context.Context, field
 	return fc, nil
 }
 
-func (ec *executionContext) _User_slug(ctx context.Context, field graphql.CollectedField, obj *model.User) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_User_slug(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Slug, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(string)
-	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_User_slug(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "User",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
 func (ec *executionContext) _User_version(ctx context.Context, field graphql.CollectedField, obj *model.User) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_User_version(ctx, field)
 	if err != nil {
@@ -7761,8 +7977,6 @@ func (ec *executionContext) fieldContext_UserProfileOk_profile(_ context.Context
 				return ec.fieldContext_User_createdAt(ctx, field)
 			case "updatedAt":
 				return ec.fieldContext_User_updatedAt(ctx, field)
-			case "slug":
-				return ec.fieldContext_User_slug(ctx, field)
 			case "version":
 				return ec.fieldContext_User_version(ctx, field)
 			case "phone":
@@ -10629,6 +10843,29 @@ func (ec *executionContext) _CreateOrderResult(ctx context.Context, sel ast.Sele
 	}
 }
 
+func (ec *executionContext) _DeleteTokensResult(ctx context.Context, sel ast.SelectionSet, obj model.DeleteTokensResult) graphql.Marshaler {
+	switch obj := (obj).(type) {
+	case nil:
+		return graphql.Null
+	case model.InternalErrorProblem:
+		return ec._InternalErrorProblem(ctx, sel, &obj)
+	case *model.InternalErrorProblem:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._InternalErrorProblem(ctx, sel, obj)
+	case model.DeleteTokensOk:
+		return ec._DeleteTokensOk(ctx, sel, &obj)
+	case *model.DeleteTokensOk:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._DeleteTokensOk(ctx, sel, obj)
+	default:
+		panic(fmt.Errorf("unexpected type %T", obj))
+	}
+}
+
 func (ec *executionContext) _LoginResult(ctx context.Context, sel ast.SelectionSet, obj model.LoginResult) graphql.Marshaler {
 	switch obj := (obj).(type) {
 	case nil:
@@ -10654,6 +10891,29 @@ func (ec *executionContext) _LoginResult(ctx context.Context, sel ast.SelectionS
 			return graphql.Null
 		}
 		return ec._LoginOk(ctx, sel, obj)
+	default:
+		panic(fmt.Errorf("unexpected type %T", obj))
+	}
+}
+
+func (ec *executionContext) _NewTokensResult(ctx context.Context, sel ast.SelectionSet, obj model.NewTokensResult) graphql.Marshaler {
+	switch obj := (obj).(type) {
+	case nil:
+		return graphql.Null
+	case model.InternalErrorProblem:
+		return ec._InternalErrorProblem(ctx, sel, &obj)
+	case *model.InternalErrorProblem:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._InternalErrorProblem(ctx, sel, obj)
+	case model.NewTokensOk:
+		return ec._NewTokensOk(ctx, sel, &obj)
+	case *model.NewTokensOk:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._NewTokensOk(ctx, sel, obj)
 	default:
 		panic(fmt.Errorf("unexpected type %T", obj))
 	}
@@ -11000,6 +11260,42 @@ func (ec *executionContext) _AuthMutations(ctx context.Context, sel ast.Selectio
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("AuthMutations")
+		case "deleteCookie":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._AuthMutations_deleteCookie(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		case "login":
 			field := field
 
@@ -11046,6 +11342,42 @@ func (ec *executionContext) _AuthMutations(ctx context.Context, sel ast.Selectio
 					}
 				}()
 				res = ec._AuthMutations_registrations(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "newTokens":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._AuthMutations_newTokens(ctx, field, obj)
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}
@@ -12402,7 +12734,46 @@ func (ec *executionContext) _CreateOrderOk(ctx context.Context, sel ast.Selectio
 	return out
 }
 
-var internalErrorProblemImplementors = []string{"InternalErrorProblem", "LoginResult", "RegistrationsResult", "CandlesMutationResult", "CandlesByIdResult", "CandlesBySlugResult", "AllCategoryResult", "TotalCountResolvingResult", "CategoryCreateResult", "UpdateCategoryResult", "CategoryBySlugResult", "CategoryByIdResult", "CategoryGetAllResult", "ColorCreateResult", "AllColorResult", "ColorByIdResult", "ColorBySlugResult", "CreateOrderResult", "AllOrdersResult", "ProblemInterface", "UserProfileResult"}
+var deleteTokensOkImplementors = []string{"DeleteTokensOk", "DeleteTokensResult"}
+
+func (ec *executionContext) _DeleteTokensOk(ctx context.Context, sel ast.SelectionSet, obj *model.DeleteTokensOk) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, deleteTokensOkImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("DeleteTokensOk")
+		case "ok":
+			out.Values[i] = ec._DeleteTokensOk_ok(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var internalErrorProblemImplementors = []string{"InternalErrorProblem", "DeleteTokensResult", "LoginResult", "RegistrationsResult", "NewTokensResult", "CandlesMutationResult", "CandlesByIdResult", "CandlesBySlugResult", "AllCategoryResult", "TotalCountResolvingResult", "CategoryCreateResult", "UpdateCategoryResult", "CategoryBySlugResult", "CategoryByIdResult", "CategoryGetAllResult", "ColorCreateResult", "AllColorResult", "ColorByIdResult", "ColorBySlugResult", "CreateOrderResult", "AllOrdersResult", "ProblemInterface", "UserProfileResult"}
 
 func (ec *executionContext) _InternalErrorProblem(ctx context.Context, sel ast.SelectionSet, obj *model.InternalErrorProblem) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, internalErrorProblemImplementors)
@@ -12585,6 +12956,45 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_orders(ctx, field)
 			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var newTokensOkImplementors = []string{"NewTokensOk", "NewTokensResult"}
+
+func (ec *executionContext) _NewTokensOk(ctx context.Context, sel ast.SelectionSet, obj *model.NewTokensOk) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, newTokensOkImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("NewTokensOk")
+		case "token":
+			out.Values[i] = ec._NewTokensOk_token(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
@@ -13254,11 +13664,6 @@ func (ec *executionContext) _User(ctx context.Context, sel ast.SelectionSet, obj
 			}
 		case "updatedAt":
 			out.Values[i] = ec._User_updatedAt(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
-			}
-		case "slug":
-			out.Values[i] = ec._User_slug(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
@@ -14236,6 +14641,16 @@ func (ec *executionContext) marshalNDateTime2timeᚐTime(ctx context.Context, se
 	return res
 }
 
+func (ec *executionContext) marshalNDeleteTokensResult2githubᚗcomᚋSanchir01ᚋcandles_backendᚋinternalᚋgqlᚋmodelᚐDeleteTokensResult(ctx context.Context, sel ast.SelectionSet, v model.DeleteTokensResult) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._DeleteTokensResult(ctx, sel, v)
+}
+
 func (ec *executionContext) unmarshalNInt2int(ctx context.Context, v interface{}) (int, error) {
 	res, err := graphql.UnmarshalInt(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -14264,6 +14679,16 @@ func (ec *executionContext) marshalNLoginResult2githubᚗcomᚋSanchir01ᚋcandl
 		return graphql.Null
 	}
 	return ec._LoginResult(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNNewTokensResult2githubᚗcomᚋSanchir01ᚋcandles_backendᚋinternalᚋgqlᚋmodelᚐNewTokensResult(ctx context.Context, sel ast.SelectionSet, v model.NewTokensResult) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._NewTokensResult(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalNOrderMutations2githubᚗcomᚋSanchir01ᚋcandles_backendᚋinternalᚋgqlᚋmodelᚐOrderMutations(ctx context.Context, sel ast.SelectionSet, v model.OrderMutations) graphql.Marshaler {

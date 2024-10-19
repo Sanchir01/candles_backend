@@ -68,8 +68,16 @@ type CreateOrderResult interface {
 	IsCreateOrderResult()
 }
 
+type DeleteTokensResult interface {
+	IsDeleteTokensResult()
+}
+
 type LoginResult interface {
 	IsLoginResult()
+}
+
+type NewTokensResult interface {
+	IsNewTokensResult()
 }
 
 type ProblemInterface interface {
@@ -118,8 +126,10 @@ type AllOrdersOk struct {
 func (AllOrdersOk) IsAllOrdersResult() {}
 
 type AuthMutations struct {
+	DeleteCookie  DeleteTokensResult  `json:"deleteCookie"`
 	Login         LoginResult         `json:"login"`
 	Registrations RegistrationsResult `json:"registrations"`
+	NewTokens     NewTokensResult     `json:"newTokens"`
 }
 
 type Candles struct {
@@ -308,13 +318,23 @@ type CreateOrderOk struct {
 
 func (CreateOrderOk) IsCreateOrderResult() {}
 
+type DeleteTokensOk struct {
+	Ok string `json:"ok"`
+}
+
+func (DeleteTokensOk) IsDeleteTokensResult() {}
+
 type InternalErrorProblem struct {
 	Message string `json:"message"`
 }
 
+func (InternalErrorProblem) IsDeleteTokensResult() {}
+
 func (InternalErrorProblem) IsLoginResult() {}
 
 func (InternalErrorProblem) IsRegistrationsResult() {}
+
+func (InternalErrorProblem) IsNewTokensResult() {}
 
 func (InternalErrorProblem) IsCandlesMutationResult() {}
 
@@ -376,6 +396,12 @@ func (LoginOk) IsLoginResult() {}
 
 type Mutation struct {
 }
+
+type NewTokensOk struct {
+	Token string `json:"token"`
+}
+
+func (NewTokensOk) IsNewTokensResult() {}
 
 type OrderItems struct {
 	ID        uuid.UUID `json:"id"`
@@ -470,7 +496,6 @@ type User struct {
 	Title     string    `json:"title"`
 	CreatedAt time.Time `json:"createdAt"`
 	UpdatedAt time.Time `json:"updatedAt"`
-	Slug      string    `json:"slug"`
 	Version   uint      `json:"version"`
 	Phone     string    `json:"phone"`
 	Email     string    `json:"email"`

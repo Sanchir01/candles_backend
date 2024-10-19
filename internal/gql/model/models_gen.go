@@ -68,10 +68,6 @@ type CreateOrderResult interface {
 	IsCreateOrderResult()
 }
 
-type DeleteTokensResult interface {
-	IsDeleteTokensResult()
-}
-
 type LoginResult interface {
 	IsLoginResult()
 }
@@ -126,7 +122,6 @@ type AllOrdersOk struct {
 func (AllOrdersOk) IsAllOrdersResult() {}
 
 type AuthMutations struct {
-	DeleteCookie  DeleteTokensResult  `json:"deleteCookie"`
 	Login         LoginResult         `json:"login"`
 	Registrations RegistrationsResult `json:"registrations"`
 	NewTokens     NewTokensResult     `json:"newTokens"`
@@ -318,17 +313,9 @@ type CreateOrderOk struct {
 
 func (CreateOrderOk) IsCreateOrderResult() {}
 
-type DeleteTokensOk struct {
-	Ok string `json:"ok"`
-}
-
-func (DeleteTokensOk) IsDeleteTokensResult() {}
-
 type InternalErrorProblem struct {
 	Message string `json:"message"`
 }
-
-func (InternalErrorProblem) IsDeleteTokensResult() {}
 
 func (InternalErrorProblem) IsLoginResult() {}
 

@@ -101,7 +101,7 @@ func (r *HttpRouter) newChiCors() {
 		}))
 	case "production":
 		r.chiRouter.Use(cors.Handler(cors.Options{
-			AllowedOrigins:   []string{"https://mahakala.ru", "http://mahakala.ru"},
+			AllowedOrigins:   []string{"https://*", "http://*"},
 			AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 			AllowCredentials: true,
 			AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},

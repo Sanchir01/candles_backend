@@ -118,6 +118,7 @@ func (r *Repository) GetBySlug(ctx context.Context, slug string) (*model.User, e
 		UpdatedAt: user.UpdatedAt,
 	}, nil
 }
+
 func (r *Repository) GetById(ctx context.Context, userId uuid.UUID) (*model.User, error) {
 	conn, err := r.primartDB.Acquire(ctx)
 	if err != nil {
@@ -126,13 +127,14 @@ func (r *Repository) GetById(ctx context.Context, userId uuid.UUID) (*model.User
 	defer conn.Release()
 
 	query, arg, err := sq.
-		Select("id ,title, phone, created_at, updated_at, version, role, password,email").
+		Select("id ,title, phone, created_at, updated_at, version, role, password, email").
 		From("public.users").
 		Where(sq.Eq{"id": userId}).
-		PlaceholderFormat(sq.Dollar).ToSql()
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
 	var user DBUser
 	if err := conn.QueryRow(ctx, query, arg...).Scan(
-		&user.ID, &user.Title, &user.Phone, &user.CreatedAt, &user.UpdatedAt, &user.Version, &user.Role, &user.Email); err != nil {
+		&user.ID, &user.Title, &user.Phone, &user.CreatedAt, &user.UpdatedAt, &user.Version, &user.Role, &user.Password, &user.Email); err != nil {
 		return nil, err
 	}
 

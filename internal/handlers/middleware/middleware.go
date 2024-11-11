@@ -36,7 +36,6 @@ func AuthMiddleware() func(http.Handler) http.Handler {
 
 			if err != nil {
 				refresh, err := r.Cookie("accessToken")
-				
 				if err != nil {
 					next.ServeHTTP(w, r)
 					return
@@ -51,7 +50,7 @@ func AuthMiddleware() func(http.Handler) http.Handler {
 					next.ServeHTTP(w, r)
 					return
 				}
-				ctx := context.WithValue(r.Context(), "user", token)
+				ctx := context.WithValue(r.Context(), app.AccessTokenContextKey, token)
 				next.ServeHTTP(w, r.WithContext(ctx))
 				return
 			}

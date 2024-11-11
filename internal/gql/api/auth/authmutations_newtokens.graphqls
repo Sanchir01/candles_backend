@@ -1,5 +1,5 @@
 extend type AuthMutations {
-    newTokens: NewTokensResult! @goField(forceResolver: true) @hasRole(role: [user])
+    newTokens: NewTokensResult! @goField(forceResolver: true) @hasRole(role: [user,admin])
 }
 
 union NewTokensResult =

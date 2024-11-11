@@ -21,6 +21,8 @@ func RoleDirective() RoleDirectiveFunc {
 	) (res interface{}, err error) {
 
 		ctxUserID, err := customMiddleware.GetJWTClaimsFromCtx(ctx)
+		//todo:delete
+		slog.Warn("RoleDirective", ctxUserID)
 		if err != nil {
 			return nil, &gqlerror.Error{Message: "Unauthorized"}
 		}

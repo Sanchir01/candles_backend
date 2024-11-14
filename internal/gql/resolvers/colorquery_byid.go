@@ -6,12 +6,17 @@ package resolver
 
 import (
 	"context"
-	"fmt"
-
 	"github.com/Sanchir01/candles_backend/internal/gql/model"
+	responseErr "github.com/Sanchir01/candles_backend/pkg/lib/api/response"
 )
 
-// ColorByManyID is the resolver for the colorByManyId field.
-func (r *colorQueryResolver) ColorByManyID(ctx context.Context, obj *model.ColorQuery, input model.ColorByIDInput) (model.ColorByIDResult, error) {
-	panic(fmt.Errorf("not implemented: ColorByManyID - colorByManyId"))
+// ColorByID is the resolver for the colorById field.
+func (r *colorQueryResolver) ColorByID(ctx context.Context, obj *model.ColorQuery, input model.ColorByIDInput) (model.ColorByIDResult, error) {
+	color, err := r.env.Services.ColorService.ColorById(ctx, input.ID)
+	if err != nil {
+		return responseErr.NewInternalErrorProblem("ошибка при получении категории"), err
+	}
+	return model.ColorByIDOk{
+		Colors: color,
+	}, nil
 }

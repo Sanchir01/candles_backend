@@ -1,6 +1,6 @@
 
 extend type OrderQuery {
-    allOrders:AllOrdersResult! @goField(forceResolver: true)
+    allOrders:AllOrdersResult! @goField(forceResolver: true)  @hasRole(role: [admin])
 }
 type AllOrdersOk {
     orders:[Orders!]!

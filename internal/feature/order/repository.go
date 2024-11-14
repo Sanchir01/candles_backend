@@ -49,19 +49,34 @@ func (r *Repository) AllOrders(ctx context.Context) ([]model.Orders, error) {
 	return orders, err
 }
 
-func (r *Repository) OrderByUserId(ctx context.Context, id uuid.UUID) (*model.Orders, error) {
+func (r *Repository) OrdersByUserId(ctx context.Context, id uuid.UUID) ([]model.Orders, error) {
 	conn, err := r.primaryDB.Acquire(ctx)
 	if err != nil {
 		return nil, err
 	}
 	defer conn.Release()
-	query, arg, err := sq.Select("id, status,user_id,total_amount,crated_at,updated_at, version").From("public.orders").Where(sq.Eq{"user_id": id}).PlaceholderFormat(sq.Dollar).ToSql()
-	var order DBOrders
-	if err := conn.QueryRow(ctx, query, arg...).
-		Scan(&order.ID, &order.Status, &order.UserID, &order.TotalAmount, &order.CreatedAt, &order.UpdatedAt, &order.Version); err != nil {
+	query, _, err := sq.Select("id, status,user_id,total_amount,crated_at,updated_at, version").
+		From("public.orders").
+		Where(sq.Eq{"user_id": id}).
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
+
+	rows, err := conn.Query(ctx, query)
+	if err != nil {
 		return nil, err
 	}
-	return (*model.Orders)(&order), err
+	defer rows.Close()
+	orders := make([]model.Orders, 0)
+
+	for rows.Next() {
+		var order model.Orders
+		if err := rows.Scan(&order.ID, &order.Status, &order.UserID, &order.TotalAmount, &order.CreatedAt, &order.UpdatedAt, &order.Version); err != nil {
+			return nil, err
+		}
+		orders = append(orders, order)
+	}
+
+	return orders, err
 }
 
 func (r *Repository) OrderById(ctx context.Context, id uuid.UUID) (*model.Orders, error) {

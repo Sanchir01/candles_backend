@@ -26,7 +26,17 @@ func (s *Service) AllOrders(ctx context.Context) ([]*model.Orders, error) {
 	if err != nil {
 		return nil, err
 	}
-	
+
+	items, err := utils.MapToGql(orders)
+	return items, nil
+}
+
+func (s *Service) AllUserOrders(ctx context.Context, id uuid.UUID) ([]*model.Orders, error) {
+	orders, err := s.repo.OrdersByUserId(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
 	items, err := utils.MapToGql(orders)
 	return items, nil
 }

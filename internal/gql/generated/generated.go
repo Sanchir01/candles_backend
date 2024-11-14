@@ -75,6 +75,10 @@ type ComplexityRoot struct {
 		Orders func(childComplexity int) int
 	}
 
+	AllUserOrdersOk struct {
+		Orders func(childComplexity int) int
+	}
+
 	AuthMutations struct {
 		Login         func(childComplexity int, input model.LoginInput) int
 		NewTokens     func(childComplexity int) int
@@ -232,7 +236,8 @@ type ComplexityRoot struct {
 	}
 
 	OrderQuery struct {
-		AllOrders func(childComplexity int) int
+		AllOrders     func(childComplexity int) int
+		AllUserOrders func(childComplexity int) int
 	}
 
 	Orders struct {
@@ -342,6 +347,7 @@ type OrderMutationsResolver interface {
 }
 type OrderQueryResolver interface {
 	AllOrders(ctx context.Context, obj *model.OrderQuery) (model.AllOrdersResult, error)
+	AllUserOrders(ctx context.Context, obj *model.OrderQuery) (model.AllUserOrdersResult, error)
 }
 type QueryResolver interface {
 	Candles(ctx context.Context) (*model.CandlesQuery, error)
@@ -405,6 +411,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.AllOrdersOk.Orders(childComplexity), true
+
+	case "AllUserOrdersOk.orders":
+		if e.complexity.AllUserOrdersOk.Orders == nil {
+			break
+		}
+
+		return e.complexity.AllUserOrdersOk.Orders(childComplexity), true
 
 	case "AuthMutations.login":
 		if e.complexity.AuthMutations.Login == nil {
@@ -986,6 +999,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.OrderQuery.AllOrders(childComplexity), true
+
+	case "OrderQuery.allUserOrders":
+		if e.complexity.OrderQuery.AllUserOrders == nil {
+			break
+		}
+
+		return e.complexity.OrderQuery.AllUserOrders(childComplexity), true
 
 	case "Orders.createdAt":
 		if e.complexity.Orders.CreatedAt == nil {
@@ -1752,7 +1772,7 @@ extend type Query {
 }`, BuiltIn: false},
 	{Name: "../api/order/orderquery_allorders.graphqls", Input: `
 extend type OrderQuery {
-    allOrders:AllOrdersResult! @goField(forceResolver: true)
+    allOrders:AllOrdersResult! @goField(forceResolver: true)  @hasRole(role: [admin])
 }
 type AllOrdersOk {
     orders:[Orders!]!
@@ -1760,6 +1780,18 @@ type AllOrdersOk {
 
 union AllOrdersResult =
     | AllOrdersOk
+    | InternalErrorProblem
+    | UnauthorizedProblem`, BuiltIn: false},
+	{Name: "../api/order/orderquery_alluserorders.graphqls", Input: `
+extend type OrderQuery {
+    allUserOrders:AllUserOrdersResult! @goField(forceResolver: true)  @hasRole(role: [admin,user])
+}
+type AllUserOrdersOk {
+    orders:[Orders!]!
+}
+
+union AllUserOrdersResult =
+    | AllUserOrdersOk
     | InternalErrorProblem
     | UnauthorizedProblem`, BuiltIn: false},
 	{Name: "../api/problem.graphqls", Input: `interface ProblemInterface {
@@ -2737,6 +2769,66 @@ func (ec *executionContext) _AllOrdersOk_orders(ctx context.Context, field graph
 func (ec *executionContext) fieldContext_AllOrdersOk_orders(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "AllOrdersOk",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Orders_id(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_Orders_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_Orders_updatedAt(ctx, field)
+			case "status":
+				return ec.fieldContext_Orders_status(ctx, field)
+			case "userId":
+				return ec.fieldContext_Orders_userId(ctx, field)
+			case "total_amount":
+				return ec.fieldContext_Orders_total_amount(ctx, field)
+			case "version":
+				return ec.fieldContext_Orders_version(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Orders", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _AllUserOrdersOk_orders(ctx context.Context, field graphql.CollectedField, obj *model.AllUserOrdersOk) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_AllUserOrdersOk_orders(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Orders, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*model.Orders)
+	fc.Result = res
+	return ec.marshalNOrders2ᚕᚖgithubᚗcomᚋSanchir01ᚋcandles_backendᚋinternalᚋgqlᚋmodelᚐOrdersᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_AllUserOrdersOk_orders(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "AllUserOrdersOk",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
@@ -6394,8 +6486,35 @@ func (ec *executionContext) _OrderQuery_allOrders(ctx context.Context, field gra
 		}
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.OrderQuery().AllOrders(rctx, obj)
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.OrderQuery().AllOrders(rctx, obj)
+		}
+
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			role, err := ec.unmarshalORole2ᚕᚖgithubᚗcomᚋSanchir01ᚋcandles_backendᚋinternalᚋgqlᚋmodelᚐRole(ctx, []interface{}{"admin"})
+			if err != nil {
+				var zeroVal model.AllOrdersResult
+				return zeroVal, err
+			}
+			if ec.directives.HasRole == nil {
+				var zeroVal model.AllOrdersResult
+				return zeroVal, errors.New("directive hasRole is not implemented")
+			}
+			return ec.directives.HasRole(ctx, obj, directive0, role)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(model.AllOrdersResult); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be github.com/Sanchir01/candles_backend/internal/gql/model.AllOrdersResult`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -6420,6 +6539,77 @@ func (ec *executionContext) fieldContext_OrderQuery_allOrders(_ context.Context,
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type AllOrdersResult does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _OrderQuery_allUserOrders(ctx context.Context, field graphql.CollectedField, obj *model.OrderQuery) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_OrderQuery_allUserOrders(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.OrderQuery().AllUserOrders(rctx, obj)
+		}
+
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			role, err := ec.unmarshalORole2ᚕᚖgithubᚗcomᚋSanchir01ᚋcandles_backendᚋinternalᚋgqlᚋmodelᚐRole(ctx, []interface{}{"admin", "user"})
+			if err != nil {
+				var zeroVal model.AllUserOrdersResult
+				return zeroVal, err
+			}
+			if ec.directives.HasRole == nil {
+				var zeroVal model.AllUserOrdersResult
+				return zeroVal, errors.New("directive hasRole is not implemented")
+			}
+			return ec.directives.HasRole(ctx, obj, directive0, role)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(model.AllUserOrdersResult); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be github.com/Sanchir01/candles_backend/internal/gql/model.AllUserOrdersResult`, tmp)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(model.AllUserOrdersResult)
+	fc.Result = res
+	return ec.marshalNAllUserOrdersResult2githubᚗcomᚋSanchir01ᚋcandles_backendᚋinternalᚋgqlᚋmodelᚐAllUserOrdersResult(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_OrderQuery_allUserOrders(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "OrderQuery",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type AllUserOrdersResult does not have child fields")
 		},
 	}
 	return fc, nil
@@ -6924,6 +7114,8 @@ func (ec *executionContext) fieldContext_Query_orders(_ context.Context, field g
 			switch field.Name {
 			case "allOrders":
 				return ec.fieldContext_OrderQuery_allOrders(ctx, field)
+			case "allUserOrders":
+				return ec.fieldContext_OrderQuery_allUserOrders(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type OrderQuery", field.Name)
 		},
@@ -10378,6 +10570,36 @@ func (ec *executionContext) _AllOrdersResult(ctx context.Context, sel ast.Select
 	}
 }
 
+func (ec *executionContext) _AllUserOrdersResult(ctx context.Context, sel ast.SelectionSet, obj model.AllUserOrdersResult) graphql.Marshaler {
+	switch obj := (obj).(type) {
+	case nil:
+		return graphql.Null
+	case model.InternalErrorProblem:
+		return ec._InternalErrorProblem(ctx, sel, &obj)
+	case *model.InternalErrorProblem:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._InternalErrorProblem(ctx, sel, obj)
+	case model.UnauthorizedProblem:
+		return ec._UnauthorizedProblem(ctx, sel, &obj)
+	case *model.UnauthorizedProblem:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._UnauthorizedProblem(ctx, sel, obj)
+	case model.AllUserOrdersOk:
+		return ec._AllUserOrdersOk(ctx, sel, &obj)
+	case *model.AllUserOrdersOk:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._AllUserOrdersOk(ctx, sel, obj)
+	default:
+		panic(fmt.Errorf("unexpected type %T", obj))
+	}
+}
+
 func (ec *executionContext) _CandlesByIdResult(ctx context.Context, sel ast.SelectionSet, obj model.CandlesByIDResult) graphql.Marshaler {
 	switch obj := (obj).(type) {
 	case nil:
@@ -11079,6 +11301,45 @@ func (ec *executionContext) _AllOrdersOk(ctx context.Context, sel ast.SelectionS
 			out.Values[i] = graphql.MarshalString("AllOrdersOk")
 		case "orders":
 			out.Values[i] = ec._AllOrdersOk_orders(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var allUserOrdersOkImplementors = []string{"AllUserOrdersOk", "AllUserOrdersResult"}
+
+func (ec *executionContext) _AllUserOrdersOk(ctx context.Context, sel ast.SelectionSet, obj *model.AllUserOrdersOk) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, allUserOrdersOkImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("AllUserOrdersOk")
+		case "orders":
+			out.Values[i] = ec._AllUserOrdersOk_orders(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
@@ -12554,7 +12815,7 @@ func (ec *executionContext) _CreateOrderOk(ctx context.Context, sel ast.Selectio
 	return out
 }
 
-var internalErrorProblemImplementors = []string{"InternalErrorProblem", "LoginResult", "RegistrationsResult", "NewTokensResult", "CandlesMutationResult", "CandlesByIdResult", "CandlesBySlugResult", "AllCategoryResult", "TotalCountResolvingResult", "CategoryCreateResult", "UpdateCategoryResult", "CategoryBySlugResult", "CategoryByIdResult", "CategoryGetAllResult", "ColorCreateResult", "AllColorResult", "ColorByIdResult", "ColorBySlugResult", "CreateOrderResult", "AllOrdersResult", "ProblemInterface", "UserProfileResult"}
+var internalErrorProblemImplementors = []string{"InternalErrorProblem", "LoginResult", "RegistrationsResult", "NewTokensResult", "CandlesMutationResult", "CandlesByIdResult", "CandlesBySlugResult", "AllCategoryResult", "TotalCountResolvingResult", "CategoryCreateResult", "UpdateCategoryResult", "CategoryBySlugResult", "CategoryByIdResult", "CategoryGetAllResult", "ColorCreateResult", "AllColorResult", "ColorByIdResult", "ColorBySlugResult", "CreateOrderResult", "AllOrdersResult", "AllUserOrdersResult", "ProblemInterface", "UserProfileResult"}
 
 func (ec *executionContext) _InternalErrorProblem(ctx context.Context, sel ast.SelectionSet, obj *model.InternalErrorProblem) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, internalErrorProblemImplementors)
@@ -13003,6 +13264,42 @@ func (ec *executionContext) _OrderQuery(ctx context.Context, sel ast.SelectionSe
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "allUserOrders":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._OrderQuery_allUserOrders(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -13339,7 +13636,7 @@ func (ec *executionContext) _TotalCountResolvingOk(ctx context.Context, sel ast.
 	return out
 }
 
-var unauthorizedProblemImplementors = []string{"UnauthorizedProblem", "CandlesMutationResult", "CategoryCreateResult", "ColorCreateResult", "CreateOrderResult", "AllOrdersResult", "ProblemInterface"}
+var unauthorizedProblemImplementors = []string{"UnauthorizedProblem", "CandlesMutationResult", "CategoryCreateResult", "ColorCreateResult", "CreateOrderResult", "AllOrdersResult", "AllUserOrdersResult", "ProblemInterface"}
 
 func (ec *executionContext) _UnauthorizedProblem(ctx context.Context, sel ast.SelectionSet, obj *model.UnauthorizedProblem) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, unauthorizedProblemImplementors)
@@ -13998,6 +14295,16 @@ func (ec *executionContext) marshalNAllOrdersResult2githubᚗcomᚋSanchir01ᚋc
 		return graphql.Null
 	}
 	return ec._AllOrdersResult(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNAllUserOrdersResult2githubᚗcomᚋSanchir01ᚋcandles_backendᚋinternalᚋgqlᚋmodelᚐAllUserOrdersResult(ctx context.Context, sel ast.SelectionSet, v model.AllUserOrdersResult) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._AllUserOrdersResult(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalNAuthMutations2githubᚗcomᚋSanchir01ᚋcandles_backendᚋinternalᚋgqlᚋmodelᚐAuthMutations(ctx context.Context, sel ast.SelectionSet, v model.AuthMutations) graphql.Marshaler {

@@ -24,6 +24,10 @@ type AllOrdersResult interface {
 	IsAllOrdersResult()
 }
 
+type AllUserOrdersResult interface {
+	IsAllUserOrdersResult()
+}
+
 type CandlesByIDResult interface {
 	IsCandlesByIDResult()
 }
@@ -120,6 +124,12 @@ type AllOrdersOk struct {
 }
 
 func (AllOrdersOk) IsAllOrdersResult() {}
+
+type AllUserOrdersOk struct {
+	Orders []*Orders `json:"orders"`
+}
+
+func (AllUserOrdersOk) IsAllUserOrdersResult() {}
 
 type AuthMutations struct {
 	Login         LoginResult         `json:"login"`
@@ -355,6 +365,8 @@ func (InternalErrorProblem) IsCreateOrderResult() {}
 
 func (InternalErrorProblem) IsAllOrdersResult() {}
 
+func (InternalErrorProblem) IsAllUserOrdersResult() {}
+
 func (InternalErrorProblem) IsProblemInterface()     {}
 func (this InternalErrorProblem) GetMessage() string { return this.Message }
 
@@ -408,7 +420,8 @@ type OrderMutations struct {
 }
 
 type OrderQuery struct {
-	AllOrders AllOrdersResult `json:"allOrders"`
+	AllOrders     AllOrdersResult     `json:"allOrders"`
+	AllUserOrders AllUserOrdersResult `json:"allUserOrders"`
 }
 
 type Orders struct {
@@ -464,6 +477,8 @@ func (UnauthorizedProblem) IsColorCreateResult() {}
 func (UnauthorizedProblem) IsCreateOrderResult() {}
 
 func (UnauthorizedProblem) IsAllOrdersResult() {}
+
+func (UnauthorizedProblem) IsAllUserOrdersResult() {}
 
 func (UnauthorizedProblem) IsProblemInterface()     {}
 func (this UnauthorizedProblem) GetMessage() string { return this.Message }

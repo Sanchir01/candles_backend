@@ -1,0 +1,12 @@
+
+extend type OrderQuery {
+    allUserOrders:AllUserOrdersResult! @goField(forceResolver: true)  @hasRole(role: [admin,user])
+}
+type AllUserOrdersOk {
+    orders:[Orders!]!
+}
+
+union AllUserOrdersResult =
+    | AllUserOrdersOk
+    | InternalErrorProblem
+    | UnauthorizedProblem

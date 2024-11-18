@@ -114,6 +114,5 @@ func GenerateCookie(name string, expire time.Time, httpOnly bool, value string) 
 }
 
 func DeleteCookie(w http.ResponseWriter) {
-	http.SetCookie(w, GenerateCookie("accessToken", time.Unix(0, 0), true, ""))
 	http.SetCookie(w, GenerateCookie("refreshToken", time.Unix(0, 0), true, ""))
 }

@@ -6,7 +6,8 @@ CREATE TABLE IF NOT EXISTS orders(
                                      updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
                                      user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
                                      status TEXT NOT NULL,
-                                     total_amount NUMERIC NOT NULL
+                                     total_amount NUMERIC NOT NULL,
+                                     version INTEGER NOT NULL DEFAULT 1
 );
 
 CREATE TABLE IF NOT EXISTS order_items (
@@ -16,7 +17,8 @@ CREATE TABLE IF NOT EXISTS order_items (
                                            price NUMERIC NOT NULL,
                                            order_id UUID NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
                                            quantity INT NOT NULL,
-                                           product_id UUID NOT NULL REFERENCES candles(id) ON DELETE CASCADE
+                                           product_id UUID NOT NULL REFERENCES candles(id) ON DELETE CASCADE,
+                                           version INTEGER NOT NULL DEFAULT 1
 );
 
 CREATE OR REPLACE FUNCTION update_timestamp()

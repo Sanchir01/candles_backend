@@ -4,6 +4,7 @@ go 1.23.2
 
 require (
 	github.com/99designs/gqlgen v0.17.56
+	github.com/AfterShip/email-verifier v1.4.1
 	github.com/Masterminds/squirrel v1.5.4
 	github.com/aws/aws-sdk-go-v2 v1.30.5
 	github.com/aws/aws-sdk-go-v2/config v1.27.33
@@ -27,7 +28,6 @@ require (
 )
 
 require (
-	github.com/AfterShip/email-verifier v1.4.1 // indirect
 	github.com/BurntSushi/toml v1.4.0 // indirect
 	github.com/agnivade/levenshtein v1.1.1 // indirect
 	github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream v1.6.4 // indirect
@@ -44,8 +44,8 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/ssooidc v1.26.8 // indirect
 	github.com/aws/aws-sdk-go-v2/service/sts v1.30.8 // indirect
 	github.com/aws/smithy-go v1.20.4 // indirect
-	github.com/badoux/checkmail v1.2.4 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.3 // indirect
+	github.com/go-faker/faker/v4 v4.5.0 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
 	github.com/go-viper/mapstructure/v2 v2.2.1 // indirect

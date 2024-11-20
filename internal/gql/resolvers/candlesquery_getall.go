@@ -21,7 +21,7 @@ func (r *allCandlesOkResolver) TotalCount(ctx context.Context, obj *model.AllCan
 
 // AllCandles is the resolver for the allCandles field.
 func (r *candlesQueryResolver) AllCandles(ctx context.Context, obj *model.CandlesQuery, filter *model.CandlesFilterInput, sort *model.CandlesSortEnum, pageSize uint, pageNumber uint) (model.AllCategoryResult, error) {
-	allCandles, err := r.env.Services.CandlesService.AllCandles(ctx, sort)
+	allCandles, err := r.env.Services.CandlesService.AllCandles(ctx, sort, filter)
 
 	if err != nil {
 		r.env.Logger.Error(err.Error())

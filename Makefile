@@ -48,3 +48,5 @@ docker:
 
 docker-app: docker-build docker
 
+seed:
+	go run cmd/seed/main.go

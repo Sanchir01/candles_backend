@@ -25,11 +25,13 @@ func (s *Repository) CategoryById(ctx context.Context, id uuid.UUID) (*model.Cat
 		return nil, err
 	}
 	defer conn.Release()
-	query, args, err := sq.Select("id", "title", "slug", "created_at", "updated_at", "version").
-		From("public.category").
-		Where(sq.Eq{"id": id}).
-		PlaceholderFormat(sq.Dollar).
-		ToSql()
+	query, args, err :=
+		sq.
+			Select("id", "title", "slug", "created_at", "updated_at", "version").
+			From("public.category").
+			Where(sq.Eq{"id": id}).
+			PlaceholderFormat(sq.Dollar).
+			ToSql()
 	var category DBCategory
 	err = conn.QueryRow(ctx, query, args...).Scan(&category.ID, &category.Title, &category.Slug, &category.CreatedAt, &category.UpdatedAt, &category.Version)
 	if err != nil {

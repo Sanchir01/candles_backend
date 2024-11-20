@@ -7,7 +7,7 @@ import (
 )
 
 var (
-	verifier = emailverifier.NewVerifier()
+	verifier = emailverifier.NewVerifier().EnableSMTPCheck()
 )
 
 func VerifyEmail(email string) error {
@@ -17,11 +17,10 @@ func VerifyEmail(email string) error {
 		return err
 	}
 	if !ret.Syntax.Valid {
-		return errors.New("невалтдный email")
+		return errors.New("невалидный email")
 	}
-
-	if ret.SMTP == nil {
-		return errors.New("Используйте действительную почту")
+	if ret.Disposable {
+		return errors.New("используйте действительную почту")
 	}
 	return nil
 }

@@ -21,9 +21,9 @@ func NewService(repository *Repository, storages *Storage) *Service {
 		storages,
 	}
 }
-func (s *Service) AllCandles(ctx context.Context, sort *model.CandlesSortEnum) ([]*model.Candles, error) {
+func (s *Service) AllCandles(ctx context.Context, sort *model.CandlesSortEnum, filter *model.CandlesFilterInput) ([]*model.Candles, error) {
 
-	candles, err := s.repository.AllCandles(ctx, sort)
+	candles, err := s.repository.AllCandles(ctx, sort, filter)
 
 	if err != nil {
 		return nil, err

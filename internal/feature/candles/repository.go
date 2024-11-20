@@ -30,22 +30,23 @@ func NewRepository(primaryDB *pgxpool.Pool) *Repository {
 		primaryDB,
 	}
 }
-func (r *Repository) AllCandles(ctx context.Context, sort *model.CandlesSortEnum) ([]model.Candles, error) {
+func (r *Repository) AllCandles(ctx context.Context, sort *model.CandlesSortEnum, filter *model.CandlesFilterInput) ([]model.Candles, error) {
 	conn, err := r.primaryDB.Acquire(ctx)
 	if err != nil {
 		return nil, err
 	}
 	defer conn.Release()
 
-	// Проверяем, не равен ли указатель nil
 	var orders string
 	if sort != nil {
 		orders = BuildSortQuery(*sort) // Разыменовываем указатель
 	}
 
-	// Создаем SQL-запрос с возможной сортировкой
-	queryBuilder := sq.Select("id, title, slug, price, images, version, category_id, created_at, updated_at").
-		From("public.candles").OrderBy(orders)
+	queryBuilder := sq.
+		Select("id, title, slug, price, images, version, category_id, created_at, updated_at").
+		From("public.candles").
+		Where(sq.Eq{"category_id": filter.CategoryID, "color_id": filter.ColorID}).
+		OrderBy(orders)
 
 	if orders != "" {
 		queryBuilder = queryBuilder.OrderBy(orders)
@@ -84,9 +85,18 @@ func (r *Repository) CreateCandles(
 	ctx context.Context, categoryID, colorID uuid.UUID, title string, slug string, images []string, price int, tr pgx.Tx,
 ) (uuid.UUID, error) {
 	var id uuid.UUID
-	query := "INSERT INTO candles (category_id, title, slug, images,price,color_id) VALUES ($1, $2, $3, $4, $5,$6) RETURNING id"
+	query, arg, err := sq.
+		Insert("public.candles").
+		Columns("color_id", "title", "slug", "price", "images", "category_id").
+		Values(colorID, title, slug, price, images, categoryID).
+		Suffix("RETURNING id").
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
+	if err != nil {
+		return uuid.Nil, err
+	}
 
-	if err := tr.QueryRow(ctx, query, categoryID, title, slug, images, price, colorID).Scan(&id); err != nil {
+	if err := tr.QueryRow(ctx, query, arg...).Scan(&id); err != nil {
 		return uuid.Nil, err
 	}
 	return id, nil
@@ -162,6 +172,70 @@ func (r *Repository) CandlesById(ctx context.Context, id uuid.UUID) (*model.Cand
 	}
 
 	return (*model.Candles)(&candle), nil
+}
+
+func (r *Repository) UpdateCandles(ctx context.Context, updates map[string]interface{}, id uuid.UUID) (string, error) {
+	if len(updates) == 0 {
+		return "", fmt.Errorf("no fields to update")
+	}
+
+	conn, err := r.primaryDB.Acquire(ctx)
+	if err != nil {
+		return "", err
+	}
+
+	defer conn.Release()
+
+	query := sq.
+		Update("candles").
+		Where(sq.Eq{"id": id}).
+		PlaceholderFormat(sq.Dollar).Suffix("RETURNING id")
+	for field, value := range updates {
+		query = query.Set(field, value)
+	}
+	querybuilder, arg, err := query.ToSql()
+	if err != nil {
+		return "", fmt.Errorf("failed to build SQL query: %w", err)
+	}
+
+	var updatedID string
+	err = conn.QueryRow(ctx, querybuilder, arg...).Scan(&updatedID)
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			return "", fmt.Errorf("no candle found with id: %s", id)
+		}
+		return "", fmt.Errorf("failed to execute query: %w", err)
+	}
+
+	// Возвращаем ID обновленной записи
+	return updatedID, nil
+}
+
+func (r *Repository) DeleteCandlesById(ctx context.Context, id uuid.UUID) (string, error) {
+	conn, err := r.primaryDB.Acquire(ctx)
+	if err != nil {
+		return "", err
+	}
+
+	defer conn.Release()
+
+	query, args, err := sq.
+		Delete("candles").
+		Where(sq.Eq{"id": id}).
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
+	if err != nil {
+		return "", err
+	}
+	var deletedID string
+	err = conn.QueryRow(ctx, query, args...).Scan(&deletedID)
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			return "", fmt.Errorf("no candle found with id: %s", id)
+		}
+		return "", fmt.Errorf("failed to execute query: %w", err)
+	}
+	return deletedID, nil
 }
 
 func BuildSortQuery(sort model.CandlesSortEnum) string {

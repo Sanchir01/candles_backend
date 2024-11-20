@@ -106,7 +106,7 @@ func (s *Repository) CreateCategory(ctx context.Context, title, slug string) (uu
 		return uuid.Nil, err
 	}
 	defer conn.Release()
-	query, args, err := sq.Insert("color").
+	query, args, err := sq.Insert("category").
 		Columns("title", "slug").
 		Values(title, slug).
 		Suffix("RETURNING id").PlaceholderFormat(sq.Dollar).

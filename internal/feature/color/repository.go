@@ -25,7 +25,11 @@ func (r *Repository) AllColor(ctx context.Context) ([]model.Color, error) {
 		return nil, err
 	}
 	defer conn.Release()
-	query, _, err := sq.Select("id , title, slug, created_at, updated_at,version").From("public.color").ToSql()
+	query, _, err :=
+		sq.
+			Select("id , title, slug, created_at, updated_at,version").
+			From("public.color").
+			ToSql()
 	if err != nil {
 		return nil, err
 	}
@@ -51,7 +55,7 @@ func (r *Repository) CreateColor(ctx context.Context, title, slug string) (uuid.
 		return uuid.Nil, err
 	}
 	defer conn.Release()
-	query, args, err := sq.Insert("category").
+	query, args, err := sq.Insert("color").
 		Columns("title", "slug").
 		Values(title, slug).
 		Suffix("RETURNING id").PlaceholderFormat(sq.Dollar).

@@ -6,6 +6,7 @@ package resolver
 
 import (
 	"context"
+	"github.com/google/uuid"
 
 	runtime "github.com/Sanchir01/candles_backend/internal/gql/generated"
 	"github.com/Sanchir01/candles_backend/internal/gql/model"
@@ -21,7 +22,17 @@ func (r *allCandlesOkResolver) TotalCount(ctx context.Context, obj *model.AllCan
 
 // AllCandles is the resolver for the allCandles field.
 func (r *candlesQueryResolver) AllCandles(ctx context.Context, obj *model.CandlesQuery, filter *model.CandlesFilterInput, sort *model.CandlesSortEnum, pageSize uint, pageNumber uint) (model.AllCategoryResult, error) {
-	allCandles, err := r.env.Services.CandlesService.AllCandles(ctx, sort, filter)
+	var categoryId uuid.UUID
+	var colorId uuid.UUID
+	if filter.ColorID != nil {
+		categoryId = *filter.ColorID
+	}
+	if filter.CategoryID != nil {
+		categoryId = *filter.CategoryID
+	}
+	//todo:delete logger
+	r.env.Logger.Warn("filter", filter.ColorID)
+	allCandles, err := r.env.Services.CandlesService.AllCandles(ctx, sort, categoryId, colorId)
 
 	if err != nil {
 		r.env.Logger.Error(err.Error())

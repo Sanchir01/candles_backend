@@ -21,22 +21,24 @@ func NewService(repository *Repository, storages *Storage) *Service {
 		storages,
 	}
 }
-func (s *Service) AllCandles(ctx context.Context, sort *model.CandlesSortEnum, filter *model.CandlesFilterInput) ([]*model.Candles, error) {
+func (s *Service) AllCandles(ctx context.Context, sort *model.CandlesSortEnum, categoryId, colorId uuid.UUID) ([]*model.Candles, error) {
+	// Проверка на nil для CategoryID
 
-	candles, err := s.repository.AllCandles(ctx, sort, filter.CategoryID, filter.ColorID)
-
+	// Теперь передаем только проверенные переменные, которые гарантированно содержат значение
+	candles, err := s.repository.AllCandles(ctx, sort, categoryId, colorId)
 	if err != nil {
 		return nil, err
 	}
+
 	gqlCandles, err := MapCandlesToGql(candles)
-
 	if err != nil {
 		return nil, err
 	}
-	return gqlCandles, err
+
+	return gqlCandles, nil
 }
 
-func (s *Service) CreateCandles(ctx context.Context, categoryID, colorID uuid.UUID, title string, images []*graphql.Upload, price int) (uuid.UUID, error) {
+func (s *Service) CreateCandles(ctx context.Context, categoryID, colorID uuid.UUID, title, description string, images []*graphql.Upload, price, weight int) (uuid.UUID, error) {
 	conn, err := s.repository.primaryDB.Acquire(ctx)
 	if err != nil {
 		return uuid.Nil, err
@@ -68,7 +70,7 @@ func (s *Service) CreateCandles(ctx context.Context, categoryID, colorID uuid.UU
 	if err != nil {
 		return uuid.Nil, nil
 	}
-	id, err := s.repository.CreateCandles(ctx, categoryID, colorID, title, slug, imagesUrl, price, tx)
+	id, err := s.repository.CreateCandles(ctx, categoryID, colorID, title, slug, description, imagesUrl, weight, price, tx)
 	if err != nil {
 		s.storages.DeleteObjects(ctx, "candles", images)
 		return uuid.Nil, err
@@ -78,6 +80,7 @@ func (s *Service) CreateCandles(ctx context.Context, categoryID, colorID uuid.UU
 	}
 	return id, nil
 }
+
 func (s *Service) CandlesById(ctx context.Context, id uuid.UUID) (*model.Candles, error) {
 	candles, err := s.repository.CandlesById(ctx, id)
 	if err != nil {

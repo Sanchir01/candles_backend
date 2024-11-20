@@ -299,11 +299,13 @@ type ColorQuery struct {
 }
 
 type CreateCandleInput struct {
-	Title      string            `json:"title"`
-	Price      int               `json:"price"`
-	CategoryID uuid.UUID         `json:"category_id"`
-	ColorID    uuid.UUID         `json:"color_id"`
-	Images     []*graphql.Upload `json:"images"`
+	Title       string            `json:"title"`
+	Price       int               `json:"price"`
+	CategoryID  uuid.UUID         `json:"category_id"`
+	ColorID     uuid.UUID         `json:"color_id"`
+	Images      []*graphql.Upload `json:"images"`
+	Description string            `json:"description"`
+	Weight      int               `json:"weight"`
 }
 
 type CreateCategoryInput struct {

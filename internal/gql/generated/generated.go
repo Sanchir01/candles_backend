@@ -1513,6 +1513,8 @@ input CreateCandleInput {
     category_id: Uuid!
     color_id: Uuid!
     images:[Upload!]!
+    description:String!
+    weight:Int!
 }
 
 union CandlesMutationResult =
@@ -10419,7 +10421,7 @@ func (ec *executionContext) unmarshalInputCreateCandleInput(ctx context.Context,
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"title", "price", "category_id", "color_id", "images"}
+	fieldsInOrder := [...]string{"title", "price", "category_id", "color_id", "images", "description", "weight"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -10461,6 +10463,20 @@ func (ec *executionContext) unmarshalInputCreateCandleInput(ctx context.Context,
 				return it, err
 			}
 			it.Images = data
+		case "description":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("description"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Description = data
+		case "weight":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("weight"))
+			data, err := ec.unmarshalNInt2int(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Weight = data
 		}
 	}
 

@@ -30,7 +30,7 @@ func NewRepository(primaryDB *pgxpool.Pool) *Repository {
 		primaryDB,
 	}
 }
-func (r *Repository) AllCandles(ctx context.Context, sort *model.CandlesSortEnum, categoryId, colorId *uuid.UUID) ([]model.Candles, error) {
+func (r *Repository) AllCandles(ctx context.Context, sort *model.CandlesSortEnum, categoryId, colorId uuid.UUID) ([]model.Candles, error) {
 	conn, err := r.primaryDB.Acquire(ctx)
 	if err != nil {
 		return nil, err
@@ -42,12 +42,18 @@ func (r *Repository) AllCandles(ctx context.Context, sort *model.CandlesSortEnum
 		orders = BuildSortQuery(*sort) // Разыменовываем указатель
 	}
 	slog.Error("filter", categoryId, colorId)
+
 	queryBuilder := sq.
-		Select("id, title, slug, price, images, version, category_id, created_at, updated_at").
+		Select("id, title, slug, price, images, version, category_id, created_at, updated_at,weight,description").
 		From("public.candles").
-		Where(sq.Eq{"category_id": categoryId, "color_id": colorId}).
 		PlaceholderFormat(sq.Dollar)
 
+	if categoryId == uuid.Nil {
+		queryBuilder.Where(sq.Eq{"category_id": categoryId})
+	}
+	if colorId == uuid.Nil {
+		queryBuilder.Where(sq.Eq{"color_id": colorId})
+	}
 	if orders != "" {
 		queryBuilder = queryBuilder.OrderBy(orders)
 	}
@@ -56,8 +62,8 @@ func (r *Repository) AllCandles(ctx context.Context, sort *model.CandlesSortEnum
 	if err != nil {
 		return nil, err
 	}
+	//todo:delete log
 	slog.Error("query", query)
-	// Выполняем запрос
 	rows, err := conn.Query(ctx, query, args...)
 	if err != nil {
 		return nil, err
@@ -68,7 +74,8 @@ func (r *Repository) AllCandles(ctx context.Context, sort *model.CandlesSortEnum
 
 	for rows.Next() {
 		var candle model.Candles
-		if err := rows.Scan(&candle.ID, &candle.Title, &candle.Slug, &candle.Price, &candle.Images, &candle.Version, &candle.CategoryID, &candle.CreatedAt, &candle.UpdatedAt); err != nil {
+		if err := rows.Scan(&candle.ID, &candle.Title, &candle.Slug, &candle.Price, &candle.Images, &candle.Version,
+			&candle.CategoryID, &candle.CreatedAt, &candle.UpdatedAt, &candle.Weight, &candle.Description); err != nil {
 			return nil, err
 		}
 		candles = append(candles, candle)
@@ -82,13 +89,13 @@ func (r *Repository) AllCandles(ctx context.Context, sort *model.CandlesSortEnum
 }
 
 func (r *Repository) CreateCandles(
-	ctx context.Context, categoryID, colorID uuid.UUID, title string, slug string, images []string, price int, tr pgx.Tx,
+	ctx context.Context, categoryID, colorID uuid.UUID, title, slug, description string, images []string, weight, price int, tr pgx.Tx,
 ) (uuid.UUID, error) {
 	var id uuid.UUID
 	query, arg, err := sq.
 		Insert("public.candles").
-		Columns("color_id", "title", "slug", "price", "images", "category_id").
-		Values(colorID, title, slug, price, images, categoryID).
+		Columns("color_id", "title", "slug", "price", "images", "category_id", "description", "weight").
+		Values(colorID, title, slug, price, images, categoryID, description, weight).
 		Suffix("RETURNING id").
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
@@ -144,7 +151,8 @@ func (r *Repository) CandlesById(ctx context.Context, id uuid.UUID) (*model.Cand
 	}
 	defer conn.Release()
 
-	query, args, err := sq.Select("id, title, slug, price, images, version, category_id, created_at, updated_at, color_id").
+	query, args, err := sq.
+		Select("id, title, slug, price, images, version, category_id, created_at, updated_at, color_id").
 		From("public.candles").
 		Where(sq.Eq{"id": id}).PlaceholderFormat(sq.Dollar).
 		ToSql()

@@ -30,7 +30,7 @@ func NewRepository(primaryDB *pgxpool.Pool) *Repository {
 		primaryDB,
 	}
 }
-func (r *Repository) AllCandles(ctx context.Context, sort *model.CandlesSortEnum, filter *model.CandlesFilterInput) ([]model.Candles, error) {
+func (r *Repository) AllCandles(ctx context.Context, sort *model.CandlesSortEnum, categoryId, colorId *uuid.UUID) ([]model.Candles, error) {
 	conn, err := r.primaryDB.Acquire(ctx)
 	if err != nil {
 		return nil, err
@@ -41,24 +41,24 @@ func (r *Repository) AllCandles(ctx context.Context, sort *model.CandlesSortEnum
 	if sort != nil {
 		orders = BuildSortQuery(*sort) // Разыменовываем указатель
 	}
-
+	slog.Error("filter", categoryId, colorId)
 	queryBuilder := sq.
 		Select("id, title, slug, price, images, version, category_id, created_at, updated_at").
 		From("public.candles").
-		Where(sq.Eq{"category_id": filter.CategoryID, "color_id": filter.ColorID}).
-		OrderBy(orders)
+		Where(sq.Eq{"category_id": categoryId, "color_id": colorId}).
+		PlaceholderFormat(sq.Dollar)
 
 	if orders != "" {
 		queryBuilder = queryBuilder.OrderBy(orders)
 	}
 
-	query, _, err := queryBuilder.ToSql()
+	query, args, err := queryBuilder.ToSql()
 	if err != nil {
 		return nil, err
 	}
-
+	slog.Error("query", query)
 	// Выполняем запрос
-	rows, err := conn.Query(ctx, query)
+	rows, err := conn.Query(ctx, query, args...)
 	if err != nil {
 		return nil, err
 	}

@@ -143,16 +143,18 @@ type AuthMutations struct {
 }
 
 type Candles struct {
-	ID         uuid.UUID `json:"id"`
-	Title      string    `json:"title"`
-	Slug       string    `json:"slug"`
-	CreatedAt  time.Time `json:"created_at"`
-	UpdatedAt  time.Time `json:"updated_at"`
-	Version    uint      `json:"version"`
-	Price      int       `json:"price"`
-	Images     []string  `json:"images"`
-	ColorID    uuid.UUID `json:"color_id"`
-	CategoryID uuid.UUID `json:"category_id"`
+	ID          uuid.UUID `json:"id"`
+	Title       string    `json:"title"`
+	Slug        string    `json:"slug"`
+	CreatedAt   time.Time `json:"created_at"`
+	UpdatedAt   time.Time `json:"updated_at"`
+	Version     uint      `json:"version"`
+	Price       int       `json:"price"`
+	Images      []string  `json:"images"`
+	ColorID     uuid.UUID `json:"color_id"`
+	CategoryID  uuid.UUID `json:"category_id"`
+	Description string    `json:"description"`
+	Weight      int       `json:"weight"`
 }
 
 type CandlesByIDInput struct {
@@ -182,8 +184,8 @@ type CandlesCreateOk struct {
 func (CandlesCreateOk) IsCandlesMutationResult() {}
 
 type CandlesFilterInput struct {
-	CategoryID []uuid.UUID `json:"categoryId,omitempty"`
-	ColorID    []uuid.UUID `json:"colorId,omitempty"`
+	CategoryID *uuid.UUID `json:"categoryId,omitempty"`
+	ColorID    *uuid.UUID `json:"colorId,omitempty"`
 }
 
 type CandlesMutation struct {

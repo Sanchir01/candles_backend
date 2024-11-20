@@ -6,12 +6,12 @@ package resolver
 
 import (
 	"context"
-	"github.com/Sanchir01/candles_backend/pkg/lib/utils"
 
 	"github.com/Sanchir01/candles_backend/internal/feature/user"
 	"github.com/Sanchir01/candles_backend/internal/gql/model"
 	customMiddleware "github.com/Sanchir01/candles_backend/internal/handlers/middleware"
 	responseErr "github.com/Sanchir01/candles_backend/pkg/lib/api/response"
+	"github.com/Sanchir01/candles_backend/pkg/lib/utils"
 )
 
 // Login is the resolver for the login field.

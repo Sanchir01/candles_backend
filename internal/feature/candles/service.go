@@ -23,7 +23,7 @@ func NewService(repository *Repository, storages *Storage) *Service {
 }
 func (s *Service) AllCandles(ctx context.Context, sort *model.CandlesSortEnum, filter *model.CandlesFilterInput) ([]*model.Candles, error) {
 
-	candles, err := s.repository.AllCandles(ctx, sort, filter)
+	candles, err := s.repository.AllCandles(ctx, sort, filter.CategoryID, filter.ColorID)
 
 	if err != nil {
 		return nil, err

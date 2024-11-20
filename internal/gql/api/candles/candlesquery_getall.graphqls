@@ -16,8 +16,8 @@ enum CandlesSortEnum {
 }
 
 input CandlesFilterInput {
-    categoryId: [Uuid!]
-    colorId: [Uuid!]
+    categoryId: Uuid
+    colorId: Uuid
 }
 
 union AllCategoryResult =

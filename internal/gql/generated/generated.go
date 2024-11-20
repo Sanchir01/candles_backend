@@ -87,16 +87,18 @@ type ComplexityRoot struct {
 	}
 
 	Candles struct {
-		CategoryID func(childComplexity int) int
-		ColorID    func(childComplexity int) int
-		CreatedAt  func(childComplexity int) int
-		ID         func(childComplexity int) int
-		Images     func(childComplexity int) int
-		Price      func(childComplexity int) int
-		Slug       func(childComplexity int) int
-		Title      func(childComplexity int) int
-		UpdatedAt  func(childComplexity int) int
-		Version    func(childComplexity int) int
+		CategoryID  func(childComplexity int) int
+		ColorID     func(childComplexity int) int
+		CreatedAt   func(childComplexity int) int
+		Description func(childComplexity int) int
+		ID          func(childComplexity int) int
+		Images      func(childComplexity int) int
+		Price       func(childComplexity int) int
+		Slug        func(childComplexity int) int
+		Title       func(childComplexity int) int
+		UpdatedAt   func(childComplexity int) int
+		Version     func(childComplexity int) int
+		Weight      func(childComplexity int) int
 	}
 
 	CandlesByIdOk struct {
@@ -484,6 +486,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Candles.CreatedAt(childComplexity), true
 
+	case "Candles.description":
+		if e.complexity.Candles.Description == nil {
+			break
+		}
+
+		return e.complexity.Candles.Description(childComplexity), true
+
 	case "Candles.id":
 		if e.complexity.Candles.ID == nil {
 			break
@@ -532,6 +541,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Candles.Version(childComplexity), true
+
+	case "Candles.weight":
+		if e.complexity.Candles.Weight == nil {
+			break
+		}
+
+		return e.complexity.Candles.Weight(childComplexity), true
 
 	case "CandlesByIdOk.candle":
 		if e.complexity.CandlesByIdOk.Candle == nil {
@@ -1477,6 +1493,8 @@ type NewTokensOk {
     images:[String!]!
     color_id: Uuid!
     category_id: Uuid!
+    description:String!
+    weight:Int!
 }`, BuiltIn: false},
 	{Name: "../api/candles/candlesmutation.graphqls", Input: `type CandlesMutation
 
@@ -1557,8 +1575,8 @@ enum CandlesSortEnum {
 }
 
 input CandlesFilterInput {
-    categoryId: [Uuid!]
-    colorId: [Uuid!]
+    categoryId: Uuid
+    colorId: Uuid
 }
 
 union AllCategoryResult =
@@ -2646,6 +2664,10 @@ func (ec *executionContext) fieldContext_AllCandlesOk_candles(_ context.Context,
 				return ec.fieldContext_Candles_color_id(ctx, field)
 			case "category_id":
 				return ec.fieldContext_Candles_category_id(ctx, field)
+			case "description":
+				return ec.fieldContext_Candles_description(ctx, field)
+			case "weight":
+				return ec.fieldContext_Candles_weight(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Candles", field.Name)
 		},
@@ -3575,6 +3597,94 @@ func (ec *executionContext) fieldContext_Candles_category_id(_ context.Context, 
 	return fc, nil
 }
 
+func (ec *executionContext) _Candles_description(ctx context.Context, field graphql.CollectedField, obj *model.Candles) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Candles_description(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Description, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Candles_description(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Candles",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Candles_weight(ctx context.Context, field graphql.CollectedField, obj *model.Candles) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Candles_weight(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Weight, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Candles_weight(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Candles",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _CandlesByIdOk_candle(ctx context.Context, field graphql.CollectedField, obj *model.CandlesByIDOk) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_CandlesByIdOk_candle(ctx, field)
 	if err != nil {
@@ -3634,6 +3744,10 @@ func (ec *executionContext) fieldContext_CandlesByIdOk_candle(_ context.Context,
 				return ec.fieldContext_Candles_color_id(ctx, field)
 			case "category_id":
 				return ec.fieldContext_Candles_category_id(ctx, field)
+			case "description":
+				return ec.fieldContext_Candles_description(ctx, field)
+			case "weight":
+				return ec.fieldContext_Candles_weight(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Candles", field.Name)
 		},
@@ -3700,6 +3814,10 @@ func (ec *executionContext) fieldContext_CandlesBySlugOk_candle(_ context.Contex
 				return ec.fieldContext_Candles_color_id(ctx, field)
 			case "category_id":
 				return ec.fieldContext_Candles_category_id(ctx, field)
+			case "description":
+				return ec.fieldContext_Candles_description(ctx, field)
+			case "weight":
+				return ec.fieldContext_Candles_weight(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Candles", field.Name)
 		},
@@ -10168,14 +10286,14 @@ func (ec *executionContext) unmarshalInputCandlesFilterInput(ctx context.Context
 		switch k {
 		case "categoryId":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("categoryId"))
-			data, err := ec.unmarshalOUuid2ᚕgithubᚗcomᚋgoogleᚋuuidᚐUUIDᚄ(ctx, v)
+			data, err := ec.unmarshalOUuid2ᚖgithubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
 			if err != nil {
 				return it, err
 			}
 			it.CategoryID = data
 		case "colorId":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("colorId"))
-			data, err := ec.unmarshalOUuid2ᚕgithubᚗcomᚋgoogleᚋuuidᚐUUIDᚄ(ctx, v)
+			data, err := ec.unmarshalOUuid2ᚖgithubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -11767,6 +11885,16 @@ func (ec *executionContext) _Candles(ctx context.Context, sel ast.SelectionSet, 
 			}
 		case "category_id":
 			out.Values[i] = ec._Candles_category_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "description":
+			out.Values[i] = ec._Candles_description(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "weight":
+			out.Values[i] = ec._Candles_weight(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
@@ -15818,42 +15946,20 @@ func (ec *executionContext) marshalOUserQuery2ᚖgithubᚗcomᚋSanchir01ᚋcand
 	return ec._UserQuery(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalOUuid2ᚕgithubᚗcomᚋgoogleᚋuuidᚐUUIDᚄ(ctx context.Context, v interface{}) ([]uuid.UUID, error) {
+func (ec *executionContext) unmarshalOUuid2ᚖgithubᚗcomᚋgoogleᚋuuidᚐUUID(ctx context.Context, v interface{}) (*uuid.UUID, error) {
 	if v == nil {
 		return nil, nil
 	}
-	var vSlice []interface{}
-	if v != nil {
-		vSlice = graphql.CoerceList(v)
-	}
-	var err error
-	res := make([]uuid.UUID, len(vSlice))
-	for i := range vSlice {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
-		res[i], err = ec.unmarshalNUuid2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, vSlice[i])
-		if err != nil {
-			return nil, err
-		}
-	}
-	return res, nil
+	res, err := model.UnmarshalUuid(v)
+	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalOUuid2ᚕgithubᚗcomᚋgoogleᚋuuidᚐUUIDᚄ(ctx context.Context, sel ast.SelectionSet, v []uuid.UUID) graphql.Marshaler {
+func (ec *executionContext) marshalOUuid2ᚖgithubᚗcomᚋgoogleᚋuuidᚐUUID(ctx context.Context, sel ast.SelectionSet, v *uuid.UUID) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
-	ret := make(graphql.Array, len(v))
-	for i := range v {
-		ret[i] = ec.marshalNUuid2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, sel, v[i])
-	}
-
-	for _, e := range ret {
-		if e == graphql.Null {
-			return graphql.Null
-		}
-	}
-
-	return ret
+	res := model.MarshalUuid(*v)
+	return res
 }
 
 func (ec *executionContext) marshalO__EnumValue2ᚕgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐEnumValueᚄ(ctx context.Context, sel ast.SelectionSet, v []introspection.EnumValue) graphql.Marshaler {

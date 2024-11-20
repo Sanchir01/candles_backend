@@ -14,9 +14,9 @@ var (
 func setupLogger(env string) *slog.Logger {
 	var lg *slog.Logger
 	switch env {
-	case development:
-		lg = setupPrettySlog()
 	case production:
+		lg = setupPrettySlog()
+	case development:
 		lg = slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo}))
 	}
 	return lg

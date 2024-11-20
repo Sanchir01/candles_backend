@@ -48,9 +48,6 @@ func AddCookieTokens(id uuid.UUID, Role model.Role, w http.ResponseWriter) error
 	if err != nil {
 		return err
 	}
-
-	slog.Warn("tokens generated", slog.String("access_token", accessToken), slog.String("refresh_token", refreshToken))
-
 	http.SetCookie(w, GenerateCookie("accessToken", expirationTimeAccess, false, accessToken))
 	http.SetCookie(w, GenerateCookie("refreshToken", expirationTimeRefresh, true, refreshToken))
 

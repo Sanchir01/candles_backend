@@ -17,6 +17,7 @@ import (
 
 // Registrations is the resolver for the registrations field.
 func (r *authMutationsResolver) Registrations(ctx context.Context, obj *model.AuthMutations, input model.RegistrationsInput) (model.RegistrationsResult, error) {
+	//todo:need created sms verification
 	conn, err := r.env.DataBase.PrimaryDB.Acquire(ctx)
 	if err != nil {
 		return nil, err

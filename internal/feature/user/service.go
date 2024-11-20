@@ -35,7 +35,6 @@ func (s *Service) UserByEmail(ctx context.Context, email string, password string
 
 		return nil, err
 	}
-	slog.Warn("password user by email", usersdb.Password)
 	decodepass, err := base64.StdEncoding.DecodeString(usersdb.Password)
 	if err != nil {
 		return nil, fmt.Errorf("Неправильный пароль")

@@ -150,6 +150,7 @@ type ComplexityRoot struct {
 
 	CategoryMutation struct {
 		CreateCategory func(childComplexity int, input *model.CreateCategoryInput) int
+		Delete         func(childComplexity int, input *model.DeleteCategoryInput) int
 		UpdateCategory func(childComplexity int, input model.UpdateCategoryInput) int
 	}
 
@@ -182,6 +183,8 @@ type ComplexityRoot struct {
 
 	ColorMutation struct {
 		CreateColor func(childComplexity int, input model.CreateColorInput) int
+		Delete      func(childComplexity int, input *model.DeleteColorInput) int
+		UpdateColor func(childComplexity int, input model.UpdateColorInput) int
 	}
 
 	ColorQuery struct {
@@ -191,6 +194,14 @@ type ComplexityRoot struct {
 	}
 
 	CreateOrderOk struct {
+		Ok func(childComplexity int) int
+	}
+
+	DeleteCategoryOk struct {
+		Ok func(childComplexity int) int
+	}
+
+	DeleteColorOk struct {
 		Ok func(childComplexity int) int
 	}
 
@@ -284,6 +295,10 @@ type ComplexityRoot struct {
 		ID func(childComplexity int) int
 	}
 
+	UpdateColorOk struct {
+		ID func(childComplexity int) int
+	}
+
 	User struct {
 		CreatedAt func(childComplexity int) int
 		Email     func(childComplexity int) int
@@ -328,6 +343,7 @@ type CandlesQueryResolver interface {
 }
 type CategoryMutationResolver interface {
 	CreateCategory(ctx context.Context, obj *model.CategoryMutation, input *model.CreateCategoryInput) (model.CategoryCreateResult, error)
+	Delete(ctx context.Context, obj *model.CategoryMutation, input *model.DeleteCategoryInput) (model.DeleteCategoryResult, error)
 	UpdateCategory(ctx context.Context, obj *model.CategoryMutation, input model.UpdateCategoryInput) (model.UpdateCategoryResult, error)
 }
 type CategoryQueryResolver interface {
@@ -337,6 +353,8 @@ type CategoryQueryResolver interface {
 }
 type ColorMutationResolver interface {
 	CreateColor(ctx context.Context, obj *model.ColorMutation, input model.CreateColorInput) (model.ColorCreateResult, error)
+	Delete(ctx context.Context, obj *model.ColorMutation, input *model.DeleteColorInput) (model.DeleteColorResult, error)
+	UpdateColor(ctx context.Context, obj *model.ColorMutation, input model.UpdateColorInput) (model.UpdateColorResult, error)
 }
 type ColorQueryResolver interface {
 	AllColor(ctx context.Context, obj *model.ColorQuery) (model.AllColorResult, error)
@@ -700,6 +718,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.CategoryMutation.CreateCategory(childComplexity, args["input"].(*model.CreateCategoryInput)), true
 
+	case "CategoryMutation.delete":
+		if e.complexity.CategoryMutation.Delete == nil {
+			break
+		}
+
+		args, err := ec.field_CategoryMutation_delete_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.CategoryMutation.Delete(childComplexity, args["input"].(*model.DeleteCategoryInput)), true
+
 	case "CategoryMutation.updateCategory":
 		if e.complexity.CategoryMutation.UpdateCategory == nil {
 			break
@@ -818,6 +848,30 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.ColorMutation.CreateColor(childComplexity, args["input"].(model.CreateColorInput)), true
 
+	case "ColorMutation.delete":
+		if e.complexity.ColorMutation.Delete == nil {
+			break
+		}
+
+		args, err := ec.field_ColorMutation_delete_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.ColorMutation.Delete(childComplexity, args["input"].(*model.DeleteColorInput)), true
+
+	case "ColorMutation.updateColor":
+		if e.complexity.ColorMutation.UpdateColor == nil {
+			break
+		}
+
+		args, err := ec.field_ColorMutation_updateColor_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.ColorMutation.UpdateColor(childComplexity, args["input"].(model.UpdateColorInput)), true
+
 	case "ColorQuery.allColor":
 		if e.complexity.ColorQuery.AllColor == nil {
 			break
@@ -855,6 +909,20 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.CreateOrderOk.Ok(childComplexity), true
+
+	case "DeleteCategoryOk.ok":
+		if e.complexity.DeleteCategoryOk.Ok == nil {
+			break
+		}
+
+		return e.complexity.DeleteCategoryOk.Ok(childComplexity), true
+
+	case "DeleteColorOk.ok":
+		if e.complexity.DeleteColorOk.Ok == nil {
+			break
+		}
+
+		return e.complexity.DeleteColorOk.Ok(childComplexity), true
 
 	case "DeleteTokensOk.ok":
 		if e.complexity.DeleteTokensOk.Ok == nil {
@@ -1176,6 +1244,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.UpdateCategoryOk.ID(childComplexity), true
 
+	case "UpdateColorOk.id":
+		if e.complexity.UpdateColorOk.ID == nil {
+			break
+		}
+
+		return e.complexity.UpdateColorOk.ID(childComplexity), true
+
 	case "User.createdAt":
 		if e.complexity.User.CreatedAt == nil {
 			break
@@ -1280,10 +1355,13 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 		ec.unmarshalInputCreateColorInput,
 		ec.unmarshalInputCreateOrderInput,
 		ec.unmarshalInputCreateOrderItem,
+		ec.unmarshalInputDeleteCategoryInput,
+		ec.unmarshalInputDeleteColorInput,
 		ec.unmarshalInputLoginInput,
 		ec.unmarshalInputRegistrationsInput,
 		ec.unmarshalInputSortRankInput,
 		ec.unmarshalInputUpdateCategoryInput,
+		ec.unmarshalInputUpdateColorInput,
 	)
 	first := true
 
@@ -1633,6 +1711,21 @@ union CategoryCreateResult =
     | InternalErrorProblem
     | UnauthorizedProblem
     | VersionMismatchProblem`, BuiltIn: false},
+	{Name: "../api/category/categorymutation_delete.graphqls", Input: `extend type CategoryMutation {
+    delete(input:DeleteCategoryInput):DeleteCategoryResult @goField(forceResolver: true) @hasRole(role: [admin])
+}
+input DeleteCategoryInput {
+    id:Uuid!
+}
+
+type DeleteCategoryOk {
+    ok:Uuid!
+}
+
+union  DeleteCategoryResult =
+    | DeleteCategoryOk
+    | InternalErrorProblem
+    | VersionMismatchProblem`, BuiltIn: false},
 	{Name: "../api/category/categorymutation_update.graphqls", Input: `extend type CategoryMutation {
   updateCategory(input:UpdateCategoryInput!):UpdateCategoryResult! @goField(forceResolver: true) @hasRole(role: [admin])
 }
@@ -1722,6 +1815,37 @@ union ColorCreateResult =
 extend type Mutation {
     color: ColorMutation!
 }`, BuiltIn: false},
+	{Name: "../api/color/colormutation_delete.graphqls", Input: `extend type ColorMutation {
+    delete(input:DeleteColorInput):DeleteColorResult @goField(forceResolver: true) @hasRole(role: [admin])
+}
+input DeleteColorInput {
+    id:Uuid!
+}
+
+type DeleteColorOk {
+    ok:Uuid!
+}
+
+union  DeleteColorResult =
+    | DeleteColorOk
+    | InternalErrorProblem
+    | VersionMismatchProblem`, BuiltIn: false},
+	{Name: "../api/color/colormutation_update.graphqls", Input: `extend type ColorMutation {
+  updateColor(input:UpdateColorInput!):UpdateColorResult! @goField(forceResolver: true) @hasRole(role: [admin])
+}
+
+union UpdateColorResult=
+    | UpdateColorOk
+    | InternalErrorProblem
+    | VersionMismatchProblem
+
+input UpdateColorInput{
+    title:String!
+}
+type UpdateColorOk {
+  id:Uuid!
+}
+`, BuiltIn: false},
 	{Name: "../api/color/colorquery.graphqls", Input: `type ColorQuery
 
 extend type Query {
@@ -2279,6 +2403,38 @@ func (ec *executionContext) field_CategoryMutation_createCategory_argsInput(
 	return zeroVal, nil
 }
 
+func (ec *executionContext) field_CategoryMutation_delete_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	arg0, err := ec.field_CategoryMutation_delete_argsInput(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["input"] = arg0
+	return args, nil
+}
+func (ec *executionContext) field_CategoryMutation_delete_argsInput(
+	ctx context.Context,
+	rawArgs map[string]interface{},
+) (*model.DeleteCategoryInput, error) {
+	// We won't call the directive if the argument is null.
+	// Set call_argument_directives_with_null to true to call directives
+	// even if the argument is null.
+	_, ok := rawArgs["input"]
+	if !ok {
+		var zeroVal *model.DeleteCategoryInput
+		return zeroVal, nil
+	}
+
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+	if tmp, ok := rawArgs["input"]; ok {
+		return ec.unmarshalODeleteCategoryInput2ᚖgithubᚗcomᚋSanchir01ᚋcandles_backendᚋinternalᚋgqlᚋmodelᚐDeleteCategoryInput(ctx, tmp)
+	}
+
+	var zeroVal *model.DeleteCategoryInput
+	return zeroVal, nil
+}
+
 func (ec *executionContext) field_CategoryMutation_updateCategory_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -2404,6 +2560,70 @@ func (ec *executionContext) field_ColorMutation_createColor_argsInput(
 	}
 
 	var zeroVal model.CreateColorInput
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_ColorMutation_delete_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	arg0, err := ec.field_ColorMutation_delete_argsInput(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["input"] = arg0
+	return args, nil
+}
+func (ec *executionContext) field_ColorMutation_delete_argsInput(
+	ctx context.Context,
+	rawArgs map[string]interface{},
+) (*model.DeleteColorInput, error) {
+	// We won't call the directive if the argument is null.
+	// Set call_argument_directives_with_null to true to call directives
+	// even if the argument is null.
+	_, ok := rawArgs["input"]
+	if !ok {
+		var zeroVal *model.DeleteColorInput
+		return zeroVal, nil
+	}
+
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+	if tmp, ok := rawArgs["input"]; ok {
+		return ec.unmarshalODeleteColorInput2ᚖgithubᚗcomᚋSanchir01ᚋcandles_backendᚋinternalᚋgqlᚋmodelᚐDeleteColorInput(ctx, tmp)
+	}
+
+	var zeroVal *model.DeleteColorInput
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_ColorMutation_updateColor_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	arg0, err := ec.field_ColorMutation_updateColor_argsInput(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["input"] = arg0
+	return args, nil
+}
+func (ec *executionContext) field_ColorMutation_updateColor_argsInput(
+	ctx context.Context,
+	rawArgs map[string]interface{},
+) (model.UpdateColorInput, error) {
+	// We won't call the directive if the argument is null.
+	// Set call_argument_directives_with_null to true to call directives
+	// even if the argument is null.
+	_, ok := rawArgs["input"]
+	if !ok {
+		var zeroVal model.UpdateColorInput
+		return zeroVal, nil
+	}
+
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+	if tmp, ok := rawArgs["input"]; ok {
+		return ec.unmarshalNUpdateColorInput2githubᚗcomᚋSanchir01ᚋcandles_backendᚋinternalᚋgqlᚋmodelᚐUpdateColorInput(ctx, tmp)
+	}
+
+	var zeroVal model.UpdateColorInput
 	return zeroVal, nil
 }
 
@@ -4676,6 +4896,85 @@ func (ec *executionContext) fieldContext_CategoryMutation_createCategory(ctx con
 	return fc, nil
 }
 
+func (ec *executionContext) _CategoryMutation_delete(ctx context.Context, field graphql.CollectedField, obj *model.CategoryMutation) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_CategoryMutation_delete(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.CategoryMutation().Delete(rctx, obj, fc.Args["input"].(*model.DeleteCategoryInput))
+		}
+
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			role, err := ec.unmarshalORole2ᚕᚖgithubᚗcomᚋSanchir01ᚋcandles_backendᚋinternalᚋgqlᚋmodelᚐRole(ctx, []interface{}{"admin"})
+			if err != nil {
+				var zeroVal model.DeleteCategoryResult
+				return zeroVal, err
+			}
+			if ec.directives.HasRole == nil {
+				var zeroVal model.DeleteCategoryResult
+				return zeroVal, errors.New("directive hasRole is not implemented")
+			}
+			return ec.directives.HasRole(ctx, obj, directive0, role)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(model.DeleteCategoryResult); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be github.com/Sanchir01/candles_backend/internal/gql/model.DeleteCategoryResult`, tmp)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(model.DeleteCategoryResult)
+	fc.Result = res
+	return ec.marshalODeleteCategoryResult2githubᚗcomᚋSanchir01ᚋcandles_backendᚋinternalᚋgqlᚋmodelᚐDeleteCategoryResult(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_CategoryMutation_delete(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "CategoryMutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type DeleteCategoryResult does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_CategoryMutation_delete_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _CategoryMutation_updateCategory(ctx context.Context, field graphql.CollectedField, obj *model.CategoryMutation) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_CategoryMutation_updateCategory(ctx, field)
 	if err != nil {
@@ -5418,6 +5717,167 @@ func (ec *executionContext) fieldContext_ColorMutation_createColor(ctx context.C
 	return fc, nil
 }
 
+func (ec *executionContext) _ColorMutation_delete(ctx context.Context, field graphql.CollectedField, obj *model.ColorMutation) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ColorMutation_delete(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.ColorMutation().Delete(rctx, obj, fc.Args["input"].(*model.DeleteColorInput))
+		}
+
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			role, err := ec.unmarshalORole2ᚕᚖgithubᚗcomᚋSanchir01ᚋcandles_backendᚋinternalᚋgqlᚋmodelᚐRole(ctx, []interface{}{"admin"})
+			if err != nil {
+				var zeroVal model.DeleteColorResult
+				return zeroVal, err
+			}
+			if ec.directives.HasRole == nil {
+				var zeroVal model.DeleteColorResult
+				return zeroVal, errors.New("directive hasRole is not implemented")
+			}
+			return ec.directives.HasRole(ctx, obj, directive0, role)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(model.DeleteColorResult); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be github.com/Sanchir01/candles_backend/internal/gql/model.DeleteColorResult`, tmp)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(model.DeleteColorResult)
+	fc.Result = res
+	return ec.marshalODeleteColorResult2githubᚗcomᚋSanchir01ᚋcandles_backendᚋinternalᚋgqlᚋmodelᚐDeleteColorResult(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_ColorMutation_delete(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ColorMutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type DeleteColorResult does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_ColorMutation_delete_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ColorMutation_updateColor(ctx context.Context, field graphql.CollectedField, obj *model.ColorMutation) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ColorMutation_updateColor(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.ColorMutation().UpdateColor(rctx, obj, fc.Args["input"].(model.UpdateColorInput))
+		}
+
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			role, err := ec.unmarshalORole2ᚕᚖgithubᚗcomᚋSanchir01ᚋcandles_backendᚋinternalᚋgqlᚋmodelᚐRole(ctx, []interface{}{"admin"})
+			if err != nil {
+				var zeroVal model.UpdateColorResult
+				return zeroVal, err
+			}
+			if ec.directives.HasRole == nil {
+				var zeroVal model.UpdateColorResult
+				return zeroVal, errors.New("directive hasRole is not implemented")
+			}
+			return ec.directives.HasRole(ctx, obj, directive0, role)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(model.UpdateColorResult); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be github.com/Sanchir01/candles_backend/internal/gql/model.UpdateColorResult`, tmp)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(model.UpdateColorResult)
+	fc.Result = res
+	return ec.marshalNUpdateColorResult2githubᚗcomᚋSanchir01ᚋcandles_backendᚋinternalᚋgqlᚋmodelᚐUpdateColorResult(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_ColorMutation_updateColor(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ColorMutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type UpdateColorResult does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_ColorMutation_updateColor_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _ColorQuery_allColor(ctx context.Context, field graphql.CollectedField, obj *model.ColorQuery) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_ColorQuery_allColor(ctx, field)
 	if err != nil {
@@ -5611,6 +6071,94 @@ func (ec *executionContext) fieldContext_CreateOrderOk_ok(_ context.Context, fie
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _DeleteCategoryOk_ok(ctx context.Context, field graphql.CollectedField, obj *model.DeleteCategoryOk) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_DeleteCategoryOk_ok(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Ok, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(uuid.UUID)
+	fc.Result = res
+	return ec.marshalNUuid2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_DeleteCategoryOk_ok(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "DeleteCategoryOk",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Uuid does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _DeleteColorOk_ok(ctx context.Context, field graphql.CollectedField, obj *model.DeleteColorOk) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_DeleteColorOk_ok(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Ok, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(uuid.UUID)
+	fc.Result = res
+	return ec.marshalNUuid2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_DeleteColorOk_ok(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "DeleteColorOk",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Uuid does not have child fields")
 		},
 	}
 	return fc, nil
@@ -6067,6 +6615,8 @@ func (ec *executionContext) fieldContext_Mutation_category(_ context.Context, fi
 			switch field.Name {
 			case "createCategory":
 				return ec.fieldContext_CategoryMutation_createCategory(ctx, field)
+			case "delete":
+				return ec.fieldContext_CategoryMutation_delete(ctx, field)
 			case "updateCategory":
 				return ec.fieldContext_CategoryMutation_updateCategory(ctx, field)
 			}
@@ -6117,6 +6667,10 @@ func (ec *executionContext) fieldContext_Mutation_color(_ context.Context, field
 			switch field.Name {
 			case "createColor":
 				return ec.fieldContext_ColorMutation_createColor(ctx, field)
+			case "delete":
+				return ec.fieldContext_ColorMutation_delete(ctx, field)
+			case "updateColor":
+				return ec.fieldContext_ColorMutation_updateColor(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type ColorMutation", field.Name)
 		},
@@ -7860,6 +8414,50 @@ func (ec *executionContext) _UpdateCategoryOk_id(ctx context.Context, field grap
 func (ec *executionContext) fieldContext_UpdateCategoryOk_id(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "UpdateCategoryOk",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Uuid does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _UpdateColorOk_id(ctx context.Context, field graphql.CollectedField, obj *model.UpdateColorOk) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_UpdateColorOk_id(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(uuid.UUID)
+	fc.Result = res
+	return ec.marshalNUuid2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_UpdateColorOk_id(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "UpdateColorOk",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
@@ -10605,6 +11203,60 @@ func (ec *executionContext) unmarshalInputCreateOrderItem(ctx context.Context, o
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputDeleteCategoryInput(ctx context.Context, obj interface{}) (model.DeleteCategoryInput, error) {
+	var it model.DeleteCategoryInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"id"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "id":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+			data, err := ec.unmarshalNUuid2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ID = data
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputDeleteColorInput(ctx context.Context, obj interface{}) (model.DeleteColorInput, error) {
+	var it model.DeleteColorInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"id"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "id":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+			data, err := ec.unmarshalNUuid2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ID = data
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputLoginInput(ctx context.Context, obj interface{}) (model.LoginInput, error) {
 	var it model.LoginInput
 	asMap := map[string]interface{}{}
@@ -10730,6 +11382,33 @@ func (ec *executionContext) unmarshalInputSortRankInput(ctx context.Context, obj
 
 func (ec *executionContext) unmarshalInputUpdateCategoryInput(ctx context.Context, obj interface{}) (model.UpdateCategoryInput, error) {
 	var it model.UpdateCategoryInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"title"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "title":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("title"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Title = data
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputUpdateColorInput(ctx context.Context, obj interface{}) (model.UpdateColorInput, error) {
+	var it model.UpdateColorInput
 	asMap := map[string]interface{}{}
 	for k, v := range obj.(map[string]interface{}) {
 		asMap[k] = v
@@ -11223,6 +11902,66 @@ func (ec *executionContext) _CreateOrderResult(ctx context.Context, sel ast.Sele
 	}
 }
 
+func (ec *executionContext) _DeleteCategoryResult(ctx context.Context, sel ast.SelectionSet, obj model.DeleteCategoryResult) graphql.Marshaler {
+	switch obj := (obj).(type) {
+	case nil:
+		return graphql.Null
+	case model.InternalErrorProblem:
+		return ec._InternalErrorProblem(ctx, sel, &obj)
+	case *model.InternalErrorProblem:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._InternalErrorProblem(ctx, sel, obj)
+	case model.VersionMismatchProblem:
+		return ec._VersionMismatchProblem(ctx, sel, &obj)
+	case *model.VersionMismatchProblem:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._VersionMismatchProblem(ctx, sel, obj)
+	case model.DeleteCategoryOk:
+		return ec._DeleteCategoryOk(ctx, sel, &obj)
+	case *model.DeleteCategoryOk:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._DeleteCategoryOk(ctx, sel, obj)
+	default:
+		panic(fmt.Errorf("unexpected type %T", obj))
+	}
+}
+
+func (ec *executionContext) _DeleteColorResult(ctx context.Context, sel ast.SelectionSet, obj model.DeleteColorResult) graphql.Marshaler {
+	switch obj := (obj).(type) {
+	case nil:
+		return graphql.Null
+	case model.InternalErrorProblem:
+		return ec._InternalErrorProblem(ctx, sel, &obj)
+	case *model.InternalErrorProblem:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._InternalErrorProblem(ctx, sel, obj)
+	case model.VersionMismatchProblem:
+		return ec._VersionMismatchProblem(ctx, sel, &obj)
+	case *model.VersionMismatchProblem:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._VersionMismatchProblem(ctx, sel, obj)
+	case model.DeleteColorOk:
+		return ec._DeleteColorOk(ctx, sel, &obj)
+	case *model.DeleteColorOk:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._DeleteColorOk(ctx, sel, obj)
+	default:
+		panic(fmt.Errorf("unexpected type %T", obj))
+	}
+}
+
 func (ec *executionContext) _DeleteTokensResult(ctx context.Context, sel ast.SelectionSet, obj model.DeleteTokensResult) graphql.Marshaler {
 	switch obj := (obj).(type) {
 	case nil:
@@ -11421,6 +12160,36 @@ func (ec *executionContext) _UpdateCategoryResult(ctx context.Context, sel ast.S
 			return graphql.Null
 		}
 		return ec._UpdateCategoryOk(ctx, sel, obj)
+	default:
+		panic(fmt.Errorf("unexpected type %T", obj))
+	}
+}
+
+func (ec *executionContext) _UpdateColorResult(ctx context.Context, sel ast.SelectionSet, obj model.UpdateColorResult) graphql.Marshaler {
+	switch obj := (obj).(type) {
+	case nil:
+		return graphql.Null
+	case model.InternalErrorProblem:
+		return ec._InternalErrorProblem(ctx, sel, &obj)
+	case *model.InternalErrorProblem:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._InternalErrorProblem(ctx, sel, obj)
+	case model.VersionMismatchProblem:
+		return ec._VersionMismatchProblem(ctx, sel, &obj)
+	case *model.VersionMismatchProblem:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._VersionMismatchProblem(ctx, sel, obj)
+	case model.UpdateColorOk:
+		return ec._UpdateColorOk(ctx, sel, &obj)
+	case *model.UpdateColorOk:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._UpdateColorOk(ctx, sel, obj)
 	default:
 		panic(fmt.Errorf("unexpected type %T", obj))
 	}
@@ -12527,6 +13296,39 @@ func (ec *executionContext) _CategoryMutation(ctx context.Context, sel ast.Selec
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "delete":
+			field := field
+
+			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._CategoryMutation_delete(ctx, field, obj)
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		case "updateCategory":
 			field := field
 
@@ -12956,6 +13758,75 @@ func (ec *executionContext) _ColorMutation(ctx context.Context, sel ast.Selectio
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "delete":
+			field := field
+
+			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._ColorMutation_delete(ctx, field, obj)
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "updateColor":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._ColorMutation_updateColor(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -13160,6 +14031,84 @@ func (ec *executionContext) _CreateOrderOk(ctx context.Context, sel ast.Selectio
 	return out
 }
 
+var deleteCategoryOkImplementors = []string{"DeleteCategoryOk", "DeleteCategoryResult"}
+
+func (ec *executionContext) _DeleteCategoryOk(ctx context.Context, sel ast.SelectionSet, obj *model.DeleteCategoryOk) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, deleteCategoryOkImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("DeleteCategoryOk")
+		case "ok":
+			out.Values[i] = ec._DeleteCategoryOk_ok(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var deleteColorOkImplementors = []string{"DeleteColorOk", "DeleteColorResult"}
+
+func (ec *executionContext) _DeleteColorOk(ctx context.Context, sel ast.SelectionSet, obj *model.DeleteColorOk) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, deleteColorOkImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("DeleteColorOk")
+		case "ok":
+			out.Values[i] = ec._DeleteColorOk_ok(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
 var deleteTokensOkImplementors = []string{"DeleteTokensOk", "DeleteTokensResult"}
 
 func (ec *executionContext) _DeleteTokensOk(ctx context.Context, sel ast.SelectionSet, obj *model.DeleteTokensOk) graphql.Marshaler {
@@ -13199,7 +14148,7 @@ func (ec *executionContext) _DeleteTokensOk(ctx context.Context, sel ast.Selecti
 	return out
 }
 
-var internalErrorProblemImplementors = []string{"InternalErrorProblem", "DeleteTokensResult", "LoginResult", "RegistrationsResult", "NewTokensResult", "CandlesMutationResult", "CandlesByIdResult", "CandlesBySlugResult", "AllCategoryResult", "TotalCountResolvingResult", "CategoryCreateResult", "UpdateCategoryResult", "CategoryBySlugResult", "CategoryByIdResult", "CategoryGetAllResult", "ColorCreateResult", "AllColorResult", "ColorByIdResult", "ColorBySlugResult", "CreateOrderResult", "AllOrdersResult", "AllUserOrdersResult", "ProblemInterface", "UserProfileResult"}
+var internalErrorProblemImplementors = []string{"InternalErrorProblem", "DeleteTokensResult", "LoginResult", "RegistrationsResult", "NewTokensResult", "CandlesMutationResult", "CandlesByIdResult", "CandlesBySlugResult", "AllCategoryResult", "TotalCountResolvingResult", "CategoryCreateResult", "DeleteCategoryResult", "UpdateCategoryResult", "CategoryBySlugResult", "CategoryByIdResult", "CategoryGetAllResult", "ColorCreateResult", "DeleteColorResult", "UpdateColorResult", "AllColorResult", "ColorByIdResult", "ColorBySlugResult", "CreateOrderResult", "AllOrdersResult", "AllUserOrdersResult", "ProblemInterface", "UserProfileResult"}
 
 func (ec *executionContext) _InternalErrorProblem(ctx context.Context, sel ast.SelectionSet, obj *model.InternalErrorProblem) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, internalErrorProblemImplementors)
@@ -14098,6 +15047,45 @@ func (ec *executionContext) _UpdateCategoryOk(ctx context.Context, sel ast.Selec
 	return out
 }
 
+var updateColorOkImplementors = []string{"UpdateColorOk", "UpdateColorResult"}
+
+func (ec *executionContext) _UpdateColorOk(ctx context.Context, sel ast.SelectionSet, obj *model.UpdateColorOk) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, updateColorOkImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("UpdateColorOk")
+		case "id":
+			out.Values[i] = ec._UpdateColorOk_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
 var userImplementors = []string{"User"}
 
 func (ec *executionContext) _User(ctx context.Context, sel ast.SelectionSet, obj *model.User) graphql.Marshaler {
@@ -14286,7 +15274,7 @@ func (ec *executionContext) _UserQuery(ctx context.Context, sel ast.SelectionSet
 	return out
 }
 
-var versionMismatchProblemImplementors = []string{"VersionMismatchProblem", "LoginResult", "RegistrationsResult", "CandlesMutationResult", "CandlesByIdResult", "CandlesBySlugResult", "AllCategoryResult", "TotalCountResolvingResult", "CategoryCreateResult", "UpdateCategoryResult", "CategoryBySlugResult", "CategoryByIdResult", "ColorCreateResult", "AllColorResult", "ColorByIdResult", "ColorBySlugResult", "UserProfileResult", "ProblemInterface"}
+var versionMismatchProblemImplementors = []string{"VersionMismatchProblem", "LoginResult", "RegistrationsResult", "CandlesMutationResult", "CandlesByIdResult", "CandlesBySlugResult", "AllCategoryResult", "TotalCountResolvingResult", "CategoryCreateResult", "DeleteCategoryResult", "UpdateCategoryResult", "CategoryBySlugResult", "CategoryByIdResult", "ColorCreateResult", "DeleteColorResult", "UpdateColorResult", "AllColorResult", "ColorByIdResult", "ColorBySlugResult", "UserProfileResult", "ProblemInterface"}
 
 func (ec *executionContext) _VersionMismatchProblem(ctx context.Context, sel ast.SelectionSet, obj *model.VersionMismatchProblem) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, versionMismatchProblemImplementors)
@@ -15377,6 +16365,21 @@ func (ec *executionContext) marshalNUpdateCategoryResult2githubᚗcomᚋSanchir0
 	return ec._UpdateCategoryResult(ctx, sel, v)
 }
 
+func (ec *executionContext) unmarshalNUpdateColorInput2githubᚗcomᚋSanchir01ᚋcandles_backendᚋinternalᚋgqlᚋmodelᚐUpdateColorInput(ctx context.Context, v interface{}) (model.UpdateColorInput, error) {
+	res, err := ec.unmarshalInputUpdateColorInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNUpdateColorResult2githubᚗcomᚋSanchir01ᚋcandles_backendᚋinternalᚋgqlᚋmodelᚐUpdateColorResult(ctx context.Context, sel ast.SelectionSet, v model.UpdateColorResult) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._UpdateColorResult(ctx, sel, v)
+}
+
 func (ec *executionContext) unmarshalNUpload2ᚕᚖgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚐUploadᚄ(ctx context.Context, v interface{}) ([]*graphql.Upload, error) {
 	var vSlice []interface{}
 	if v != nil {
@@ -15815,6 +16818,36 @@ func (ec *executionContext) unmarshalOCreateOrderItem2ᚕᚖgithubᚗcomᚋSanch
 		}
 	}
 	return res, nil
+}
+
+func (ec *executionContext) unmarshalODeleteCategoryInput2ᚖgithubᚗcomᚋSanchir01ᚋcandles_backendᚋinternalᚋgqlᚋmodelᚐDeleteCategoryInput(ctx context.Context, v interface{}) (*model.DeleteCategoryInput, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputDeleteCategoryInput(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalODeleteCategoryResult2githubᚗcomᚋSanchir01ᚋcandles_backendᚋinternalᚋgqlᚋmodelᚐDeleteCategoryResult(ctx context.Context, sel ast.SelectionSet, v model.DeleteCategoryResult) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._DeleteCategoryResult(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalODeleteColorInput2ᚖgithubᚗcomᚋSanchir01ᚋcandles_backendᚋinternalᚋgqlᚋmodelᚐDeleteColorInput(ctx context.Context, v interface{}) (*model.DeleteColorInput, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputDeleteColorInput(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalODeleteColorResult2githubᚗcomᚋSanchir01ᚋcandles_backendᚋinternalᚋgqlᚋmodelᚐDeleteColorResult(ctx context.Context, sel ast.SelectionSet, v model.DeleteColorResult) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._DeleteColorResult(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalODeleteTokensResult2githubᚗcomᚋSanchir01ᚋcandles_backendᚋinternalᚋgqlᚋmodelᚐDeleteTokensResult(ctx context.Context, sel ast.SelectionSet, v model.DeleteTokensResult) graphql.Marshaler {

@@ -1,0 +1,15 @@
+extend type ColorMutation {
+    delete(input:DeleteColorInput):DeleteColorResult @goField(forceResolver: true) @hasRole(role: [admin])
+}
+input DeleteColorInput {
+    id:Uuid!
+}
+
+type DeleteColorOk {
+    ok:Uuid!
+}
+
+union  DeleteColorResult =
+    | DeleteColorOk
+    | InternalErrorProblem
+    | VersionMismatchProblem

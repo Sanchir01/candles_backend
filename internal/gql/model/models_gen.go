@@ -72,6 +72,14 @@ type CreateOrderResult interface {
 	IsCreateOrderResult()
 }
 
+type DeleteCategoryResult interface {
+	IsDeleteCategoryResult()
+}
+
+type DeleteColorResult interface {
+	IsDeleteColorResult()
+}
+
 type DeleteTokensResult interface {
 	IsDeleteTokensResult()
 }
@@ -99,6 +107,10 @@ type TotalCountResolvingResult interface {
 
 type UpdateCategoryResult interface {
 	IsUpdateCategoryResult()
+}
+
+type UpdateColorResult interface {
+	IsUpdateColorResult()
 }
 
 type UserProfileResult interface {
@@ -244,6 +256,7 @@ func (CategoryGetAllOk) IsCategoryGetAllResult() {}
 
 type CategoryMutation struct {
 	CreateCategory CategoryCreateResult `json:"createCategory"`
+	Delete         DeleteCategoryResult `json:"delete,omitempty"`
 	UpdateCategory UpdateCategoryResult `json:"updateCategory"`
 }
 
@@ -290,6 +303,8 @@ func (ColorCreateOk) IsColorCreateResult() {}
 
 type ColorMutation struct {
 	CreateColor ColorCreateResult `json:"createColor"`
+	Delete      DeleteColorResult `json:"delete,omitempty"`
+	UpdateColor UpdateColorResult `json:"updateColor"`
 }
 
 type ColorQuery struct {
@@ -332,6 +347,26 @@ type CreateOrderOk struct {
 
 func (CreateOrderOk) IsCreateOrderResult() {}
 
+type DeleteCategoryInput struct {
+	ID uuid.UUID `json:"id"`
+}
+
+type DeleteCategoryOk struct {
+	Ok uuid.UUID `json:"ok"`
+}
+
+func (DeleteCategoryOk) IsDeleteCategoryResult() {}
+
+type DeleteColorInput struct {
+	ID uuid.UUID `json:"id"`
+}
+
+type DeleteColorOk struct {
+	Ok uuid.UUID `json:"ok"`
+}
+
+func (DeleteColorOk) IsDeleteColorResult() {}
+
 type DeleteTokensOk struct {
 	Ok string `json:"ok"`
 }
@@ -362,6 +397,8 @@ func (InternalErrorProblem) IsTotalCountResolvingResult() {}
 
 func (InternalErrorProblem) IsCategoryCreateResult() {}
 
+func (InternalErrorProblem) IsDeleteCategoryResult() {}
+
 func (InternalErrorProblem) IsUpdateCategoryResult() {}
 
 func (InternalErrorProblem) IsCategoryBySlugResult() {}
@@ -371,6 +408,10 @@ func (InternalErrorProblem) IsCategoryByIDResult() {}
 func (InternalErrorProblem) IsCategoryGetAllResult() {}
 
 func (InternalErrorProblem) IsColorCreateResult() {}
+
+func (InternalErrorProblem) IsDeleteColorResult() {}
+
+func (InternalErrorProblem) IsUpdateColorResult() {}
 
 func (InternalErrorProblem) IsAllColorResult() {}
 
@@ -510,6 +551,16 @@ type UpdateCategoryOk struct {
 
 func (UpdateCategoryOk) IsUpdateCategoryResult() {}
 
+type UpdateColorInput struct {
+	Title string `json:"title"`
+}
+
+type UpdateColorOk struct {
+	ID uuid.UUID `json:"id"`
+}
+
+func (UpdateColorOk) IsUpdateColorResult() {}
+
 type User struct {
 	ID        uuid.UUID `json:"id"`
 	Title     string    `json:"title"`
@@ -552,6 +603,8 @@ func (VersionMismatchProblem) IsTotalCountResolvingResult() {}
 
 func (VersionMismatchProblem) IsCategoryCreateResult() {}
 
+func (VersionMismatchProblem) IsDeleteCategoryResult() {}
+
 func (VersionMismatchProblem) IsUpdateCategoryResult() {}
 
 func (VersionMismatchProblem) IsCategoryBySlugResult() {}
@@ -559,6 +612,10 @@ func (VersionMismatchProblem) IsCategoryBySlugResult() {}
 func (VersionMismatchProblem) IsCategoryByIDResult() {}
 
 func (VersionMismatchProblem) IsColorCreateResult() {}
+
+func (VersionMismatchProblem) IsDeleteColorResult() {}
+
+func (VersionMismatchProblem) IsUpdateColorResult() {}
 
 func (VersionMismatchProblem) IsAllColorResult() {}
 

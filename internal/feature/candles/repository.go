@@ -197,7 +197,8 @@ func (r *Repository) UpdateCandles(ctx context.Context, updates map[string]inter
 	query := sq.
 		Update("candles").
 		Where(sq.Eq{"id": id}).
-		PlaceholderFormat(sq.Dollar).Suffix("RETURNING id")
+		PlaceholderFormat(sq.Dollar).
+		Suffix("RETURNING id")
 	for field, value := range updates {
 		query = query.Set(field, value)
 	}
@@ -215,7 +216,6 @@ func (r *Repository) UpdateCandles(ctx context.Context, updates map[string]inter
 		return "", fmt.Errorf("failed to execute query: %w", err)
 	}
 
-	// Возвращаем ID обновленной записи
 	return updatedID, nil
 }
 

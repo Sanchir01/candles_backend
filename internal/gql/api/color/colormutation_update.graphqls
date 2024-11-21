@@ -1,0 +1,15 @@
+extend type ColorMutation {
+  updateColor(input:UpdateColorInput!):UpdateColorResult! @goField(forceResolver: true) @hasRole(role: [admin])
+}
+
+union UpdateColorResult=
+    | UpdateColorOk
+    | InternalErrorProblem
+    | VersionMismatchProblem
+
+input UpdateColorInput{
+    title:String!
+}
+type UpdateColorOk {
+  id:Uuid!
+}

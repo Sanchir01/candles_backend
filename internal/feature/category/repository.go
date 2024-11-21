@@ -125,15 +125,43 @@ func (s *Repository) CreateCategory(ctx context.Context, title, slug string) (uu
 	return id, nil
 }
 
-func (s *Repository) UpdateCategory(ctx context.Context, id uuid.UUID, name, slug string) (uuid.UUID, error) {
-	conn, err := s.primaryDB.Acquire(ctx)
+func (r *Repository) UpdateCategory(ctx context.Context, id uuid.UUID, name, slug string) (uuid.UUID, error) {
+	conn, err := r.primaryDB.Acquire(ctx)
 	if err != nil {
 		return uuid.Nil, err
 	}
 	defer conn.Release()
 	var idReturning uuid.UUID
-	query := "PDATE category SET title = $1, slug = $2 WHERE id = $3"
-	row := conn.QueryRow(ctx, query, name, slug)
+	query, args, err :=
+		sq.
+			Update("category").
+			Where(sq.Eq{"id": id}).
+			Set("title", name).
+			Set("slug", slug).
+			PlaceholderFormat(sq.Dollar).
+			Suffix("RETURNING id").
+			ToSql()
+	row := conn.QueryRow(ctx, query, args...)
+	if err := row.Scan(&idReturning); err != nil {
+		return uuid.Nil, err
+	}
+	return idReturning, nil
+}
+
+func (r *Repository) DeleteCategory(ctx context.Context, id uuid.UUID) (uuid.UUID, error) {
+	conn, err := r.primaryDB.Acquire(ctx)
+	if err != nil {
+		return uuid.Nil, err
+	}
+	defer conn.Release()
+	var idReturning uuid.UUID
+	query, args, err := sq.
+		Delete("category").
+		Where(sq.Eq{"id": id}).
+		PlaceholderFormat(sq.Dollar).
+		Suffix("RETURNING id").
+		ToSql()
+	row := conn.QueryRow(ctx, query, args...)
 	if err := row.Scan(&idReturning); err != nil {
 		return uuid.Nil, err
 	}

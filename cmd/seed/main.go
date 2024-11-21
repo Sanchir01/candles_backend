@@ -8,23 +8,12 @@ import (
 	"github.com/Sanchir01/candles_backend/internal/app"
 	"github.com/Sanchir01/candles_backend/internal/gql/model"
 	"github.com/Sanchir01/candles_backend/pkg/lib/utils"
+	"github.com/brianvoe/gofakeit/v7"
 	"github.com/go-faker/faker/v4"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"log/slog"
-	"math/rand"
-	"time"
 )
-
-func randomColorName() string {
-	rand.Seed(time.Now().UnixNano())
-	colorNames := []string{
-		"Red", "Green", "Blue", "Yellow", "Purple", "Cyan", "Magenta",
-		"Orange", "Pink", "Brown", "Black", "White", "Gray", "Turquoise",
-		"Gold", "Silver", "Ivory", "Coral", "Lavender",
-	}
-	return colorNames[rand.Intn(len(colorNames))]
-}
 
 func main() {
 	env, err := app.NewEnv()
@@ -42,7 +31,6 @@ func main() {
 	}
 	defer conn.Release()
 
-	colorName := randomColorName()
 	tx, err := conn.BeginTx(ctx, pgx.TxOptions{})
 	if err != nil {
 		slog.Error(err.Error())
@@ -56,13 +44,13 @@ func main() {
 			}
 		}
 	}()
-	colorId, err := env.Services.ColorService.CreateColor(ctx, colorName)
+	colorId, err := env.Services.ColorService.CreateColor(ctx, gofakeit.Color())
 	if err != nil {
 		slog.Error(err.Error())
 		return
 	}
 
-	categoryId, err := env.Services.CategoryService.CreateCategory(ctx, faker.Word())
+	categoryId, err := env.Services.CategoryService.CreateCategory(ctx, gofakeit.Word())
 	if err != nil {
 		slog.Error(err.Error())
 		return
@@ -87,7 +75,8 @@ func generateFakeCandle(colorId, categoryId uuid.UUID, tr pgx.Tx) (uuid.UUID, er
 	if err := faker.FakeData(&candle); err != nil {
 		return uuid.Nil, fmt.Errorf("failed to generate fake title: %w", err)
 	}
-	slug, err := utils.Slugify(candle.Title)
+	name := gofakeit.Name()
+	slug, err := utils.Slugify(name)
 	if err != nil {
 		return uuid.Nil, err
 	}
@@ -96,7 +85,7 @@ func generateFakeCandle(colorId, categoryId uuid.UUID, tr pgx.Tx) (uuid.UUID, er
 	query, arg, err := sq.
 		Insert("public.candles").
 		Columns("color_id", "title", "slug", "price", "images", "category_id", "description", "weight").
-		Values(colorId, candle.Title, slug, candle.Price, imagesArray, categoryId, candle.Description, candle.Weight).
+		Values(colorId, gofakeit.Word(), slug, gofakeit.IntRange(500, 5000), imagesArray, categoryId, gofakeit.LoremIpsumSentence(10), gofakeit.IntRange(100, 800)).
 		Suffix("RETURNING id").
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
@@ -110,22 +99,10 @@ func generateFakeCandle(colorId, categoryId uuid.UUID, tr pgx.Tx) (uuid.UUID, er
 	return candleId, nil
 }
 
-func generateImageURL() string {
-	width, err := faker.RandomInt(300, 1920)
-	if err != nil {
-		return ""
-	}
-	height, err := faker.RandomInt(300, 1080)
-	if err != nil {
-		return ""
-	}
-	return fmt.Sprintf("https://picsum.photos/%d/%d", width, height)
-}
-
 func generateImageArrayUrl() []string {
 	var urls []string
 	for i := 0; i < 2; i++ {
-		urls = append(urls, generateImageURL())
+		urls = append(urls, "https://random.imagecdn.app/800/600")
 	}
 
 	return urls

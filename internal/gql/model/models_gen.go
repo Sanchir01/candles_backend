@@ -517,7 +517,10 @@ type SortRankInput struct {
 }
 
 type TotalCountResolvingOk struct {
-	TotalCount uint `json:"totalCount"`
+	TotalCount     uint `json:"totalCount"`
+	TotalCountPage uint `json:"totalCountPage"`
+	PrevPage       bool `json:"prevPage"`
+	NextPage       bool `json:"nextPage"`
 }
 
 func (TotalCountResolvingOk) IsTotalCountResolvingResult() {}

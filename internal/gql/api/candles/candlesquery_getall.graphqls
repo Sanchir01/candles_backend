@@ -32,6 +32,9 @@ type AllCandlesOk {
 
 type TotalCountResolvingOk{
     totalCount: UInt!
+    totalCountPage:UInt!
+    prevPage:Boolean!
+    nextPage:Boolean!
 }
 
 union TotalCountResolvingResult =

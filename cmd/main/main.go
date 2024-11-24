@@ -7,7 +7,6 @@ import (
 	httphandlers "github.com/Sanchir01/candles_backend/internal/handlers"
 	httpserver "github.com/Sanchir01/candles_backend/internal/server/http"
 	"github.com/go-chi/chi/v5"
-	"github.com/go-faker/faker/v4"
 	"log/slog"
 	"os"
 	"os/signal"
@@ -21,7 +20,7 @@ func main() {
 	}
 	serve := httpserver.NewHttpServer(env.Config)
 	rout := chi.NewRouter()
-	slog.Warn("faker url  %s", faker.URL())
+
 	var (
 		handlers = httphandlers.New(rout, env)
 	)

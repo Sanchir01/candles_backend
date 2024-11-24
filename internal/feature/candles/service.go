@@ -21,11 +21,9 @@ func NewService(repository *Repository, storages *Storage) *Service {
 		storages,
 	}
 }
-func (s *Service) AllCandles(ctx context.Context, sort *model.CandlesSortEnum, categoryId, colorId uuid.UUID) ([]*model.Candles, error) {
-	// Проверка на nil для CategoryID
+func (s *Service) AllCandles(ctx context.Context, sort *model.CandlesSortEnum, filter *model.CandlesFilterInput, pageSize uint, pageNumber uint) ([]*model.Candles, error) {
 
-	// Теперь передаем только проверенные переменные, которые гарантированно содержат значение
-	candles, err := s.repository.AllCandles(ctx, sort, categoryId, colorId)
+	candles, err := s.repository.AllCandles(ctx, sort, filter, pageSize, pageNumber)
 	if err != nil {
 		return nil, err
 	}
@@ -37,7 +35,13 @@ func (s *Service) AllCandles(ctx context.Context, sort *model.CandlesSortEnum, c
 
 	return gqlCandles, nil
 }
-
+func (s *Service) GetTotalCountCandles(ctx context.Context) (uint, error) {
+	totalcount, err := s.repository.CountCandles(ctx)
+	if err != nil {
+		return 0, err
+	}
+	return totalcount, nil
+}
 func (s *Service) CreateCandles(ctx context.Context, categoryID, colorID uuid.UUID, title, description string, images []*graphql.Upload, price, weight int) (uuid.UUID, error) {
 	conn, err := s.repository.primaryDB.Acquire(ctx)
 	if err != nil {

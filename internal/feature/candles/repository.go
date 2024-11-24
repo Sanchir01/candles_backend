@@ -16,6 +16,7 @@ type Repository struct {
 }
 type CandlesSortEnum int
 
+//todo:update this const
 const (
 	CREATED_AT_ASC CandlesSortEnum = iota
 	CREATED_AT_DESC
@@ -30,7 +31,26 @@ func NewRepository(primaryDB *pgxpool.Pool) *Repository {
 		primaryDB,
 	}
 }
-func (r *Repository) AllCandles(ctx context.Context, sort *model.CandlesSortEnum, categoryId, colorId uuid.UUID) ([]model.Candles, error) {
+func (r *Repository) CountCandles(ctx context.Context) (uint, error) {
+	conn, err := r.primaryDB.Acquire(ctx)
+	if err != nil {
+		return 0, err
+	}
+	defer conn.Release()
+	var totalCount uint
+	query, arg, err := sq.
+		Select("count(*)").
+		From("candles").
+		PlaceholderFormat(sq.Dollar).ToSql()
+	if err != nil {
+		return 0, fmt.Errorf("failed to build SQL query: %w", err.Error())
+	}
+	if err := conn.QueryRow(ctx, query, arg...).Scan(&totalCount); err != nil {
+		return 0, fmt.Errorf("failed to count candles: %w", err.Error())
+	}
+	return totalCount, nil
+}
+func (r *Repository) AllCandles(ctx context.Context, sort *model.CandlesSortEnum, filter *model.CandlesFilterInput, pageSize uint, pageNumber uint) ([]model.Candles, error) {
 	conn, err := r.primaryDB.Acquire(ctx)
 	if err != nil {
 		return nil, err
@@ -38,22 +58,31 @@ func (r *Repository) AllCandles(ctx context.Context, sort *model.CandlesSortEnum
 	defer conn.Release()
 
 	var orders string
-	if sort != nil {
-		orders = BuildSortQuery(*sort) // Разыменовываем указатель
+	var offset uint
+	if pageNumber != 1 {
+		offset = (pageNumber - 1) * pageSize
+	} else {
+		offset = 0
 	}
-	slog.Error("filter", categoryId, colorId)
+
+	if sort != nil {
+		orders = BuildSortQuery(*sort)
+	}
 
 	queryBuilder := sq.
 		Select("id, title, slug, price, images, version, category_id, created_at, updated_at,weight,description").
 		From("public.candles").
-		PlaceholderFormat(sq.Dollar)
+		PlaceholderFormat(sq.Dollar).
+		Limit(uint64(pageSize)).
+		Offset(uint64(offset))
 
-	if categoryId == uuid.Nil {
-		queryBuilder.Where(sq.Eq{"category_id": categoryId})
+	if filter.CategoryID != nil {
+		queryBuilder = queryBuilder.Where(sq.Eq{"category_id": filter.CategoryID})
 	}
-	if colorId == uuid.Nil {
-		queryBuilder.Where(sq.Eq{"color_id": colorId})
+	if filter.ColorID != nil {
+		queryBuilder = queryBuilder.Where(sq.Eq{"color_id": filter.ColorID})
 	}
+
 	if orders != "" {
 		queryBuilder = queryBuilder.OrderBy(orders)
 	}

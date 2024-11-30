@@ -124,6 +124,10 @@ type VersionInterface interface {
 
 type AllCandlesOk struct {
 	Candles    []*Candles                `json:"candles"`
+	NextPage   bool                      `json:"nextPage"`
+	PrevPage   bool                      `json:"prevPage"`
+	Page       int                       `json:"page"`
+	TotalPage  int                       `json:"totalPage"`
 	TotalCount TotalCountResolvingResult `json:"totalCount"`
 }
 
@@ -517,10 +521,7 @@ type SortRankInput struct {
 }
 
 type TotalCountResolvingOk struct {
-	TotalCount     uint `json:"totalCount"`
-	TotalCountPage uint `json:"totalCountPage"`
-	PrevPage       bool `json:"prevPage"`
-	NextPage       bool `json:"nextPage"`
+	TotalCount uint `json:"totalCount"`
 }
 
 func (TotalCountResolvingOk) IsTotalCountResolvingResult() {}

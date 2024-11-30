@@ -11,7 +11,7 @@ import (
 	"log/slog"
 )
 
-type Repository struct {
+type RepositoryCandles struct {
 	primaryDB *pgxpool.Pool
 }
 type CandlesSortEnum int
@@ -26,22 +26,29 @@ const (
 	PRICE_DESC
 )
 
-func NewRepository(primaryDB *pgxpool.Pool) *Repository {
-	return &Repository{
+func NewRepositoryCandles(primaryDB *pgxpool.Pool) *RepositoryCandles {
+	return &RepositoryCandles{
 		primaryDB,
 	}
 }
-func (r *Repository) CountCandles(ctx context.Context) (uint, error) {
+func (r *RepositoryCandles) CountCandles(ctx context.Context, filter *model.CandlesFilterInput) (uint, error) {
 	conn, err := r.primaryDB.Acquire(ctx)
 	if err != nil {
 		return 0, err
 	}
 	defer conn.Release()
 	var totalCount uint
-	query, arg, err := sq.
+	queryBuilder := sq.
 		Select("count(*)").
 		From("candles").
-		PlaceholderFormat(sq.Dollar).ToSql()
+		PlaceholderFormat(sq.Dollar)
+	if filter.CategoryID != nil {
+		queryBuilder = queryBuilder.Where(sq.Eq{"category_id": filter.CategoryID})
+	}
+	if filter.ColorID != nil {
+		queryBuilder = queryBuilder.Where(sq.Eq{"color_id": filter.ColorID})
+	}
+	query, arg, err := queryBuilder.ToSql()
 	if err != nil {
 		return 0, fmt.Errorf("failed to build SQL query: %w", err.Error())
 	}
@@ -50,7 +57,7 @@ func (r *Repository) CountCandles(ctx context.Context) (uint, error) {
 	}
 	return totalCount, nil
 }
-func (r *Repository) AllCandles(ctx context.Context, sort *model.CandlesSortEnum, filter *model.CandlesFilterInput, pageSize uint, pageNumber uint) ([]model.Candles, error) {
+func (r *RepositoryCandles) AllCandles(ctx context.Context, sort *model.CandlesSortEnum, filter *model.CandlesFilterInput, pageSize uint, pageNumber uint) ([]model.Candles, error) {
 	conn, err := r.primaryDB.Acquire(ctx)
 	if err != nil {
 		return nil, err
@@ -117,7 +124,7 @@ func (r *Repository) AllCandles(ctx context.Context, sort *model.CandlesSortEnum
 	return candles, nil
 }
 
-func (r *Repository) CreateCandles(
+func (r *RepositoryCandles) CreateCandles(
 	ctx context.Context, categoryID, colorID uuid.UUID, title, slug, description string, images []string, weight, price int, tr pgx.Tx,
 ) (uuid.UUID, error) {
 	var id uuid.UUID
@@ -139,7 +146,7 @@ func (r *Repository) CreateCandles(
 
 }
 
-func (r *Repository) CandlesBySlug(ctx context.Context, slug string) (*model.Candles, error) {
+func (r *RepositoryCandles) CandlesBySlug(ctx context.Context, slug string) (*model.Candles, error) {
 	conn, err := r.primaryDB.Acquire(ctx)
 	if err != nil {
 		return nil, err
@@ -173,7 +180,7 @@ func (r *Repository) CandlesBySlug(ctx context.Context, slug string) (*model.Can
 	return (*model.Candles)(&candle), nil
 }
 
-func (r *Repository) CandlesById(ctx context.Context, id uuid.UUID) (*model.Candles, error) {
+func (r *RepositoryCandles) CandlesById(ctx context.Context, id uuid.UUID) (*model.Candles, error) {
 	conn, err := r.primaryDB.Acquire(ctx)
 	if err != nil {
 		return nil, err
@@ -211,7 +218,7 @@ func (r *Repository) CandlesById(ctx context.Context, id uuid.UUID) (*model.Cand
 	return (*model.Candles)(&candle), nil
 }
 
-func (r *Repository) UpdateCandles(ctx context.Context, updates map[string]interface{}, id uuid.UUID) (string, error) {
+func (r *RepositoryCandles) UpdateCandles(ctx context.Context, updates map[string]interface{}, id uuid.UUID) (string, error) {
 	if len(updates) == 0 {
 		return "", fmt.Errorf("no fields to update")
 	}
@@ -248,7 +255,7 @@ func (r *Repository) UpdateCandles(ctx context.Context, updates map[string]inter
 	return updatedID, nil
 }
 
-func (r *Repository) DeleteCandlesById(ctx context.Context, id uuid.UUID) (string, error) {
+func (r *RepositoryCandles) DeleteCandlesById(ctx context.Context, id uuid.UUID) (string, error) {
 	conn, err := r.primaryDB.Acquire(ctx)
 	if err != nil {
 		return "", err

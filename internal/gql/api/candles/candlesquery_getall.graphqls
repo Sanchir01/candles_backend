@@ -27,14 +27,15 @@ union AllCategoryResult =
 
 type AllCandlesOk {
     candles: [Candles!]!
+    nextPage:Boolean!
+    prevPage:Boolean!
+    page:Int!
+    totalPage:Int!
     totalCount(estimate:UInt! = 1000):TotalCountResolvingResult! @goField(forceResolver: true)
 }
 
 type TotalCountResolvingOk{
     totalCount: UInt!
-    totalCountPage:UInt!
-    prevPage:Boolean!
-    nextPage:Boolean!
 }
 
 union TotalCountResolvingResult =

@@ -6,7 +6,9 @@ package resolver
 
 import (
 	"context"
+	"log/slog"
 
+	"github.com/99designs/gqlgen/graphql"
 	runtime "github.com/Sanchir01/candles_backend/internal/gql/generated"
 	"github.com/Sanchir01/candles_backend/internal/gql/model"
 	responseErr "github.com/Sanchir01/candles_backend/pkg/lib/api/response"
@@ -14,7 +16,9 @@ import (
 
 // TotalCount is the resolver for the totalCount field.
 func (r *allCandlesOkResolver) TotalCount(ctx context.Context, obj *model.AllCandlesOk, estimate uint) (model.TotalCountResolvingResult, error) {
-	count, err := r.env.Services.CandlesService.GetTotalCountCandles(ctx)
+	filter := graphql.GetFieldContext(ctx).Parent.Args["filter"].(*model.CandlesFilterInput)
+
+	count, err := r.env.Services.CandlesService.GetTotalCountCandles(ctx, filter)
 	if err != nil {
 		return nil, err
 	}
@@ -25,14 +29,19 @@ func (r *allCandlesOkResolver) TotalCount(ctx context.Context, obj *model.AllCan
 func (r *candlesQueryResolver) AllCandles(ctx context.Context, obj *model.CandlesQuery, filter *model.CandlesFilterInput, sort *model.CandlesSortEnum, pageSize uint, pageNumber uint) (model.AllCategoryResult, error) {
 	//todo:delete logger
 	r.env.Logger.Warn("filter resolver", filter)
+	r.env.Logger.Warn("currentPage:", pageNumber)
 	allCandles, err := r.env.Services.CandlesService.AllCandles(ctx, sort, filter, pageSize, pageNumber)
-
 	if err != nil {
 		r.env.Logger.Error(err.Error())
 		return responseErr.NewInternalErrorProblem("не удалось получить товары"), err
 	}
 
-	return model.AllCandlesOk{Candles: allCandles}, nil
+	totalCount := len(allCandles)
+	slog.Warn("totalCount:", totalCount)
+	currentPage := 1
+	nextPage := (currentPage * int(pageSize)) < totalCount
+
+	return model.AllCandlesOk{Candles: allCandles, PrevPage: false, NextPage: nextPage, Page: int(pageNumber + 1)}, nil
 }
 
 // AllCandlesOk returns runtime.AllCandlesOkResolver implementation.

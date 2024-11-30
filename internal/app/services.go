@@ -12,7 +12,7 @@ import (
 type Services struct {
 	ColorService    *color.Service
 	CategoryService *category.Service
-	CandlesService  *candles.Service
+	CandlesService  *candles.ServiceCandles
 	UserService     *user.Service
 	OrderService    *order.Service
 }
@@ -21,7 +21,7 @@ func NewServices(repos *Repositories, storages *Storages, bot *bot.Bot) *Service
 	return &Services{
 		ColorService:    color.NewService(repos.ColorRepository),
 		CategoryService: category.NewService(repos.CategoryRepository),
-		CandlesService:  candles.NewService(repos.CandlesRepository, storages.CandlesStorage),
+		CandlesService:  candles.NewServiceCandles(repos.CandlesRepository, storages.CandlesStorage),
 		UserService:     user.NewService(repos.UserRepository),
 		OrderService:    order.NewService(repos.OrderRepository, bot),
 	}

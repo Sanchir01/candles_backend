@@ -65,10 +65,9 @@ type ComplexityRoot struct {
 	AllCandlesOk struct {
 		Candles    func(childComplexity int) int
 		NextPage   func(childComplexity int) int
-		Page       func(childComplexity int) int
 		PrevPage   func(childComplexity int) int
-		TotalCount func(childComplexity int, estimate uint) int
-		TotalPage  func(childComplexity int) int
+		TotalCount func(childComplexity int) int
+		TotalPages func(childComplexity int) int
 	}
 
 	AllColorOk struct {
@@ -329,7 +328,7 @@ type ComplexityRoot struct {
 }
 
 type AllCandlesOkResolver interface {
-	TotalCount(ctx context.Context, obj *model.AllCandlesOk, estimate uint) (model.TotalCountResolvingResult, error)
+	TotalCount(ctx context.Context, obj *model.AllCandlesOk) (model.TotalCountResolvingResult, error)
 }
 type AuthMutationsResolver interface {
 	DeleteToken(ctx context.Context, obj *model.AuthMutations) (model.DeleteTokensResult, error)
@@ -423,13 +422,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.AllCandlesOk.NextPage(childComplexity), true
 
-	case "AllCandlesOk.page":
-		if e.complexity.AllCandlesOk.Page == nil {
-			break
-		}
-
-		return e.complexity.AllCandlesOk.Page(childComplexity), true
-
 	case "AllCandlesOk.prevPage":
 		if e.complexity.AllCandlesOk.PrevPage == nil {
 			break
@@ -442,19 +434,14 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			break
 		}
 
-		args, err := ec.field_AllCandlesOk_totalCount_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
+		return e.complexity.AllCandlesOk.TotalCount(childComplexity), true
 
-		return e.complexity.AllCandlesOk.TotalCount(childComplexity, args["estimate"].(uint)), true
-
-	case "AllCandlesOk.totalPage":
-		if e.complexity.AllCandlesOk.TotalPage == nil {
+	case "AllCandlesOk.totalPages":
+		if e.complexity.AllCandlesOk.TotalPages == nil {
 			break
 		}
 
-		return e.complexity.AllCandlesOk.TotalPage(childComplexity), true
+		return e.complexity.AllCandlesOk.TotalPages(childComplexity), true
 
 	case "AllColorOk.colors":
 		if e.complexity.AllColorOk.Colors == nil {
@@ -1698,11 +1685,10 @@ union AllCategoryResult =
 
 type AllCandlesOk {
     candles: [Candles!]!
-    nextPage:Boolean!
-    prevPage:Boolean!
-    page:Int!
-    totalPage:Int!
-    totalCount(estimate:UInt! = 1000):TotalCountResolvingResult! @goField(forceResolver: true)
+    nextPage:Int!
+    prevPage:Int!
+    totalPages:Int!
+    totalCount:TotalCountResolvingResult! @goField(forceResolver: true)
 }
 
 type TotalCountResolvingOk{
@@ -2099,38 +2085,6 @@ func (ec *executionContext) dir_hasRole_argsRole(
 	}
 
 	var zeroVal []*model.Role
-	return zeroVal, nil
-}
-
-func (ec *executionContext) field_AllCandlesOk_totalCount_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
-	arg0, err := ec.field_AllCandlesOk_totalCount_argsEstimate(ctx, rawArgs)
-	if err != nil {
-		return nil, err
-	}
-	args["estimate"] = arg0
-	return args, nil
-}
-func (ec *executionContext) field_AllCandlesOk_totalCount_argsEstimate(
-	ctx context.Context,
-	rawArgs map[string]interface{},
-) (uint, error) {
-	// We won't call the directive if the argument is null.
-	// Set call_argument_directives_with_null to true to call directives
-	// even if the argument is null.
-	_, ok := rawArgs["estimate"]
-	if !ok {
-		var zeroVal uint
-		return zeroVal, nil
-	}
-
-	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("estimate"))
-	if tmp, ok := rawArgs["estimate"]; ok {
-		return ec.unmarshalNUInt2uint(ctx, tmp)
-	}
-
-	var zeroVal uint
 	return zeroVal, nil
 }
 
@@ -2959,9 +2913,9 @@ func (ec *executionContext) _AllCandlesOk_nextPage(ctx context.Context, field gr
 		}
 		return graphql.Null
 	}
-	res := resTmp.(bool)
+	res := resTmp.(int)
 	fc.Result = res
-	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+	return ec.marshalNInt2int(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_AllCandlesOk_nextPage(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -2971,7 +2925,7 @@ func (ec *executionContext) fieldContext_AllCandlesOk_nextPage(_ context.Context
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Boolean does not have child fields")
+			return nil, errors.New("field of type Int does not have child fields")
 		},
 	}
 	return fc, nil
@@ -3003,56 +2957,12 @@ func (ec *executionContext) _AllCandlesOk_prevPage(ctx context.Context, field gr
 		}
 		return graphql.Null
 	}
-	res := resTmp.(bool)
-	fc.Result = res
-	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_AllCandlesOk_prevPage(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "AllCandlesOk",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Boolean does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _AllCandlesOk_page(ctx context.Context, field graphql.CollectedField, obj *model.AllCandlesOk) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_AllCandlesOk_page(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Page, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
 	res := resTmp.(int)
 	fc.Result = res
 	return ec.marshalNInt2int(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_AllCandlesOk_page(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_AllCandlesOk_prevPage(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "AllCandlesOk",
 		Field:      field,
@@ -3065,8 +2975,8 @@ func (ec *executionContext) fieldContext_AllCandlesOk_page(_ context.Context, fi
 	return fc, nil
 }
 
-func (ec *executionContext) _AllCandlesOk_totalPage(ctx context.Context, field graphql.CollectedField, obj *model.AllCandlesOk) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_AllCandlesOk_totalPage(ctx, field)
+func (ec *executionContext) _AllCandlesOk_totalPages(ctx context.Context, field graphql.CollectedField, obj *model.AllCandlesOk) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_AllCandlesOk_totalPages(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -3079,7 +2989,7 @@ func (ec *executionContext) _AllCandlesOk_totalPage(ctx context.Context, field g
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.TotalPage, nil
+		return obj.TotalPages, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -3096,7 +3006,7 @@ func (ec *executionContext) _AllCandlesOk_totalPage(ctx context.Context, field g
 	return ec.marshalNInt2int(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_AllCandlesOk_totalPage(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_AllCandlesOk_totalPages(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "AllCandlesOk",
 		Field:      field,
@@ -3123,7 +3033,7 @@ func (ec *executionContext) _AllCandlesOk_totalCount(ctx context.Context, field 
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.AllCandlesOk().TotalCount(rctx, obj, fc.Args["estimate"].(uint))
+		return ec.resolvers.AllCandlesOk().TotalCount(rctx, obj)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -3140,7 +3050,7 @@ func (ec *executionContext) _AllCandlesOk_totalCount(ctx context.Context, field 
 	return ec.marshalNTotalCountResolvingResult2githubᚗcomᚋSanchir01ᚋcandles_backendᚋinternalᚋgqlᚋmodelᚐTotalCountResolvingResult(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_AllCandlesOk_totalCount(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_AllCandlesOk_totalCount(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "AllCandlesOk",
 		Field:      field,
@@ -3149,17 +3059,6 @@ func (ec *executionContext) fieldContext_AllCandlesOk_totalCount(ctx context.Con
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type TotalCountResolvingResult does not have child fields")
 		},
-	}
-	defer func() {
-		if r := recover(); r != nil {
-			err = ec.Recover(ctx, r)
-			ec.Error(ctx, err)
-		}
-	}()
-	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_AllCandlesOk_totalCount_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
-		ec.Error(ctx, err)
-		return fc, err
 	}
 	return fc, nil
 }
@@ -12483,13 +12382,8 @@ func (ec *executionContext) _AllCandlesOk(ctx context.Context, sel ast.Selection
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&out.Invalids, 1)
 			}
-		case "page":
-			out.Values[i] = ec._AllCandlesOk_page(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&out.Invalids, 1)
-			}
-		case "totalPage":
-			out.Values[i] = ec._AllCandlesOk_totalPage(ctx, field, obj)
+		case "totalPages":
+			out.Values[i] = ec._AllCandlesOk_totalPages(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&out.Invalids, 1)
 			}

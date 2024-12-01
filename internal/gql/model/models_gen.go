@@ -124,10 +124,9 @@ type VersionInterface interface {
 
 type AllCandlesOk struct {
 	Candles    []*Candles                `json:"candles"`
-	NextPage   bool                      `json:"nextPage"`
-	PrevPage   bool                      `json:"prevPage"`
-	Page       int                       `json:"page"`
-	TotalPage  int                       `json:"totalPage"`
+	NextPage   int                       `json:"nextPage"`
+	PrevPage   int                       `json:"prevPage"`
+	TotalPages int                       `json:"totalPages"`
 	TotalCount TotalCountResolvingResult `json:"totalCount"`
 }
 

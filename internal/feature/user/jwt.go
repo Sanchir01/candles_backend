@@ -88,7 +88,7 @@ func NewAccessToken(tokenString string, threshold time.Duration, w http.Response
 	}
 
 	// Генерация нового токена с обновленным временем истечения
-	newExpire := time.Now().Add(1 * time.Hour) // Задайте желаемое время жизни нового токена
+	newExpire := time.Now().Add(5 * time.Hour) // Задайте желаемое время жизни нового токена
 	newToken, err := GenerateJwtToken(claims.ID, claims.Role, newExpire)
 	if err != nil {
 		return "", err
@@ -103,8 +103,8 @@ func GenerateCookie(name string, expire time.Time, httpOnly bool, value string, 
 		Name:     name,
 		Value:    value,
 		Expires:  expire,
-		Domain:   domain,
 		Path:     "/",
+		Secure:   true,
 		HttpOnly: httpOnly,
 		SameSite: http.SameSiteLaxMode,
 	}

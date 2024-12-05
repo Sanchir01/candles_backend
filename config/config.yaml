@@ -7,7 +7,7 @@ database:
   dbname: "default_db"
   max_attempts: 10
 
-domain: ".emgushovs.ru"
+domain: "feature.backend.candles.emgushovs.ru"
 
 http_server:
   host: 0.0.0.0

@@ -28,7 +28,7 @@ func (r *authMutationsResolver) Login(ctx context.Context, obj *model.AuthMutati
 	}
 
 	w := customMiddleware.GetResponseWriter(ctx)
-	if err = user.AddCookieTokens(userdb.ID, userdb.Role, w); err != nil {
+	if err = user.AddCookieTokens(userdb.ID, userdb.Role, w, r.env.Config.Domain); err != nil {
 		r.env.Logger.Error("login error", err.Error())
 		return nil, nil
 	}

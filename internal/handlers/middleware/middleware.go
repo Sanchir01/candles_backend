@@ -28,7 +28,7 @@ func GetResponseWriter(ctx context.Context) http.ResponseWriter {
 	return ctx.Value(responseWriterKey).(http.ResponseWriter)
 }
 
-func AuthMiddleware() func(http.Handler) http.Handler {
+func AuthMiddleware(domain string) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
@@ -40,7 +40,7 @@ func AuthMiddleware() func(http.Handler) http.Handler {
 					next.ServeHTTP(w, r)
 					return
 				}
-				accessToken, err := userFeature.NewAccessToken(refresh.Value, 0, w, ".emgushovs.ru")
+				accessToken, err := userFeature.NewAccessToken(refresh.Value, 0, w, domain)
 				if err != nil {
 					next.ServeHTTP(w, r)
 					return

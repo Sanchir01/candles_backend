@@ -100,13 +100,14 @@ func NewAccessToken(tokenString string, threshold time.Duration, w http.Response
 
 func GenerateCookie(name string, expire time.Time, httpOnly bool, value string, domain string) *http.Cookie {
 	cookie := &http.Cookie{
-		Name:     name,
-		Value:    value,
-		Expires:  expire,
-		Path:     "/",
-		Secure:   true,
-		HttpOnly: httpOnly,
-		SameSite: http.SameSiteLaxMode,
+		Name:        name,
+		Value:       value,
+		Expires:     expire,
+		Partitioned: true,
+		Path:        "/",
+		Secure:      true,
+		HttpOnly:    httpOnly,
+		SameSite:    http.SameSiteLaxMode,
 	}
 
 	return cookie

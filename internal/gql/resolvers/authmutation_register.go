@@ -43,7 +43,7 @@ func (r *authMutationsResolver) Registrations(ctx context.Context, obj *model.Au
 		return responseErr.NewInternalErrorProblem("не удалось зарегистрироваться"), nil
 	}
 	w := customMiddleware.GetResponseWriter(ctx)
-	if err = user.AddCookieTokens(usersdb.ID, usersdb.Role, w); err != nil {
+	if err = user.AddCookieTokens(usersdb.ID, usersdb.Role, w, r.env.Config.Domain); err != nil {
 		r.env.Logger.Error("register errors", err.Error())
 		return responseErr.NewInternalErrorProblem("Error for generating jwt tokens"), nil
 	}

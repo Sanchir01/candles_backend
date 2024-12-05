@@ -1,9 +1,11 @@
 package utils
 
 import (
-	"errors"
+	"fmt"
 	emailverifier "github.com/AfterShip/email-verifier"
-	"log/slog"
+	"net"
+	"net/mail"
+	"strings"
 )
 
 var (
@@ -11,16 +13,23 @@ var (
 )
 
 func VerifyEmail(email string) error {
-	ret, err := verifier.Verify(email)
+
+	_, err := verifier.Verify(email)
 	if err != nil {
-		slog.Error("verify email address failed, error is: ", err.Error())
+		fmt.Println("Error:", err)
 		return err
 	}
-	if !ret.Syntax.Valid {
-		return errors.New("невалидный email")
+	_, err = mail.ParseAddress(email)
+	if err != nil {
+		return err
 	}
-	if ret.Disposable {
-		return errors.New("используйте действительную почту")
+
+	// Проверяем наличие MX-записей у домена
+	domain := email[strings.LastIndex(email, "@")+1:]
+	mxRecords, err := net.LookupMX(domain)
+	if err != nil && len(mxRecords) < 0 {
+		return err
 	}
+
 	return nil
 }

@@ -37,7 +37,7 @@ func GenerateJwtToken(id uuid.UUID, role model.Role, expire time.Time) (string, 
 	return tokenString, nil
 }
 
-func AddCookieTokens(id uuid.UUID, Role model.Role, w http.ResponseWriter) error {
+func AddCookieTokens(id uuid.UUID, Role model.Role, w http.ResponseWriter, domain string) error {
 	expirationTimeAccess := time.Now().Add(15 * time.Minute)
 	expirationTimeRefresh := time.Now().Add(14 * 24 * time.Hour)
 	refreshToken, err := GenerateJwtToken(id, Role, expirationTimeRefresh)
@@ -48,8 +48,8 @@ func AddCookieTokens(id uuid.UUID, Role model.Role, w http.ResponseWriter) error
 	if err != nil {
 		return err
 	}
-	http.SetCookie(w, GenerateCookie("accessToken", expirationTimeAccess, false, accessToken))
-	http.SetCookie(w, GenerateCookie("refreshToken", expirationTimeRefresh, true, refreshToken))
+	http.SetCookie(w, GenerateCookie("accessToken", expirationTimeAccess, false, accessToken, domain))
+	http.SetCookie(w, GenerateCookie("refreshToken", expirationTimeRefresh, true, refreshToken, domain))
 
 	return nil
 }
@@ -75,7 +75,7 @@ func ParseToken(tokenString string) (*Claims, error) {
 		return nil, errors.New("invalid token")
 	}
 }
-func NewAccessToken(tokenString string, threshold time.Duration, w http.ResponseWriter) (string, error) {
+func NewAccessToken(tokenString string, threshold time.Duration, w http.ResponseWriter, domain string) (string, error) {
 	claims, err := ParseToken(tokenString)
 	if err != nil {
 		return "", err
@@ -94,22 +94,24 @@ func NewAccessToken(tokenString string, threshold time.Duration, w http.Response
 		return "", err
 	}
 
-	http.SetCookie(w, GenerateCookie("accessToken", newExpire, false, newToken))
+	http.SetCookie(w, GenerateCookie("accessToken", newExpire, false, newToken, domain))
 	return newToken, nil
 }
 
-func GenerateCookie(name string, expire time.Time, httpOnly bool, value string) *http.Cookie {
+func GenerateCookie(name string, expire time.Time, httpOnly bool, value string, domain string) *http.Cookie {
 	cookie := &http.Cookie{
 		Name:     name,
 		Value:    value,
 		Expires:  expire,
+		Domain:   domain,
 		Path:     "/",
 		HttpOnly: httpOnly,
+		SameSite: http.SameSiteLaxMode,
 	}
 
 	return cookie
 }
 
 func DeleteCookie(w http.ResponseWriter) {
-	http.SetCookie(w, GenerateCookie("refreshToken", time.Unix(0, 0), true, ""))
+	http.SetCookie(w, GenerateCookie("refreshToken", time.Unix(0, 0), true, "", ""))
 }

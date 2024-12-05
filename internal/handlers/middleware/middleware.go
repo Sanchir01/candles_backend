@@ -40,7 +40,7 @@ func AuthMiddleware() func(http.Handler) http.Handler {
 					next.ServeHTTP(w, r)
 					return
 				}
-				accessToken, err := userFeature.NewAccessToken(refresh.Value, 0, w)
+				accessToken, err := userFeature.NewAccessToken(refresh.Value, 0, w, ".emgushovs.ru")
 				if err != nil {
 					next.ServeHTTP(w, r)
 					return

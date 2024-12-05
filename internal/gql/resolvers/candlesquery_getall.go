@@ -6,8 +6,6 @@ package resolver
 
 import (
 	"context"
-	"log/slog"
-
 	"github.com/99designs/gqlgen/graphql"
 	runtime "github.com/Sanchir01/candles_backend/internal/gql/generated"
 	"github.com/Sanchir01/candles_backend/internal/gql/model"
@@ -17,7 +15,6 @@ import (
 // TotalCount is the resolver for the totalCount field.
 func (r *allCandlesOkResolver) TotalCount(ctx context.Context, obj *model.AllCandlesOk) (model.TotalCountResolvingResult, error) {
 	filter := graphql.GetFieldContext(ctx).Parent.Args["filter"].(*model.CandlesFilterInput)
-
 	count, err := r.env.Services.CandlesService.GetTotalCountCandles(ctx, filter)
 	if err != nil {
 		return nil, err
@@ -35,9 +32,6 @@ func (r *candlesQueryResolver) AllCandles(ctx context.Context, obj *model.Candle
 		r.env.Logger.Error(err.Error())
 		return responseErr.NewInternalErrorProblem("не удалось получить товары"), err
 	}
-
-	totalCount := len(allCandles)
-	slog.Warn("totalCount:", totalCount)
 
 	return model.AllCandlesOk{Candles: allCandles, PrevPage: int(pageNumber), NextPage: int(pageNumber + 1), TotalPages: int(pageNumber)}, nil
 }

@@ -38,7 +38,7 @@ func GenerateJwtToken(id uuid.UUID, role model.Role, expire time.Time) (string, 
 }
 
 func AddCookieTokens(id uuid.UUID, Role model.Role, w http.ResponseWriter, domain string) error {
-	expirationTimeAccess := time.Now().Add(15 * time.Minute)
+	expirationTimeAccess := time.Now().Add(4 * time.Hour)
 	expirationTimeRefresh := time.Now().Add(14 * 24 * time.Hour)
 	refreshToken, err := GenerateJwtToken(id, Role, expirationTimeRefresh)
 	if err != nil {
@@ -88,7 +88,7 @@ func NewAccessToken(tokenString string, threshold time.Duration, w http.Response
 	}
 
 	// Генерация нового токена с обновленным временем истечения
-	newExpire := time.Now().Add(5 * time.Hour) // Задайте желаемое время жизни нового токена
+	newExpire := time.Now().Add(4 * time.Hour) // Задайте желаемое время жизни нового токена
 	newToken, err := GenerateJwtToken(claims.ID, claims.Role, newExpire)
 	if err != nil {
 		return "", err

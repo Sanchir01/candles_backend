@@ -107,7 +107,7 @@ func GenerateCookie(name string, expire time.Time, httpOnly bool, value string, 
 		Path:        "/",
 		Secure:      true,
 		HttpOnly:    httpOnly,
-		SameSite:    http.SameSiteLaxMode,
+		SameSite:    http.SameSiteNoneMode,
 	}
 
 	return cookie

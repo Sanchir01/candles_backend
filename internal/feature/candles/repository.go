@@ -57,6 +57,7 @@ func (r *RepositoryCandles) CountCandles(ctx context.Context, filter *model.Cand
 	}
 	return totalCount, nil
 }
+
 func (r *RepositoryCandles) AllCandles(ctx context.Context, sort *model.CandlesSortEnum, filter *model.CandlesFilterInput, pageSize uint, pageNumber uint) ([]model.Candles, error) {
 	conn, err := r.primaryDB.Acquire(ctx)
 	if err != nil {
@@ -98,8 +99,6 @@ func (r *RepositoryCandles) AllCandles(ctx context.Context, sort *model.CandlesS
 	if err != nil {
 		return nil, err
 	}
-	//todo:delete log
-	slog.Error("query", query)
 	rows, err := conn.Query(ctx, query, args...)
 	if err != nil {
 		return nil, err
@@ -124,6 +123,35 @@ func (r *RepositoryCandles) AllCandles(ctx context.Context, sort *model.CandlesS
 	return candles, nil
 }
 
+func (r *RepositoryCandles) CandleByManyIds(ctx context.Context, tr pgx.Tx, ids []uuid.UUID) ([]model.Candles, error) {
+	query, arg, err := sq.Select("id, title, slug, price, images, version,  created_at, updated_at,weight,description").
+		From("public.candles").
+		Where(sq.Eq{"id": ids}).
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
+	if err != nil {
+		return nil, err
+	}
+	var candles []model.Candles
+	rows, err := tr.Query(ctx, query, arg...)
+	if err != nil {
+		return nil, err
+	}
+	for rows.Next() {
+		var candle model.Candles
+		if err := rows.Scan(&candle.ID, &candle.Title, &candle.Slug, &candle.Price, &candle.Images, &candle.Version,
+			&candle.CreatedAt, &candle.UpdatedAt, &candle.Weight, &candle.Description); err != nil {
+			return nil, err
+		}
+		candles = append(candles, candle)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return candles, nil
+}
 func (r *RepositoryCandles) CreateCandles(
 	ctx context.Context, categoryID, colorID uuid.UUID, title, slug, description string, images []string, weight, price int, tr pgx.Tx,
 ) (uuid.UUID, error) {
@@ -152,7 +180,8 @@ func (r *RepositoryCandles) CandlesBySlug(ctx context.Context, slug string) (*mo
 		return nil, err
 	}
 	defer conn.Release()
-	query, args, err := sq.Select("id, title, slug, price, images, version, category_id, created_at, updated_at, color_id").
+	query, args, err := sq.
+		Select("id, title, slug, price, images, version, category_id, created_at, updated_at, color_id").
 		From("public.candles").
 		Where(sq.Eq{"slug": slug}).PlaceholderFormat(sq.Dollar).
 		ToSql()
@@ -160,7 +189,6 @@ func (r *RepositoryCandles) CandlesBySlug(ctx context.Context, slug string) (*mo
 	if err != nil {
 		return nil, err
 	}
-	//query := "SELECT id ,title,slug, price, images, version, category_id, created_at, updated_at, color_id FROM public.candles WHERE slug = $1"
 
 	var candle DBCandles
 	if err := conn.QueryRow(ctx, query, args...).Scan(

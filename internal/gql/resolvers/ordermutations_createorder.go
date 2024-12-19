@@ -8,6 +8,7 @@ import (
 	"context"
 	"errors"
 	"github.com/Sanchir01/candles_backend/pkg/lib/excel"
+	"log/slog"
 
 	"github.com/Sanchir01/candles_backend/internal/gql/model"
 	customMiddleware "github.com/Sanchir01/candles_backend/internal/handlers/middleware"
@@ -19,7 +20,6 @@ import (
 // CreateOrder is the resolver for the createOrder field.
 func (r *orderMutationsResolver) CreateOrder(ctx context.Context, obj *model.OrderMutations, input model.CreateOrderInput) (model.CreateOrderResult, error) {
 	conn, err := r.env.DataBase.PrimaryDB.Acquire(ctx)
-
 	if err != nil {
 		return responseErr.NewInternalErrorProblem("Database connection error"), nil
 	}
@@ -50,16 +50,19 @@ func (r *orderMutationsResolver) CreateOrder(ctx context.Context, obj *model.Ord
 		prices = append(prices, product.Price)
 
 	}
-
 	//ids, err := r.env.Services.OrderService.CreateOrder(ctx, tx, userCookie.ID, "processing", productsId, quantities, prices)
 	//if err != nil {
 	//	r.env.Logger.Warn("Failed to create order: %v", err.Error())
 	//	return responseErr.NewInternalErrorProblem("не удалось создать заказ"), err
 	//}
 	//r.env.Logger.Warn("order items ids", ids)
-	if err = excel.CreateFileExcel(); err != nil {
-		return responseErr.NewInternalErrorProblem("не удалось создать заказ"), err
+	product, err := r.env.Repositories.CandlesRepository.CandleByManyIds(ctx, tx, productsId)
+	slog.Warn("this product resolver", product)
+	if err = excel.CreateFileExcel(product, quantities, "products.xlsx"); err != nil {
+		r.env.Logger.Warn("error for create excel file", err.Error())
+		return responseErr.NewInternalErrorProblem("не удалось создать заказ"), nil
 	}
+
 	if err := tx.Commit(ctx); err != nil {
 		r.env.Logger.Warn("Failed to commit transaction: %v", err.Error())
 		return nil, err

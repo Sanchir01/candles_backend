@@ -6,42 +6,57 @@ import (
 	"github.com/xuri/excelize/v2"
 )
 
-func CreateFileExcel(candles []model.Candles, quantity []int, filePath string) error {
+func CreateFileExcel(candles []model.Candles, quantity []int, filePath, sheetName string) error {
 	if len(candles) != len(quantity) {
 		return fmt.Errorf("length of candles and quantity do not match")
 	}
 	f := excelize.NewFile()
 
-	sheetName := "Order"
 	f.SetSheetName(f.GetSheetName(0), sheetName)
-	headers := []string{"Title", "Price", "Quantity"}
+	headers := []string{"Название", "Цена", "Количесво", "Цена за эти товары"}
 	for i, header := range headers {
-		cell := fmt.Sprintf("%s1", string('A'+i)) // A1, B1, C1
+		cell := fmt.Sprintf("%s1", string('A'+i))
 		if err := f.SetCellValue(sheetName, cell, header); err != nil {
 			return fmt.Errorf("failed to set header: %v", err)
 		}
 	}
+	maxLength := make([]int, len(headers))
 
-	// Set active sheet of the workbook.
 	for rowIndex, product := range candles {
-		row := rowIndex + 2                                                     // Данные начинаются со второй строки
-		err := f.SetCellValue(sheetName, fmt.Sprintf("A%d", row), product.Slug) // Название продукта
+		row := rowIndex + 2
+		err := f.SetCellValue(sheetName, fmt.Sprintf("A%d", row), product.Slug)
 		if err != nil {
 			return fmt.Errorf("failed to set title: %v", err)
 		}
-
-		err = f.SetCellValue(sheetName, fmt.Sprintf("B%d", row), product.Price) // Цена
+		maxLength[0] = max(maxLength[0], len(product.Slug))
+		err = f.SetCellValue(sheetName, fmt.Sprintf("B%d", row), product.Price)
 		if err != nil {
 			return fmt.Errorf("failed to set price: %v", err)
 		}
+		maxLength[1] = max(maxLength[1], len(fmt.Sprintf("%f", product.Price)))
 
-		err = f.SetCellValue(sheetName, fmt.Sprintf("C%d", row), quantity[rowIndex]) // Количество
+		err = f.SetCellValue(sheetName, fmt.Sprintf("C%d", row), quantity[rowIndex])
 		if err != nil {
 			return fmt.Errorf("failed to set quantity: %v", err)
 		}
-	}
 
-	// Сохраняем файл
+		maxLength[2] = max(maxLength[2], len(fmt.Sprintf("%d", product.Slug)))
+
+		totalPrice := quantity[rowIndex] * product.Price
+		err = f.SetCellValue(sheetName, fmt.Sprintf("D%d", row), totalPrice)
+		if err != nil {
+			return fmt.Errorf("failed to set product quantity price: %v", err)
+		}
+
+		maxLength[3] = max(maxLength[3], len(fmt.Sprintf("%f", totalPrice)))
+	}
+	for i, maxLength := range maxLength {
+		col := string('A' + i)
+		width := float64(maxLength + 2)
+		if err := f.SetColWidth(sheetName, col, col, width); err != nil {
+			return fmt.Errorf("failed to set column width for %s: %v", col, err)
+		}
+	}
 	if err := f.SaveAs(filePath); err != nil {
 		return fmt.Errorf("failed to save excel file: %v", err)
 	}

@@ -38,11 +38,10 @@ func main() {
 			env.Logger.Error("Listen server error", slog.String("error", err.Error()))
 		}
 	}(ctx)
-	<-ctx.Done()
-	//if err := env.Bot.Start(ctx); err != nil {
-	//	env.Logger.Error("error for get updates bot")
-	//}
-	//if err := serve.Gracefull(ctx); err != nil {
-	//	env.Logger.Error("Graphql serve gracefull")
-	//}
+	if err := env.Bot.Start(ctx); err != nil {
+		env.Logger.Error("error for get updates bot")
+	}
+	if err := serve.Gracefull(ctx); err != nil {
+		env.Logger.Error("Graphql serve gracefull")
+	}
 }

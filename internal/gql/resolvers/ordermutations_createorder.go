@@ -58,11 +58,12 @@ func (r *orderMutationsResolver) CreateOrder(ctx context.Context, obj *model.Ord
 	//r.env.Logger.Warn("order items ids", ids)
 	product, err := r.env.Repositories.CandlesRepository.CandleByManyIds(ctx, tx, productsId)
 	slog.Warn("this product resolver", product)
-	if err = excel.CreateFileExcel(product, quantities, "products.xlsx"); err != nil {
+	if err = excel.CreateFileExcel(product, quantities, "products.xlsx", "Order"); err != nil {
 		r.env.Logger.Warn("error for create excel file", err.Error())
 		return responseErr.NewInternalErrorProblem("не удалось создать заказ"), nil
 	}
 
+	r.env.Bot.Start(ctx)
 	if err := tx.Commit(ctx); err != nil {
 		r.env.Logger.Warn("Failed to commit transaction: %v", err.Error())
 		return nil, err

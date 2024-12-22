@@ -12,7 +12,6 @@ import (
 	httphandlers "github.com/Sanchir01/candles_backend/internal/handlers"
 	httpserver "github.com/Sanchir01/candles_backend/internal/server/http"
 	"github.com/go-chi/chi/v5"
-	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
 func main() {
@@ -40,12 +39,6 @@ func main() {
 			env.Logger.Error("Listen server error", slog.String("error", err.Error()))
 		}
 	}(ctx)
-	commands := []tgbotapi.BotCommand{
-		{Command: "start", Description: "Запустить бота"},
-		{Command: "help", Description: "Список доступных команд"},
-		{Command: "menu", Description: "Показать меню"},
-		{Command: "info", Description: "Информация о боте"},
-	}
 	if err := env.Bot.Start(ctx); err != nil {
 		env.Logger.Error("error for get updates bot")
 	}

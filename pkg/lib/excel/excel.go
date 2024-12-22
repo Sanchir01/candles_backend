@@ -13,7 +13,7 @@ func CreateFileExcel(candles []model.Candles, quantity []int, filePath, sheetNam
 	f := excelize.NewFile()
 
 	f.SetSheetName(f.GetSheetName(0), sheetName)
-	headers := []string{"Название", "Цена", "Количесво", "Цена за эти товары"}
+	headers := []string{"Название", "Цена", "Количесво", "Цена за эти товары", "Цена за все товары"}
 	for i, header := range headers {
 		cell := fmt.Sprintf("%s1", string('A'+i))
 		if err := f.SetCellValue(sheetName, cell, header); err != nil {
@@ -21,7 +21,7 @@ func CreateFileExcel(candles []model.Candles, quantity []int, filePath, sheetNam
 		}
 	}
 	maxLength := make([]int, len(headers))
-
+	var totalOrderPrice int
 	for rowIndex, product := range candles {
 		row := rowIndex + 2
 		err := f.SetCellValue(sheetName, fmt.Sprintf("A%d", row), product.Slug)
@@ -49,10 +49,17 @@ func CreateFileExcel(candles []model.Candles, quantity []int, filePath, sheetNam
 		}
 
 		maxLength[3] = max(maxLength[3], len(fmt.Sprintf("%f", totalPrice)))
+
+		totalOrderPrice += totalPrice
+	}
+	totalRow := len(candles) + 2
+	err := f.SetCellValue(sheetName, fmt.Sprintf("E%d", totalRow), totalOrderPrice)
+	if err != nil {
+		return fmt.Errorf("failed to set total order price: %v", err)
 	}
 	for i, maxLength := range maxLength {
 		col := string('A' + i)
-		width := float64(maxLength + 2)
+		width := float64(maxLength + 10)
 		if err := f.SetColWidth(sheetName, col, col, width); err != nil {
 			return fmt.Errorf("failed to set column width for %s: %v", col, err)
 		}

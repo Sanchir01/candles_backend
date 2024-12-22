@@ -15,6 +15,7 @@ func (b *Bot) handleMessage(message *tgbotapi.Message) {
 func (b *Bot) handleCommands() {
 	b.RegisterCmdView("start", ViewCmdStart())
 	b.RegisterCmdView("word", ViewCmdHolloWord())
+	b.botCommands()
 }
 
 func (b *Bot) SendOrder(path string, chatId int64) error {
@@ -29,6 +30,18 @@ func (b *Bot) SendOrder(path string, chatId int64) error {
 	}
 	slog.Warn("Документ успешно отправлен!")
 	return nil
+}
+func (b *Bot) botCommands() {
+	commands := []tgbotapi.BotCommand{
+		{Command: "start", Description: "Запустить бота"},
+		{Command: "help", Description: "Список доступных команд"},
+	}
+
+	if _, err := b.bot.Request(tgbotapi.NewSetMyCommands(commands...)); err != nil {
+		slog.Warn(
+			"error", err.Error(),
+		)
+	}
 }
 
 // todo:delete for production

@@ -1,7 +1,6 @@
 package app
 
 import (
-	"github.com/Sanchir01/candles_backend/internal/bot"
 	"github.com/Sanchir01/candles_backend/internal/feature/candles"
 	"github.com/Sanchir01/candles_backend/internal/feature/category"
 	"github.com/Sanchir01/candles_backend/internal/feature/color"
@@ -17,12 +16,12 @@ type Services struct {
 	OrderService    *order.Service
 }
 
-func NewServices(repos *Repositories, storages *Storages, bot *bot.Bot) *Services {
+func NewServices(repos *Repositories, storages *Storages) *Services {
 	return &Services{
 		ColorService:    color.NewService(repos.ColorRepository),
 		CategoryService: category.NewService(repos.CategoryRepository),
 		CandlesService:  candles.NewServiceCandles(repos.CandlesRepository, storages.CandlesStorage),
 		UserService:     user.NewService(repos.UserRepository),
-		OrderService:    order.NewService(repos.OrderRepository, bot),
+		OrderService:    order.NewService(repos.OrderRepository),
 	}
 }

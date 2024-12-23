@@ -2,10 +2,10 @@ package app
 
 import (
 	"context"
-	telegram "github.com/Sanchir01/candles_backend/internal/bot"
+
+	"log/slog"
 
 	"github.com/Sanchir01/candles_backend/internal/config"
-	"log/slog"
 )
 
 type Env struct {
@@ -15,14 +15,13 @@ type Env struct {
 	Config       *config.Config
 	Repositories *Repositories
 	Services     *Services
-	Bot          *telegram.Bot
+	Bot          *Bot
 }
 
 func NewEnv() (*Env, error) {
 	cfg := config.InitConfig()
 	lg := setupLogger(cfg.Env)
 	ctx := context.Background()
-	bot := telegram.NewBot()
 	pgxdb, err := NewDataBases(cfg)
 	if err != nil {
 		lg.Error("pgx error connect", err.Error())
@@ -34,8 +33,9 @@ func NewEnv() (*Env, error) {
 		lg.Error("s3 error connect", err.Error())
 	}
 	repos := NewRepositories(pgxdb)
-	servises := NewServices(repos, s3client, bot)
+	servises := NewServices(repos, s3client)
 
+	bot := NewBot(servises)
 	env := Env{
 		Logger:       lg,
 		DataBase:     pgxdb,

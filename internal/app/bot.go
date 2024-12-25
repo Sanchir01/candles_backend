@@ -2,7 +2,6 @@ package app
 
 import (
 	"context"
-	"github.com/Sanchir01/candles_backend/internal/botkit"
 
 	"log"
 	"log/slog"
@@ -15,10 +14,9 @@ import (
 )
 
 type Bot struct {
-	bot         *tgbotapi.BotAPI
-	cmdView     map[string]botkit.ViewFunc
-	botkit      *botkit.BotKit
-	OrderServie *order.Service
+	bot      *tgbotapi.BotAPI
+	cmdView  map[string]ViewFunc
+	OrderBot *order.OrderBot
 }
 
 func NewBot(Services *Services) *Bot {
@@ -26,8 +24,10 @@ func NewBot(Services *Services) *Bot {
 	if err != nil {
 		log.Panic(err)
 	}
-	botkit := botkit.NewBotKit(bot)
-	return &Bot{bot: bot, OrderServie: Services.OrderService, botkit: botkit}
+	return &Bot{
+		bot:      bot,
+		OrderBot: order.NewBotService(Services.OrderService, bot),
+	}
 }
 
 func (b *Bot) Start(ctx context.Context) error {
@@ -36,8 +36,7 @@ func (b *Bot) Start(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-
-	b.botkit.ViewCmdAllOrders()
+	b.HandleCommands()
 
 	for {
 		select {
@@ -45,9 +44,9 @@ func (b *Bot) Start(ctx context.Context) error {
 			if !update.Message.IsCommand() {
 				continue
 			}
-			updateCtx, updateCanndel := context.WithTimeout(ctx, 5*time.Second)
+			updateCtx, updateChannel := context.WithTimeout(ctx, 5*time.Second)
 			b.handleUpdateCommand(updateCtx, update)
-			updateCanndel()
+			updateChannel()
 		case <-ctx.Done():
 			return ctx.Err()
 		}
@@ -60,7 +59,7 @@ func (b *Bot) handleUpdateCommand(ctx context.Context, update tgbotapi.Update) {
 			log.Printf("panic recoverL: %v\n%s", p, string(debug.Stack()))
 		}
 	}()
-	var view botkit.ViewFunc
+	var view ViewFunc
 
 	cmd := update.Message.Command()
 	cmdView, ok := b.cmdView[cmd]
@@ -84,4 +83,72 @@ func (b *Bot) initUpdatesChannel() (tgbotapi.UpdatesChannel, error) {
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = 60
 	return b.bot.GetUpdatesChan(u), nil
+}
+
+type ViewFunc func(ctx context.Context, bot *tgbotapi.BotAPI, update tgbotapi.Update) error
+type BotKit struct {
+	bot     *tgbotapi.BotAPI
+	cmdView map[string]ViewFunc
+}
+
+func (b *Bot) handleMessage(message *tgbotapi.Message) {
+	msg := tgbotapi.NewMessage(message.Chat.ID, message.Text)
+	b.bot.Send(msg)
+}
+
+func (b *Bot) RegisterCmdView(cmd string, view ViewFunc) {
+	if b.cmdView == nil {
+		b.cmdView = make(map[string]ViewFunc)
+	}
+	b.cmdView[cmd] = view
+}
+
+func (b *Bot) HandleCommands() {
+	b.RegisterCmdView("start", b.ViewCmdStart())
+	b.botCommands()
+}
+
+func (b *Bot) SendOrder(path string, chatId int64) error {
+	file, err := os.Open(path)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+	document := tgbotapi.NewDocument(chatId, tgbotapi.FileReader{Name: "products.xlsx", Reader: file})
+	if _, err := b.bot.Send(document); err != nil {
+		return err
+	}
+	slog.Warn("Документ успешно отправлен!")
+	return nil
+}
+
+func (b *Bot) botCommands() {
+	commands := []tgbotapi.BotCommand{
+		{Command: "start", Description: "Запустить бота"},
+		{Command: "help", Description: "Список доступных команд"},
+	}
+
+	if _, err := b.bot.Request(tgbotapi.NewSetMyCommands(commands...)); err != nil {
+		slog.Warn(
+			"error", err.Error(),
+		)
+	}
+}
+
+// todo:delete for production
+func (b *Bot) SendMessage(chatId int64, msg string) error {
+	message := tgbotapi.NewMessage(chatId, msg)
+	if _, err := b.bot.Send(message); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (b *Bot) ViewCmdStart() ViewFunc {
+	return func(ctx context.Context, bot *tgbotapi.BotAPI, update tgbotapi.Update) error {
+		if _, err := b.bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, "Привет")); err != nil {
+			return err
+		}
+		return nil
+	}
 }

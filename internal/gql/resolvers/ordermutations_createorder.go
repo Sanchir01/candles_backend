@@ -7,6 +7,7 @@ package resolver
 import (
 	"context"
 	"errors"
+
 	"github.com/Sanchir01/candles_backend/internal/gql/model"
 	customMiddleware "github.com/Sanchir01/candles_backend/internal/handlers/middleware"
 	responseErr "github.com/Sanchir01/candles_backend/pkg/lib/api/response"
@@ -26,7 +27,6 @@ func (r *orderMutationsResolver) CreateOrder(ctx context.Context, obj *model.Ord
 		if err != nil {
 			rollbackErr := tx.Rollback(ctx)
 			if rollbackErr != nil {
-
 				err = errors.Join(err, rollbackErr)
 				r.env.Logger.Warn("rollback transaction: %v", err.Error())
 				return
@@ -61,7 +61,7 @@ func (r *orderMutationsResolver) CreateOrder(ctx context.Context, obj *model.Ord
 		return responseErr.NewInternalErrorProblem("не удалось создать заказ"), nil
 	}
 
-	if err := r.env.Bot.SendOrder("products.xlsx", int64(1195173283)); err != nil {
+	if err := r.env.Bot.OrderBot.SendOrder("products.xlsx"); err != nil {
 		r.env.Logger.Warn("order resolver", err)
 		return responseErr.NewInternalErrorProblem("не отправить заказ"), nil
 	}

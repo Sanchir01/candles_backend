@@ -86,10 +86,6 @@ func (b *Bot) initUpdatesChannel() (tgbotapi.UpdatesChannel, error) {
 }
 
 type ViewFunc func(ctx context.Context, bot *tgbotapi.BotAPI, update tgbotapi.Update) error
-type BotKit struct {
-	bot     *tgbotapi.BotAPI
-	cmdView map[string]ViewFunc
-}
 
 func (b *Bot) handleMessage(message *tgbotapi.Message) {
 	msg := tgbotapi.NewMessage(message.Chat.ID, message.Text)
@@ -105,6 +101,7 @@ func (b *Bot) RegisterCmdView(cmd string, view ViewFunc) {
 
 func (b *Bot) HandleCommands() {
 	b.RegisterCmdView("start", b.ViewCmdStart())
+	b.RegisterCmdView("orders", b.ViewCmdAllOrders())
 	b.botCommands()
 }
 
@@ -126,6 +123,7 @@ func (b *Bot) botCommands() {
 	commands := []tgbotapi.BotCommand{
 		{Command: "start", Description: "Запустить бота"},
 		{Command: "help", Description: "Список доступных команд"},
+		{Command: "orders", Description: "Список всех заказов"},
 	}
 
 	if _, err := b.bot.Request(tgbotapi.NewSetMyCommands(commands...)); err != nil {
@@ -142,13 +140,4 @@ func (b *Bot) SendMessage(chatId int64, msg string) error {
 		return err
 	}
 	return nil
-}
-
-func (b *Bot) ViewCmdStart() ViewFunc {
-	return func(ctx context.Context, bot *tgbotapi.BotAPI, update tgbotapi.Update) error {
-		if _, err := b.bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, "Привет")); err != nil {
-			return err
-		}
-		return nil
-	}
 }

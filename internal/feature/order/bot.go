@@ -2,6 +2,7 @@ package order
 
 import (
 	"context"
+	"log/slog"
 	"os"
 	"strconv"
 
@@ -56,4 +57,19 @@ func (b *OrderBot) SendAllordersTg(ctx context.Context, chatId int64) error {
 	return nil
 }
 
-func (b *OrderBot) SendStatusOrder(ctx context.Context, productId uuid.UUID, chatId int64)
+func (b *OrderBot) SendStatusOrder(ctx context.Context, productId uuid.UUID, chatId int64) error {
+	status, err := b.OrderService.OrderById(ctx, productId)
+	if err != nil {
+		errorMsg := "Произошла ошибка при получении статуса заказа. Попробуйте позже"
+		slog.Error("send status error", err.Error())
+		if _, sendErr := b.bot.Send(tgbotapi.NewMessage(chatId, errorMsg)); sendErr != nil {
+			slog.Error("error sending error message to user", sendErr.Error())
+		}
+		return err
+	}
+	msg := tgbotapi.NewMessage(chatId, status)
+	if _, err := b.bot.Send(msg); err != nil {
+		return err
+	}
+	return nil
+}

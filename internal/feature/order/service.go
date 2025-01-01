@@ -57,3 +57,11 @@ func (s *Service) CreateOrder(
 
 	return uuids, err
 }
+
+func (s *Service) OrderById(ctx context.Context, id uuid.UUID) (string, error) {
+	status, err := s.repo.GetOrderById(ctx, id)
+	if err != nil {
+		return "", err
+	}
+	return status, nil
+}

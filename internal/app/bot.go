@@ -37,7 +37,7 @@ func (b *Bot) Start(ctx context.Context) error {
 		return err
 	}
 	b.HandleCommands()
-
+	b.botCommands()
 	for {
 		select {
 		case update := <-updates:
@@ -102,7 +102,8 @@ func (b *Bot) RegisterCmdView(cmd string, view ViewFunc) {
 func (b *Bot) HandleCommands() {
 	b.RegisterCmdView("start", b.ViewCmdStart())
 	b.RegisterCmdView("orders", b.ViewCmdAllOrders())
-	b.botCommands()
+	b.RegisterCmdView("help", b.ViewCmdHelp())
+	b.RegisterCmdView("order_status", b.ViewCmdOrderStatus())
 }
 
 func (b *Bot) SendOrder(path string, chatId int64) error {
@@ -124,6 +125,7 @@ func (b *Bot) botCommands() {
 		{Command: "start", Description: "Запустить бота"},
 		{Command: "help", Description: "Список доступных команд"},
 		{Command: "orders", Description: "Список всех заказов"},
+		{Command: "order_status", Description: "Получить статус заказа"},
 	}
 
 	if _, err := b.bot.Request(tgbotapi.NewSetMyCommands(commands...)); err != nil {

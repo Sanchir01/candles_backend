@@ -146,18 +146,23 @@ func (r *Repository) CreateOrderItem(
 	return ids, err
 }
 
-func (r *Repository) GetOrderBuId(ctx context.Context, orderId uuid.UUID) (string, error) {
+func (r *Repository) GetOrderById(ctx context.Context, orderId uuid.UUID) (string, error) {
 	conn, err := r.primaryDB.Acquire(ctx)
 	if err != nil {
 		return "", err
 	}
 	defer conn.Release()
 
-	query, arg, err := sq.Select("status").From("public.orders").Where(sq.Eq{}).PlaceholderFormat(sq.Dollar).ToSql()
+	query, arg, err := sq.
+		Select("status").
+		From("public.orders").
+		Where(sq.Eq{"id": orderId}).
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
 
 	var status string
-	if err := conn.QueryRow(ctx, query, arg...).Scan(status); err != nil {
+	if err := conn.QueryRow(ctx, query, arg...).Scan(&status); err != nil {
 		return "", err
 	}
-	return "", nil
+	return status, nil
 }

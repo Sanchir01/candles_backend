@@ -2,7 +2,7 @@ FROM golang:1.23-alpine3.20 AS builder
 
 WORKDIR /app
 
-RUN apk --no-cache add bash git make gcc  gettext musl-dev
+RUN apk --no-cache add bash git make gcc gettext musl-dev
 
 RUN go version
 

@@ -2,7 +2,6 @@ package order
 
 import (
 	"context"
-	"github.com/Sanchir01/candles_backend/internal/bot"
 	"github.com/Sanchir01/candles_backend/internal/gql/model"
 	"github.com/Sanchir01/candles_backend/pkg/lib/utils"
 	"github.com/google/uuid"
@@ -11,13 +10,11 @@ import (
 
 type Service struct {
 	repo *Repository
-	bot  *bot.Bot
 }
 
-func NewService(repo *Repository, bot *bot.Bot) *Service {
+func NewService(repo *Repository) *Service {
 	return &Service{
 		repo,
-		bot,
 	}
 }
 
@@ -26,7 +23,17 @@ func (s *Service) AllOrders(ctx context.Context) ([]*model.Orders, error) {
 	if err != nil {
 		return nil, err
 	}
-	
+
+	items, err := utils.MapToGql(orders)
+	return items, nil
+}
+
+func (s *Service) AllUserOrders(ctx context.Context, id uuid.UUID) ([]*model.Orders, error) {
+	orders, err := s.repo.OrdersByUserId(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
 	items, err := utils.MapToGql(orders)
 	return items, nil
 }
@@ -49,4 +56,12 @@ func (s *Service) CreateOrder(
 	}
 
 	return uuids, err
+}
+
+func (s *Service) OrderById(ctx context.Context, id uuid.UUID) (string, error) {
+	status, err := s.repo.GetOrderById(ctx, id)
+	if err != nil {
+		return "", err
+	}
+	return status, nil
 }

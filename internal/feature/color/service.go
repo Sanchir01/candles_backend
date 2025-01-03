@@ -53,3 +53,11 @@ func (s *Service) ColorBySlug(ctx context.Context, slug string) (*model.Color, e
 	}
 	return color, nil
 }
+
+func (s *Service) ColorById(ctx context.Context, id uuid.UUID) (*model.Color, error) {
+	color, err := s.repository.ColorById(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	return color, nil
+}

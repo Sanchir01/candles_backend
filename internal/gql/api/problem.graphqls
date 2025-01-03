@@ -8,3 +8,10 @@ type InternalErrorProblem implements ProblemInterface {
 type UnauthorizedProblem implements ProblemInterface{
     message:String!
 }
+interface VersionInterface {
+    version: UInt!
+}
+
+type VersionMismatchProblem implements ProblemInterface {
+    message: String!
+}

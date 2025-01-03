@@ -1,0 +1,15 @@
+extend type CategoryMutation {
+    delete(input:DeleteCategoryInput):DeleteCategoryResult @goField(forceResolver: true) @hasRole(role: [admin])
+}
+input DeleteCategoryInput {
+    id:Uuid!
+}
+
+type DeleteCategoryOk {
+    ok:Uuid!
+}
+
+union  DeleteCategoryResult =
+    | DeleteCategoryOk
+    | InternalErrorProblem
+    | VersionMismatchProblem

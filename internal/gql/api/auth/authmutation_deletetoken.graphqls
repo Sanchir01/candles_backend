@@ -1,0 +1,11 @@
+extend type AuthMutations {
+    deleteToken: DeleteTokensResult @goField(forceResolver: true) @hasRole(role: [admin,user])
+}
+
+union DeleteTokensResult =
+    | InternalErrorProblem
+    | DeleteTokensOk
+
+type DeleteTokensOk {
+    ok:String!
+}

@@ -10,22 +10,26 @@ import (
 )
 
 type Repository struct {
-	primartDB *pgxpool.Pool
+	primaryDB *pgxpool.Pool
 }
 
-func NewRepository(primartDB *pgxpool.Pool) *Repository {
+func NewRepository(primaryDB *pgxpool.Pool) *Repository {
 	return &Repository{
-		primartDB,
+		primaryDB,
 	}
 }
 
 func (r *Repository) AllColor(ctx context.Context) ([]model.Color, error) {
-	conn, err := r.primartDB.Acquire(ctx)
+	conn, err := r.primaryDB.Acquire(ctx)
 	if err != nil {
 		return nil, err
 	}
 	defer conn.Release()
-	query, _, err := sq.Select("id , title, slug, created_at, updated_at,version").From("public.color").ToSql()
+	query, _, err :=
+		sq.
+			Select("id , title, slug, created_at, updated_at,version").
+			From("public.color").
+			ToSql()
 	if err != nil {
 		return nil, err
 	}
@@ -46,12 +50,12 @@ func (r *Repository) AllColor(ctx context.Context) ([]model.Color, error) {
 }
 
 func (r *Repository) CreateColor(ctx context.Context, title, slug string) (uuid.UUID, error) {
-	conn, err := r.primartDB.Acquire(ctx)
+	conn, err := r.primaryDB.Acquire(ctx)
 	if err != nil {
 		return uuid.Nil, err
 	}
 	defer conn.Release()
-	query, args, err := sq.Insert("category").
+	query, args, err := sq.Insert("color").
 		Columns("title", "slug").
 		Values(title, slug).
 		Suffix("RETURNING id").PlaceholderFormat(sq.Dollar).
@@ -69,7 +73,7 @@ func (r *Repository) CreateColor(ctx context.Context, title, slug string) (uuid.
 
 func (r *Repository) ColorByManyId(ctx context.Context, ids []uuid.UUID) ([]*model.Color, error) {
 	log.Printf("DataLoader keys many load sanchir  test: %v", ids)
-	conn, err := r.primartDB.Acquire(ctx)
+	conn, err := r.primaryDB.Acquire(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -93,7 +97,7 @@ func (r *Repository) ColorByManyId(ctx context.Context, ids []uuid.UUID) ([]*mod
 }
 
 func (r *Repository) ColorById(ctx context.Context, id uuid.UUID) (*model.Color, error) {
-	conn, err := r.primartDB.Acquire(ctx)
+	conn, err := r.primaryDB.Acquire(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -113,14 +117,17 @@ func (r *Repository) ColorById(ctx context.Context, id uuid.UUID) (*model.Color,
 
 }
 func (r *Repository) ColorBySlug(ctx context.Context, slug string) (*model.Color, error) {
-	conn, err := r.primartDB.Acquire(ctx)
+	conn, err := r.primaryDB.Acquire(ctx)
 	if err != nil {
 		return nil, err
 	}
 	defer conn.Release()
 
-	query, _, err := sq.Select("id , title, slug, created_at, updated_at,version").From("public.color").
-		Where(sq.Eq{"slug": slug}).PlaceholderFormat(sq.Dollar).ToSql()
+	query, _, err := sq.
+		Select("id , title, slug, created_at, updated_at,version").From("public.color").
+		Where(sq.Eq{"slug": slug}).
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
 	var color DBColor
 
 	if err := conn.QueryRow(ctx, query, slug).Scan(
@@ -130,4 +137,44 @@ func (r *Repository) ColorBySlug(ctx context.Context, slug string) (*model.Color
 	}
 
 	return (*model.Color)(&color), nil
+}
+func (r *Repository) UpdateCategory(ctx context.Context, id uuid.UUID, name, slug string) (uuid.UUID, error) {
+	conn, err := r.primaryDB.Acquire(ctx)
+	if err != nil {
+		return uuid.Nil, err
+	}
+	defer conn.Release()
+	var idReturning uuid.UUID
+	query, args, err := sq.Update("color").
+		Where(sq.Eq{"id": id}).
+		Set("title", name).
+		Set("slug", slug).
+		PlaceholderFormat(sq.Dollar).
+		Suffix("RETURNING id").
+		ToSql()
+	row := conn.QueryRow(ctx, query, args...)
+	if err := row.Scan(&idReturning); err != nil {
+		return uuid.Nil, err
+	}
+	return idReturning, nil
+}
+func (r *Repository) DeleteColor(ctx context.Context, id uuid.UUID) (uuid.UUID, error) {
+	conn, err := r.primaryDB.Acquire(ctx)
+	if err != nil {
+		return uuid.Nil, err
+	}
+	defer conn.Release()
+	var idReturning uuid.UUID
+	query, args, err :=
+		sq.
+			Delete("color").
+			Where(sq.Eq{"id": id}).
+			PlaceholderFormat(sq.Dollar).
+			Suffix("RETURNING id").
+			ToSql()
+	row := conn.QueryRow(ctx, query, args...)
+	if err := row.Scan(&idReturning); err != nil {
+		return uuid.Nil, err
+	}
+	return idReturning, nil
 }

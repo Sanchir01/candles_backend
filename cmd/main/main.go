@@ -3,14 +3,15 @@ package main
 import (
 	"context"
 	"errors"
-	"github.com/Sanchir01/candles_backend/internal/app"
-	httphandlers "github.com/Sanchir01/candles_backend/internal/handlers"
-	httpserver "github.com/Sanchir01/candles_backend/internal/server/http"
-	"github.com/go-chi/chi/v5"
 	"log/slog"
 	"os"
 	"os/signal"
 	"syscall"
+
+	"github.com/Sanchir01/candles_backend/internal/app"
+	httphandlers "github.com/Sanchir01/candles_backend/internal/handlers"
+	httpserver "github.com/Sanchir01/candles_backend/internal/server/http"
+	"github.com/go-chi/chi/v5"
 )
 
 func main() {
@@ -38,7 +39,6 @@ func main() {
 			env.Logger.Error("Listen server error", slog.String("error", err.Error()))
 		}
 	}(ctx)
-
 	if err := env.Bot.Start(ctx); err != nil {
 		env.Logger.Error("error for get updates bot")
 	}

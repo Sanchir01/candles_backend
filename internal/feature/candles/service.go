@@ -10,33 +10,39 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
-type Service struct {
-	repository *Repository
+type ServiceCandles struct {
+	repository *RepositoryCandles
 	storages   *Storage
 }
 
-func NewService(repository *Repository, storages *Storage) *Service {
-	return &Service{
+func NewServiceCandles(repository *RepositoryCandles, storages *Storage) *ServiceCandles {
+	return &ServiceCandles{
 		repository,
 		storages,
 	}
 }
-func (s *Service) AllCandles(ctx context.Context, sort *model.CandlesSortEnum) ([]*model.Candles, error) {
+func (s *ServiceCandles) AllCandles(ctx context.Context, sort *model.CandlesSortEnum, filter *model.CandlesFilterInput, pageSize uint, pageNumber uint) ([]*model.Candles, error) {
 
-	candles, err := s.repository.AllCandles(ctx, sort)
-
+	candles, err := s.repository.AllCandles(ctx, sort, filter, pageSize, pageNumber)
 	if err != nil {
 		return nil, err
 	}
+
 	gqlCandles, err := MapCandlesToGql(candles)
-
 	if err != nil {
 		return nil, err
 	}
-	return gqlCandles, err
-}
 
-func (s *Service) CreateCandles(ctx context.Context, categoryID, colorID uuid.UUID, title string, images []*graphql.Upload, price int) (uuid.UUID, error) {
+	return gqlCandles, nil
+}
+func (s *ServiceCandles) GetTotalCountCandles(ctx context.Context, filter *model.CandlesFilterInput) (uint, error) {
+	totalcount, err := s.repository.CountCandles(ctx, filter)
+	if err != nil {
+		return 0, err
+	}
+	return totalcount, nil
+}
+func (s *ServiceCandles) CreateCandles(ctx context.Context, categoryID, colorID uuid.UUID, title, description string, images []*graphql.Upload, price, weight int) (uuid.UUID, error) {
 	conn, err := s.repository.primaryDB.Acquire(ctx)
 	if err != nil {
 		return uuid.Nil, err
@@ -68,7 +74,7 @@ func (s *Service) CreateCandles(ctx context.Context, categoryID, colorID uuid.UU
 	if err != nil {
 		return uuid.Nil, nil
 	}
-	id, err := s.repository.CreateCandles(ctx, categoryID, colorID, title, slug, imagesUrl, price, tx)
+	id, err := s.repository.CreateCandles(ctx, categoryID, colorID, title, slug, description, imagesUrl, weight, price, tx)
 	if err != nil {
 		s.storages.DeleteObjects(ctx, "candles", images)
 		return uuid.Nil, err
@@ -78,7 +84,8 @@ func (s *Service) CreateCandles(ctx context.Context, categoryID, colorID uuid.UU
 	}
 	return id, nil
 }
-func (s *Service) CandlesById(ctx context.Context, id uuid.UUID) (*model.Candles, error) {
+
+func (s *ServiceCandles) CandlesById(ctx context.Context, id uuid.UUID) (*model.Candles, error) {
 	candles, err := s.repository.CandlesById(ctx, id)
 	if err != nil {
 		return nil, err
@@ -86,7 +93,7 @@ func (s *Service) CandlesById(ctx context.Context, id uuid.UUID) (*model.Candles
 	return candles, err
 }
 
-func (s *Service) CandlesBySlug(ctx context.Context, title string) (*model.Candles, error) {
+func (s *ServiceCandles) CandlesBySlug(ctx context.Context, title string) (*model.Candles, error) {
 	slug, err := utils.Slugify(title)
 	if err != nil {
 		return nil, err

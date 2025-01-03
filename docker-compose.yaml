@@ -20,7 +20,6 @@ services:
       volumes:
         - "./localstack:/var/lib/localstack"
 volumes:
-    app:
     db:
     localstack:
 

@@ -10,6 +10,8 @@ input CreateCandleInput {
     category_id: Uuid!
     color_id: Uuid!
     images:[Upload!]!
+    description:String!
+    weight:Int!
 }
 
 union CandlesMutationResult =

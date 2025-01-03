@@ -9,4 +9,6 @@ type Candles {
     images:[String!]!
     color_id: Uuid!
     category_id: Uuid!
+    description:String!
+    weight:Int!
 }

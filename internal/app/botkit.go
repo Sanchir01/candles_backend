@@ -6,15 +6,10 @@ import (
 	"os"
 	"strconv"
 	"strings"
-	"sync"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/google/uuid"
 )
-
-type UserState struct {
-	orderId sync.Map
-}
 
 func (b *Bot) ViewCmdStart() ViewFunc {
 	return func(ctx context.Context, bot *tgbotapi.BotAPI, update tgbotapi.Update) error {

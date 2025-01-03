@@ -17,7 +17,6 @@ http_server:
   idle_timeout: 60s
 
 s3store:
-  key: "44YEJC1KE8L28V73VF43" 
   url: "https://s3.timeweb.cloud"
   region: "ru-1"
   bucketname: "14e29e5b-46a00c68-6e30-4d39-ae5e-35075eefe000"

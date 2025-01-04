@@ -107,9 +107,11 @@ func GenerateCookie(name string, expire time.Time, httpOnly bool, value string, 
 		Path:        "/",
 		Secure:      true,
 		HttpOnly:    httpOnly,
-		SameSite:    http.SameSiteNoneMode,
+		SameSite:    http.SameSiteLaxMode,
 	}
-
+	if domain := os.Getenv("DOMAIN_PROD"); domain != "" {
+		cookie.Domain = domain
+	}
 	return cookie
 }
 

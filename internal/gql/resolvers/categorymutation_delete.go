@@ -6,12 +6,18 @@ package resolver
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/Sanchir01/candles_backend/internal/gql/model"
+	responseErr "github.com/Sanchir01/candles_backend/pkg/lib/api/response"
 )
 
 // Delete is the resolver for the delete field.
 func (r *categoryMutationResolver) Delete(ctx context.Context, obj *model.CategoryMutation, input *model.DeleteCategoryInput) (model.DeleteCategoryResult, error) {
-	panic(fmt.Errorf("not implemented: Delete - delete"))
+	id, err := r.env.Services.CategoryService.DeleteCategoryById(ctx, input.ID)
+	if err != nil {
+		return responseErr.NewInternalErrorProblem("error for delete category"), err
+	}
+	return model.DeleteCategoryOk{
+		Ok: id,
+	}, nil
 }

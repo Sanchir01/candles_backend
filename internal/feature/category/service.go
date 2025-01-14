@@ -33,7 +33,6 @@ func (s *Service) AllCategory(ctx context.Context) ([]*model.Category, error) {
 }
 
 func (s *Service) CategoryById(ctx context.Context, id uuid.UUID) (*model.Category, error) {
-
 	return s.repository.CategoryById(ctx, id)
 }
 
@@ -50,6 +49,13 @@ func (s *Service) CreateCategory(ctx context.Context, title string) (uuid.UUID, 
 		return uuid.Nil, fmt.Errorf("категория с slug: %s уже существует", isExistCategory.Slug)
 	}
 	id, err := s.repository.CreateCategory(ctx, title, slug)
+	if err != nil {
+		return uuid.Nil, err
+	}
+	return id, nil
+}
+func (s *Service) DeleteCategoryById(ctx context.Context, id uuid.UUID) (uuid.UUID, error) {
+	id, err := s.repository.DeleteCategory(ctx, id)
 	if err != nil {
 		return uuid.Nil, err
 	}

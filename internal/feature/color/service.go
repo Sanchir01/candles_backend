@@ -61,3 +61,11 @@ func (s *Service) ColorById(ctx context.Context, id uuid.UUID) (*model.Color, er
 	}
 	return color, nil
 }
+
+func(s *Service) DeleteColorById(ctx context.Context,id uuid.UUID) (uuid.UUID,error){
+  id,err := s.repository.DeleteColor(ctx, id)
+  if err != nil {
+    return uuid.Nil,err
+  }
+  return id,nil
+}

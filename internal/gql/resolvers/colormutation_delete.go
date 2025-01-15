@@ -6,12 +6,20 @@ package resolver
 
 import (
 	"context"
-	"fmt"
-
 	"github.com/Sanchir01/candles_backend/internal/gql/model"
+	responseErr "github.com/Sanchir01/candles_backend/pkg/lib/api/response"
 )
 
 // Delete is the resolver for the delete field.
 func (r *colorMutationResolver) Delete(ctx context.Context, obj *model.ColorMutation, input *model.DeleteColorInput) (model.DeleteColorResult, error) {
-	panic(fmt.Errorf("not implemented: Delete - delete"))
+  id,err := r.env.Services.ColorService.DeleteColorById(
+    ctx, input.ID)
+
+
+  if err != nil {
+		return responseErr.NewInternalErrorProblem("error for delete color"), err
+  }
+  return model.DeleteColorOk{
+    Ok: id,
+  },nil
 }

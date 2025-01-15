@@ -72,6 +72,10 @@ type CreateOrderResult interface {
 	IsCreateOrderResult()
 }
 
+type DeleteCandlesResult interface {
+	IsDeleteCandlesResult()
+}
+
 type DeleteCategoryResult interface {
 	IsDeleteCategoryResult()
 }
@@ -198,6 +202,12 @@ type CandlesCreateOk struct {
 
 func (CandlesCreateOk) IsCandlesMutationResult() {}
 
+type CandlesDeleteOk struct {
+	Ok uuid.UUID `json:"ok"`
+}
+
+func (CandlesDeleteOk) IsDeleteCandlesResult() {}
+
 type CandlesFilterInput struct {
 	CategoryID *uuid.UUID `json:"categoryId,omitempty"`
 	ColorID    *uuid.UUID `json:"colorId,omitempty"`
@@ -205,6 +215,7 @@ type CandlesFilterInput struct {
 
 type CandlesMutation struct {
 	CreateCandle CandlesMutationResult `json:"createCandle"`
+	DeleteCandle DeleteCandlesResult   `json:"deleteCandle"`
 }
 
 type CandlesQuery struct {
@@ -350,6 +361,10 @@ type CreateOrderOk struct {
 
 func (CreateOrderOk) IsCreateOrderResult() {}
 
+type DeleteCandleInput struct {
+	ID uuid.UUID `json:"id"`
+}
+
 type DeleteCategoryInput struct {
 	ID uuid.UUID `json:"id"`
 }
@@ -389,6 +404,8 @@ func (InternalErrorProblem) IsRegistrationsResult() {}
 func (InternalErrorProblem) IsNewTokensResult() {}
 
 func (InternalErrorProblem) IsCandlesMutationResult() {}
+
+func (InternalErrorProblem) IsDeleteCandlesResult() {}
 
 func (InternalErrorProblem) IsCandlesByIDResult() {}
 
@@ -531,6 +548,8 @@ type UnauthorizedProblem struct {
 
 func (UnauthorizedProblem) IsCandlesMutationResult() {}
 
+func (UnauthorizedProblem) IsDeleteCandlesResult() {}
+
 func (UnauthorizedProblem) IsCategoryCreateResult() {}
 
 func (UnauthorizedProblem) IsColorCreateResult() {}
@@ -596,6 +615,8 @@ func (VersionMismatchProblem) IsRegistrationsResult() {}
 
 func (VersionMismatchProblem) IsCandlesMutationResult() {}
 
+func (VersionMismatchProblem) IsDeleteCandlesResult() {}
+
 func (VersionMismatchProblem) IsCandlesByIDResult() {}
 
 func (VersionMismatchProblem) IsCandlesBySlugResult() {}
@@ -626,10 +647,10 @@ func (VersionMismatchProblem) IsColorByIDResult() {}
 
 func (VersionMismatchProblem) IsColorBySlugResult() {}
 
-func (VersionMismatchProblem) IsUserProfileResult() {}
-
 func (VersionMismatchProblem) IsProblemInterface()     {}
 func (this VersionMismatchProblem) GetMessage() string { return this.Message }
+
+func (VersionMismatchProblem) IsUserProfileResult() {}
 
 type CandlesSortEnum string
 
@@ -663,7 +684,7 @@ func (e CandlesSortEnum) String() string {
 	return string(e)
 }
 
-func (e *CandlesSortEnum) UnmarshalGQL(v interface{}) error {
+func (e *CandlesSortEnum) UnmarshalGQL(v any) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -706,7 +727,7 @@ func (e Role) String() string {
 	return string(e)
 }
 
-func (e *Role) UnmarshalGQL(v interface{}) error {
+func (e *Role) UnmarshalGQL(v any) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")

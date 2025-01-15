@@ -104,3 +104,12 @@ func (s *ServiceCandles) CandlesBySlug(ctx context.Context, title string) (*mode
 	}
 	return candles, err
 }
+
+func (s *ServiceCandles) DeleteCandlesById(ctx context.Context, id uuid.UUID)(uuid.UUID,error){
+
+  ids,err := s.repository.DeleteCandlesById(ctx , id )
+  if err != nil{
+    return uuid.Nil,err
+  }
+  return ids,nil
+}

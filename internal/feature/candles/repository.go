@@ -283,10 +283,10 @@ func (r *RepositoryCandles) UpdateCandles(ctx context.Context, updates map[strin
 	return updatedID, nil
 }
 
-func (r *RepositoryCandles) DeleteCandlesById(ctx context.Context, id uuid.UUID) (string, error) {
+func (r *RepositoryCandles) DeleteCandlesById(ctx context.Context, id uuid.UUID) (uuid.UUID, error) {
 	conn, err := r.primaryDB.Acquire(ctx)
 	if err != nil {
-		return "", err
+		return uuid.Nil, err
 	}
 
 	defer conn.Release()
@@ -297,15 +297,15 @@ func (r *RepositoryCandles) DeleteCandlesById(ctx context.Context, id uuid.UUID)
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
 	if err != nil {
-		return "", err
+		return uuid.Nil, err
 	}
-	var deletedID string
+	var deletedID uuid.UUID
 	err = conn.QueryRow(ctx, query, args...).Scan(&deletedID)
 	if err != nil {
 		if err == pgx.ErrNoRows {
-			return "", fmt.Errorf("no candle found with id: %s", id)
+			return uuid.Nil, fmt.Errorf("no candle found with id: %s", id)
 		}
-		return "", fmt.Errorf("failed to execute query: %w", err)
+		return uuid.Nil, fmt.Errorf("failed to execute query: %w", err)
 	}
 	return deletedID, nil
 }

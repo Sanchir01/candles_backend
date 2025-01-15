@@ -1,9 +1,0 @@
-package candles
-
-type Bot struct {
-	service *Service
-}
-
-func NewOrdersBot(service *Services) *Bot {
-	return &Bot{service}
-}

@@ -1,0 +1,18 @@
+
+extend type CandlesMutation {
+  deleteCandle(input:DeleteCandleInput):DeleteCandlesResult! @goField(forceResolver:true) @hasRole(role:[admin])
+}
+
+input DeleteCandleInput {
+  id: Uuid!
+}
+
+union DeleteCandlesResult = 
+    | CandlesDeleteOk
+    | InternalErrorProblem
+    | UnauthorizedProblem
+    | VersionMismatchProblem 
+
+type CandlesDeleteOk {
+    ok: Uuid!
+}

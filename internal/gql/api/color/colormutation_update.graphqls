@@ -8,6 +8,7 @@ union UpdateColorResult=
     | VersionMismatchProblem
 
 input UpdateColorInput{
+    id: Uuid!
     title:String!
 }
 type UpdateColorOk {

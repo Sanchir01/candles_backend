@@ -8,6 +8,7 @@ union UpdateCategoryResult=
     | VersionMismatchProblem
 
 input UpdateCategoryInput{
+    id:Uuid!
     title:String!
 }
 type UpdateCategoryOk {

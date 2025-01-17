@@ -3,6 +3,7 @@ package candles
 import (
 	"context"
 	"errors"
+
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/Sanchir01/candles_backend/internal/gql/model"
 	"github.com/Sanchir01/candles_backend/pkg/lib/utils"
@@ -21,8 +22,8 @@ func NewServiceCandles(repository *RepositoryCandles, storages *Storage) *Servic
 		storages,
 	}
 }
-func (s *ServiceCandles) AllCandles(ctx context.Context, sort *model.CandlesSortEnum, filter *model.CandlesFilterInput, pageSize uint, pageNumber uint) ([]*model.Candles, error) {
 
+func (s *ServiceCandles) AllCandles(ctx context.Context, sort *model.CandlesSortEnum, filter *model.CandlesFilterInput, pageSize uint, pageNumber uint) ([]*model.Candles, error) {
 	candles, err := s.repository.AllCandles(ctx, sort, filter, pageSize, pageNumber)
 	if err != nil {
 		return nil, err
@@ -35,6 +36,7 @@ func (s *ServiceCandles) AllCandles(ctx context.Context, sort *model.CandlesSort
 
 	return gqlCandles, nil
 }
+
 func (s *ServiceCandles) GetTotalCountCandles(ctx context.Context, filter *model.CandlesFilterInput) (uint, error) {
 	totalcount, err := s.repository.CountCandles(ctx, filter)
 	if err != nil {
@@ -42,6 +44,7 @@ func (s *ServiceCandles) GetTotalCountCandles(ctx context.Context, filter *model
 	}
 	return totalcount, nil
 }
+
 func (s *ServiceCandles) CreateCandles(ctx context.Context, categoryID, colorID uuid.UUID, title, description string, images []*graphql.Upload, price, weight int) (uuid.UUID, error) {
 	conn, err := s.repository.primaryDB.Acquire(ctx)
 	if err != nil {
@@ -103,4 +106,12 @@ func (s *ServiceCandles) CandlesBySlug(ctx context.Context, title string) (*mode
 		return nil, err
 	}
 	return candles, err
+}
+
+func (s *ServiceCandles) DeleteCandleById(ctx context.Context, id uuid.UUID) (uuid.UUID, error) {
+	canldesId, err := s.repository.DeleteCandlesById(ctx, id)
+	if err != nil {
+		return uuid.Nil, err
+	}
+	return canldesId, nil
 }

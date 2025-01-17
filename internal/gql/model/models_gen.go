@@ -72,6 +72,10 @@ type CreateOrderResult interface {
 	IsCreateOrderResult()
 }
 
+type DeleteCandleResult interface {
+	IsDeleteCandleResult()
+}
+
 type DeleteCategoryResult interface {
 	IsDeleteCategoryResult()
 }
@@ -205,6 +209,7 @@ type CandlesFilterInput struct {
 
 type CandlesMutation struct {
 	CreateCandle CandlesMutationResult `json:"createCandle"`
+	DeleteCandle DeleteCandleResult    `json:"deleteCandle"`
 }
 
 type CandlesQuery struct {
@@ -212,6 +217,12 @@ type CandlesQuery struct {
 	CandleBySlug CandlesBySlugResult `json:"candleBySlug"`
 	AllCandles   AllCategoryResult   `json:"allCandles"`
 }
+
+type CanldesDeleteOk struct {
+	ID uuid.UUID `json:"id"`
+}
+
+func (CanldesDeleteOk) IsDeleteCandleResult() {}
 
 type Category struct {
 	ID        uuid.UUID `json:"id"`
@@ -350,6 +361,10 @@ type CreateOrderOk struct {
 
 func (CreateOrderOk) IsCreateOrderResult() {}
 
+type DeleteCandleInput struct {
+	ID uuid.UUID `json:"id"`
+}
+
 type DeleteCategoryInput struct {
 	ID uuid.UUID `json:"id"`
 }
@@ -389,6 +404,8 @@ func (InternalErrorProblem) IsRegistrationsResult() {}
 func (InternalErrorProblem) IsNewTokensResult() {}
 
 func (InternalErrorProblem) IsCandlesMutationResult() {}
+
+func (InternalErrorProblem) IsDeleteCandleResult() {}
 
 func (InternalErrorProblem) IsCandlesByIDResult() {}
 
@@ -531,6 +548,8 @@ type UnauthorizedProblem struct {
 
 func (UnauthorizedProblem) IsCandlesMutationResult() {}
 
+func (UnauthorizedProblem) IsDeleteCandleResult() {}
+
 func (UnauthorizedProblem) IsCategoryCreateResult() {}
 
 func (UnauthorizedProblem) IsColorCreateResult() {}
@@ -545,7 +564,8 @@ func (UnauthorizedProblem) IsProblemInterface()     {}
 func (this UnauthorizedProblem) GetMessage() string { return this.Message }
 
 type UpdateCategoryInput struct {
-	Title string `json:"title"`
+	ID    uuid.UUID `json:"id"`
+	Title string    `json:"title"`
 }
 
 type UpdateCategoryOk struct {
@@ -555,7 +575,8 @@ type UpdateCategoryOk struct {
 func (UpdateCategoryOk) IsUpdateCategoryResult() {}
 
 type UpdateColorInput struct {
-	Title string `json:"title"`
+	ID    uuid.UUID `json:"id"`
+	Title string    `json:"title"`
 }
 
 type UpdateColorOk struct {
@@ -596,6 +617,8 @@ func (VersionMismatchProblem) IsRegistrationsResult() {}
 
 func (VersionMismatchProblem) IsCandlesMutationResult() {}
 
+func (VersionMismatchProblem) IsDeleteCandleResult() {}
+
 func (VersionMismatchProblem) IsCandlesByIDResult() {}
 
 func (VersionMismatchProblem) IsCandlesBySlugResult() {}
@@ -626,10 +649,10 @@ func (VersionMismatchProblem) IsColorByIDResult() {}
 
 func (VersionMismatchProblem) IsColorBySlugResult() {}
 
-func (VersionMismatchProblem) IsUserProfileResult() {}
-
 func (VersionMismatchProblem) IsProblemInterface()     {}
 func (this VersionMismatchProblem) GetMessage() string { return this.Message }
+
+func (VersionMismatchProblem) IsUserProfileResult() {}
 
 type CandlesSortEnum string
 
@@ -663,7 +686,7 @@ func (e CandlesSortEnum) String() string {
 	return string(e)
 }
 
-func (e *CandlesSortEnum) UnmarshalGQL(v interface{}) error {
+func (e *CandlesSortEnum) UnmarshalGQL(v any) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -706,7 +729,7 @@ func (e Role) String() string {
 	return string(e)
 }
 
-func (e *Role) UnmarshalGQL(v interface{}) error {
+func (e *Role) UnmarshalGQL(v any) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")

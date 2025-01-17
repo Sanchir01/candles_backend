@@ -3,12 +3,13 @@ package candles
 import (
 	"context"
 	"fmt"
+	"log/slog"
+
 	sq "github.com/Masterminds/squirrel"
 	"github.com/Sanchir01/candles_backend/internal/gql/model"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"log/slog"
 )
 
 type RepositoryCandles struct {
@@ -31,6 +32,7 @@ func NewRepositoryCandles(primaryDB *pgxpool.Pool) *RepositoryCandles {
 		primaryDB,
 	}
 }
+
 func (r *RepositoryCandles) CountCandles(ctx context.Context, filter *model.CandlesFilterInput) (uint, error) {
 	conn, err := r.primaryDB.Acquire(ctx)
 	if err != nil {
@@ -152,6 +154,7 @@ func (r *RepositoryCandles) CandleByManyIds(ctx context.Context, tr pgx.Tx, ids 
 
 	return candles, nil
 }
+
 func (r *RepositoryCandles) CreateCandles(
 	ctx context.Context, categoryID, colorID uuid.UUID, title, slug, description string, images []string, weight, price int, tr pgx.Tx,
 ) (uuid.UUID, error) {
@@ -171,7 +174,6 @@ func (r *RepositoryCandles) CreateCandles(
 		return uuid.Nil, err
 	}
 	return id, nil
-
 }
 
 func (r *RepositoryCandles) CandlesBySlug(ctx context.Context, slug string) (*model.Candles, error) {
@@ -185,7 +187,6 @@ func (r *RepositoryCandles) CandlesBySlug(ctx context.Context, slug string) (*mo
 		From("public.candles").
 		Where(sq.Eq{"slug": slug}).PlaceholderFormat(sq.Dollar).
 		ToSql()
-
 	if err != nil {
 		return nil, err
 	}
@@ -220,7 +221,6 @@ func (r *RepositoryCandles) CandlesById(ctx context.Context, id uuid.UUID) (*mod
 		From("public.candles").
 		Where(sq.Eq{"id": id}).PlaceholderFormat(sq.Dollar).
 		ToSql()
-
 	if err != nil {
 		return nil, err
 	}
@@ -283,10 +283,10 @@ func (r *RepositoryCandles) UpdateCandles(ctx context.Context, updates map[strin
 	return updatedID, nil
 }
 
-func (r *RepositoryCandles) DeleteCandlesById(ctx context.Context, id uuid.UUID) (string, error) {
+func (r *RepositoryCandles) DeleteCandlesById(ctx context.Context, id uuid.UUID) (uuid.UUID, error) {
 	conn, err := r.primaryDB.Acquire(ctx)
 	if err != nil {
-		return "", err
+		return uuid.Nil, err
 	}
 
 	defer conn.Release()
@@ -295,17 +295,18 @@ func (r *RepositoryCandles) DeleteCandlesById(ctx context.Context, id uuid.UUID)
 		Delete("candles").
 		Where(sq.Eq{"id": id}).
 		PlaceholderFormat(sq.Dollar).
+		Suffix("RETURNING id").
 		ToSql()
 	if err != nil {
-		return "", err
+		return uuid.Nil, err
 	}
-	var deletedID string
+	var deletedID uuid.UUID
 	err = conn.QueryRow(ctx, query, args...).Scan(&deletedID)
 	if err != nil {
 		if err == pgx.ErrNoRows {
-			return "", fmt.Errorf("no candle found with id: %s", id)
+			return uuid.Nil, fmt.Errorf("no candle found with id: %s", id)
 		}
-		return "", fmt.Errorf("failed to execute query: %w", err)
+		return uuid.Nil, fmt.Errorf("failed to execute query: %w", err)
 	}
 	return deletedID, nil
 }

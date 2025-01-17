@@ -3,6 +3,7 @@ package color
 import (
 	"context"
 	"fmt"
+
 	"github.com/Sanchir01/candles_backend/internal/gql/model"
 	"github.com/Sanchir01/candles_backend/pkg/lib/utils"
 	"github.com/google/uuid"
@@ -62,10 +63,18 @@ func (s *Service) ColorById(ctx context.Context, id uuid.UUID) (*model.Color, er
 	return color, nil
 }
 
-func(s *Service) DeleteColorById(ctx context.Context,id uuid.UUID) (uuid.UUID,error){
-  id,err := s.repository.DeleteColor(ctx, id)
-  if err != nil {
-    return uuid.Nil,err
-  }
-  return id,nil
+func (s *Service) UpdateColorById(ctx context.Context, id uuid.UUID, title, slug string) (uuid.UUID, error) {
+	colorId, err := s.repository.UpdateCategory(ctx, id, title, slug)
+	if err != nil {
+		return uuid.Nil, err
+	}
+	return colorId, nil
+}
+
+func (s *Service) DeleteColorById(ctx context.Context, id uuid.UUID) (uuid.UUID, error) {
+	id, err := s.repository.DeleteColor(ctx, id)
+	if err != nil {
+		return uuid.Nil, err
+	}
+	return id, nil
 }

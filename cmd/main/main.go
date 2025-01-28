@@ -36,13 +36,15 @@ func main() {
 				env.Logger.Error("Listen server error", slog.String("error", err.Error()))
 				return
 			}
-			env.Logger.Error("Listen server error", slog.String("error", err.Error()))
+
 		}
 	}(ctx)
+	go func(ctx context.Context) { env.GRPCSrv.MustRun() }(ctx)
 	if err := env.Bot.Start(ctx); err != nil {
 		env.Logger.Error("error for get updates bot")
 	}
 	if err := serve.Gracefull(ctx); err != nil {
 		env.Logger.Error("Graphql serve gracefull")
 	}
+	env.GRPCSrv.Stop()
 }

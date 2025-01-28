@@ -14,6 +14,7 @@ type Config struct {
 	Domain     string `yaml:"domain"`
 	HttpServer `yaml:"http_server"`
 	Errors     `yaml:"errors"`
+	Grpc       GrpcOrder
 	DB         DataBase `yaml:"database"`
 	S3Store    S3Store  `yaml:"s3store"`
 }
@@ -24,6 +25,10 @@ type DataBase struct {
 	Database    string `yaml:"dbname"`
 	SSL         string `yaml:"ssl"`
 	MaxAttempts int    `yaml:"max_attempts"`
+}
+type GrpcOrder struct {
+	Timeout int `yaml:"timeout"`
+	Port    int `yaml:"port"`
 }
 type S3Store struct {
 	Key        string `yaml:"key"`

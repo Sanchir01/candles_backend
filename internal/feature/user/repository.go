@@ -156,7 +156,9 @@ func (r *Repository) CreateUser(ctx context.Context, title, phone, email, role s
 		Insert("users").
 		Columns("title", "phone", "email", "role", "password").
 		Values(title, phone, email, role, password).
-		Suffix("RETURNING id, phone, role, email").PlaceholderFormat(sq.Dollar).ToSql()
+		Suffix("RETURNING id, phone, role, email").
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
 
 	if err != nil {
 		return nil, err

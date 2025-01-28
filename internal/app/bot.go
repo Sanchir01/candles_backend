@@ -2,7 +2,6 @@ package app
 
 import (
 	"context"
-
 	"log"
 	"log/slog"
 	"os"

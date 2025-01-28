@@ -2,8 +2,9 @@ package httpserver
 
 import (
 	"context"
-	"github.com/Sanchir01/candles_backend/internal/config"
 	"net/http"
+
+	"github.com/Sanchir01/candles_backend/internal/config"
 )
 
 type Server struct {
@@ -24,6 +25,7 @@ func NewHttpServer(cfg *config.Config) *Server {
 		config:     cfg,
 	}
 }
+
 func (s *Server) Run(handler http.Handler) error {
 	s.httpServer.Handler = handler
 	return s.httpServer.ListenAndServe()

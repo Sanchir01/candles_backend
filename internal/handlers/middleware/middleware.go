@@ -3,9 +3,10 @@ package customMiddleware
 import (
 	"context"
 	"errors"
+	"net/http"
+
 	"github.com/Sanchir01/candles_backend/internal/app"
 	userFeature "github.com/Sanchir01/candles_backend/internal/feature/user"
-	"net/http"
 )
 
 const responseWriterKey = "responseWriter"
@@ -24,6 +25,7 @@ func WithResponseWriter(next http.Handler) http.Handler {
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
+
 func GetResponseWriter(ctx context.Context) http.ResponseWriter {
 	return ctx.Value(responseWriterKey).(http.ResponseWriter)
 }
@@ -31,9 +33,7 @@ func GetResponseWriter(ctx context.Context) http.ResponseWriter {
 func AuthMiddleware(domain string) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-
 			access, err := r.Cookie("refreshToken")
-
 			if err != nil {
 				refresh, err := r.Cookie("accessToken")
 				if err != nil {
@@ -73,10 +73,8 @@ func NewDataLoadersMiddleware(env *app.Env) func(next http.Handler) http.Handler
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			loaders := app.NewDataLoaders(env.Repositories)
 
-			// Добавляем DataLoaders в контекст запроса
 			ctx := context.WithValue(r.Context(), app.DataLoadersContextKey, loaders)
 
-			// Передаем контекст дальше по цепочке
 			next.ServeHTTP(w, r.WithContext(ctx))
 		})
 	}

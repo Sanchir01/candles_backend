@@ -8,7 +8,7 @@ input CreateOrderItem {
 }
 
 input CreateOrderInput {
-    items:[CreateOrderItem!]
+    items:[CreateOrderItem!]!
 }
 type CreateOrderOk {
     ok:String!

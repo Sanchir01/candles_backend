@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/base64"
 	"fmt"
+
 	sq "github.com/Masterminds/squirrel"
 	"github.com/Sanchir01/candles_backend/internal/gql/model"
 	"github.com/google/uuid"
@@ -20,6 +21,7 @@ func NewRepository(primartDB *pgxpool.Pool) *Repository {
 		primartDB,
 	}
 }
+
 func (r *Repository) GetByPhone(ctx context.Context, phone string) (*model.User, error) {
 	conn, err := r.primartDB.Acquire(ctx)
 	if err != nil {
@@ -51,6 +53,7 @@ func (r *Repository) GetByPhone(ctx context.Context, phone string) (*model.User,
 		UpdatedAt: user.UpdatedAt,
 	}, nil
 }
+
 func (r *Repository) GetByEmail(ctx context.Context, email string) (*model.User, error) {
 	conn, err := r.primartDB.Acquire(ctx)
 	if err != nil {
@@ -87,6 +90,7 @@ func (r *Repository) GetByEmail(ctx context.Context, email string) (*model.User,
 		UpdatedAt: user.UpdatedAt,
 	}, nil
 }
+
 func (r *Repository) GetBySlug(ctx context.Context, slug string) (*model.User, error) {
 	conn, err := r.primartDB.Acquire(ctx)
 	if err != nil {
@@ -156,8 +160,9 @@ func (r *Repository) CreateUser(ctx context.Context, title, phone, email, role s
 		Insert("users").
 		Columns("title", "phone", "email", "role", "password").
 		Values(title, phone, email, role, password).
-		Suffix("RETURNING id, phone, role, email").PlaceholderFormat(sq.Dollar).ToSql()
-
+		Suffix("RETURNING id, phone, role, email").
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
 	if err != nil {
 		return nil, err
 	}

@@ -22,6 +22,5 @@ func NewDataBases(cfg *config.Config) (*Database, error) {
 
 func (databases *Database) Close() error {
 	databases.PrimaryDB.Close()
-
 	return nil
 }

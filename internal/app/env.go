@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"time"
 
 	"log/slog"
 
@@ -15,7 +16,7 @@ type Env struct {
 	Config       *config.Config
 	Repositories *Repositories
 	Services     *Services
-	Bot          *Bot
+	GrpcOrder    *GRPCClient
 }
 
 func NewEnv() (*Env, error) {
@@ -27,6 +28,10 @@ func NewEnv() (*Env, error) {
 		lg.Error("pgx error connect", err.Error())
 		return nil, err
 	}
+	grpcorder, err := NewGRPCClient(ctx, cfg.GrpcClient.Order.Address, lg, cfg.GrpcClient.Order.RetriesCount, time.Duration(cfg.GrpcClient.Order.Timeout)*time.Second)
+	if err != nil {
+		lg.Error("s3 error connect", err.Error())
+	}
 
 	s3client, err := NewStorages(ctx, lg, cfg)
 	if err != nil {
@@ -35,7 +40,6 @@ func NewEnv() (*Env, error) {
 	repos := NewRepositories(pgxdb)
 	servises := NewServices(repos, s3client)
 
-	bot := NewBot(servises)
 	env := Env{
 		Logger:       lg,
 		DataBase:     pgxdb,
@@ -43,7 +47,8 @@ func NewEnv() (*Env, error) {
 		Config:       cfg,
 		Services:     servises,
 		Repositories: repos,
-		Bot:          bot,
+
+		GrpcOrder: grpcorder,
 	}
 
 	return &env, nil

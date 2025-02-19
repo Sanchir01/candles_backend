@@ -25,7 +25,7 @@ func main() {
 	var (
 		handlers = httphandlers.New(rout, env)
 	)
-	env.Logger.Info("start server", slog.String("port", env.Config.Port))
+	env.Logger.Info("start http server", slog.String("port", env.Config.Port))
 
 	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGTERM, syscall.SIGINT, os.Interrupt)
 	defer cancel()
@@ -39,9 +39,7 @@ func main() {
 			env.Logger.Error("Listen server error", slog.String("error", err.Error()))
 		}
 	}(ctx)
-	if err := env.Bot.Start(ctx); err != nil {
-		env.Logger.Error("error for get updates bot")
-	}
+	<-ctx.Done()
 	if err := serve.Gracefull(ctx); err != nil {
 		env.Logger.Error("Graphql serve gracefull")
 	}

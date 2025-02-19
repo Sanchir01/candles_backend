@@ -1,12 +1,13 @@
 package config
 
 import (
-	"github.com/ilyakaznacheev/cleanenv"
-	"github.com/joho/godotenv"
 	"log"
 	"log/slog"
 	"os"
 	"time"
+
+	"github.com/ilyakaznacheev/cleanenv"
+	"github.com/joho/godotenv"
 )
 
 type Config struct {
@@ -14,8 +15,9 @@ type Config struct {
 	Domain     string `yaml:"domain"`
 	HttpServer `yaml:"http_server"`
 	Errors     `yaml:"errors"`
-	DB         DataBase `yaml:"database"`
-	S3Store    S3Store  `yaml:"s3store"`
+	DB         DataBase      `yaml:"database"`
+	S3Store    S3Store       `yaml:"s3store"`
+	GrpcClient ClientsConfig `yaml:"grpc_client"`
 }
 type DataBase struct {
 	Host        string `yaml:"host"`
@@ -25,6 +27,18 @@ type DataBase struct {
 	SSL         string `yaml:"ssl"`
 	MaxAttempts int    `yaml:"max_attempts"`
 }
+
+type Client struct {
+	Address      string `yaml:"address"`
+	RetriesCount int    `yaml:"retries_count"`
+	Timeout      int    `yaml:"timeout"`
+	Insecure     bool   `yaml:"insecure"`
+}
+
+type ClientsConfig struct {
+	Order Client `yaml:"order"`
+}
+
 type S3Store struct {
 	Key        string `yaml:"key"`
 	BucketName string `yaml:"bucketname"`

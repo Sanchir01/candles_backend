@@ -16,18 +16,22 @@ require (
 	github.com/go-chi/cors v1.2.1
 	github.com/go-faker/faker/v4 v4.5.0
 	github.com/go-playground/validator/v10 v10.23.0
-	github.com/go-telegram-bot-api/telegram-bot-api/v5 v5.5.1
 	github.com/golang-jwt/jwt/v5 v5.2.1
 	github.com/google/uuid v1.6.0
 	github.com/grpc-ecosystem/go-grpc-middleware/v2 v2.2.0
 	github.com/ilyakaznacheev/cleanenv v1.5.0
 	github.com/jackc/pgx/v5 v5.6.0
 	github.com/joho/godotenv v1.5.1
+<<<<<<< HEAD
+=======
+	github.com/makiyarodzy/mahakala_proto v0.0.0-20250129053749-cc54bc30f7de
+>>>>>>> 300d39b3abf6fc864fb588333f3ec7607f4b171b
 	github.com/vektah/gqlparser/v2 v2.5.22
 	github.com/vikstrous/dataloadgen v0.0.6
 	github.com/xuri/excelize/v2 v2.9.0
 	golang.org/x/crypto v0.31.0
 	golang.org/x/exp v0.0.0-20240823005443-9b4947da3948
+	google.golang.org/grpc v1.61.1
 )
 
 require (
@@ -77,8 +81,12 @@ require (
 	golang.org/x/sync v0.10.0 // indirect
 	golang.org/x/sys v0.29.0 // indirect
 	golang.org/x/text v0.21.0 // indirect
+<<<<<<< HEAD
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20240814211410-ddb44dafa142 // indirect
 	google.golang.org/grpc v1.67.1 // indirect
+=======
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20240213162025-012b6fc9bca9 // indirect
+>>>>>>> 300d39b3abf6fc864fb588333f3ec7607f4b171b
 	google.golang.org/protobuf v1.36.4 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	olympos.io/encoding/edn v0.0.0-20201019073823-d3554ca0b0a3 // indirect

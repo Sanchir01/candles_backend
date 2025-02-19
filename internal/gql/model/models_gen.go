@@ -28,10 +28,6 @@ type AllUserOrdersResult interface {
 	IsAllUserOrdersResult()
 }
 
-type ByOneClickResult interface {
-	IsByOneClickResult()
-}
-
 type CandlesByIDResult interface {
 	IsCandlesByIDResult()
 }
@@ -164,16 +160,6 @@ type AuthMutations struct {
 	Registrations RegistrationsResult `json:"registrations"`
 	NewTokens     NewTokensResult     `json:"newTokens"`
 }
-
-type ByOneClickInput struct {
-	Items []*CreateOrderItem `json:"items"`
-}
-
-type ByOneClickOk struct {
-	Ok string `json:"ok"`
-}
-
-func (ByOneClickOk) IsByOneClickResult() {}
 
 type Candles struct {
 	ID          uuid.UUID `json:"id"`
@@ -453,8 +439,6 @@ func (InternalErrorProblem) IsColorByIDResult() {}
 
 func (InternalErrorProblem) IsColorBySlugResult() {}
 
-func (InternalErrorProblem) IsByOneClickResult() {}
-
 func (InternalErrorProblem) IsCreateOrderResult() {}
 
 func (InternalErrorProblem) IsAllOrdersResult() {}
@@ -510,7 +494,6 @@ type OrderItems struct {
 }
 
 type OrderMutations struct {
-	ByOneClick  ByOneClickResult  `json:"byOneClick"`
 	CreateOrder CreateOrderResult `json:"createOrder"`
 }
 
@@ -570,8 +553,6 @@ func (UnauthorizedProblem) IsDeleteCandlesResult() {}
 func (UnauthorizedProblem) IsCategoryCreateResult() {}
 
 func (UnauthorizedProblem) IsColorCreateResult() {}
-
-func (UnauthorizedProblem) IsByOneClickResult() {}
 
 func (UnauthorizedProblem) IsCreateOrderResult() {}
 

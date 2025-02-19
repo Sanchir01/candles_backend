@@ -2,11 +2,12 @@ package category
 
 import (
 	"context"
+	"log/slog"
+
 	sq "github.com/Masterminds/squirrel"
 	"github.com/Sanchir01/candles_backend/internal/gql/model"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"log/slog"
 )
 
 type Repository struct {
@@ -25,13 +26,12 @@ func (s *Repository) CategoryById(ctx context.Context, id uuid.UUID) (*model.Cat
 		return nil, err
 	}
 	defer conn.Release()
-	query, args, err :=
-		sq.
-			Select("id", "title", "slug", "created_at", "updated_at", "version").
-			From("public.category").
-			Where(sq.Eq{"id": id}).
-			PlaceholderFormat(sq.Dollar).
-			ToSql()
+	query, args, err := sq.
+		Select("id", "title", "slug", "created_at", "updated_at", "version").
+		From("public.category").
+		Where(sq.Eq{"id": id}).
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
 	var category DBCategory
 	err = conn.QueryRow(ctx, query, args...).Scan(&category.ID, &category.Title, &category.Slug, &category.CreatedAt, &category.UpdatedAt, &category.Version)
 	if err != nil {
@@ -40,8 +40,8 @@ func (s *Repository) CategoryById(ctx context.Context, id uuid.UUID) (*model.Cat
 	}
 
 	return (*model.Category)(&category), nil
-
 }
+
 func (s *Repository) CategoryBySlug(ctx context.Context, slug string) (*model.Category, error) {
 	conn, err := s.primaryDB.Acquire(ctx)
 	if err != nil {
@@ -132,15 +132,14 @@ func (r *Repository) UpdateCategory(ctx context.Context, id uuid.UUID, name, slu
 	}
 	defer conn.Release()
 	var idReturning uuid.UUID
-	query, args, err :=
-		sq.
-			Update("category").
-			Where(sq.Eq{"id": id}).
-			Set("title", name).
-			Set("slug", slug).
-			PlaceholderFormat(sq.Dollar).
-			Suffix("RETURNING id").
-			ToSql()
+	query, args, err := sq.
+		Update("category").
+		Where(sq.Eq{"id": id}).
+		Set("title", name).
+		Set("slug", slug).
+		PlaceholderFormat(sq.Dollar).
+		Suffix("RETURNING id").
+		ToSql()
 	row := conn.QueryRow(ctx, query, args...)
 	if err := row.Scan(&idReturning); err != nil {
 		return uuid.Nil, err

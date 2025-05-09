@@ -2,8 +2,10 @@ package httpserver
 
 import (
 	"context"
-	"github.com/Sanchir01/candles_backend/internal/config"
 	"net/http"
+	"time"
+
+	"github.com/Sanchir01/candles_backend/internal/config"
 )
 
 type Server struct {
@@ -11,19 +13,19 @@ type Server struct {
 	config     *config.Config
 }
 
-func NewHttpServer(cfg *config.Config) *Server {
+func NewHTTPServer(host, port string, timeout, idletimeout time.Duration) *Server {
 	srv := &http.Server{
-		Addr:           cfg.HttpServer.Host + ":" + cfg.HttpServer.Port,
+		Addr:           host + ":" + port,
 		MaxHeaderBytes: 1 << 20,
-		ReadTimeout:    cfg.HttpServer.Timeout,
-		WriteTimeout:   cfg.HttpServer.Timeout,
-		IdleTimeout:    cfg.HttpServer.IdleTimeout,
+		ReadTimeout:    timeout,
+		WriteTimeout:   timeout,
+		IdleTimeout:    idletimeout,
 	}
 	return &Server{
 		httpServer: srv,
-		config:     cfg,
 	}
 }
+
 func (s *Server) Run(handler http.Handler) error {
 	s.httpServer.Handler = handler
 	return s.httpServer.ListenAndServe()

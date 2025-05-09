@@ -2,10 +2,11 @@ package grpcserver
 
 import (
 	"fmt"
-	ordergrpc "github.com/Sanchir01/candles_backend/internal/grpc"
-	"google.golang.org/grpc"
 	"log/slog"
 	"net"
+
+	ordergrpc "github.com/Sanchir01/candles_backend/internal/grpc"
+	"google.golang.org/grpc"
 )
 
 type App struct {
@@ -46,10 +47,10 @@ func (a *App) Run() error {
 
 func (a *App) MustRun() {
 	if err := a.Run(); err != nil {
-
 		panic(err)
 	}
 }
+
 func (a *App) Stop() {
 	const op = "grpcapp.Stop"
 

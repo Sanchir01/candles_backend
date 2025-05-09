@@ -2,6 +2,10 @@ package httphandlers
 
 import (
 	"context"
+	"log"
+	"net/http"
+	"runtime"
+
 	gqlhandler "github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/handler/extension"
 	"github.com/99designs/gqlgen/graphql/handler/lru"
@@ -15,11 +19,9 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/vektah/gqlparser/v2/ast"
 	"github.com/vektah/gqlparser/v2/gqlerror"
-	"log"
-	"net/http"
-	"runtime"
 )
 
 type HttpRouter struct {
@@ -91,6 +93,7 @@ func (r *HttpRouter) newSchemaConfig() genGql.Config {
 	cfg.Directives.HasRole = directive.RoleDirective()
 	return cfg
 }
+
 func (r *HttpRouter) newChiCors() {
 	switch r.env.Config.Env {
 	case "development":
@@ -110,4 +113,11 @@ func (r *HttpRouter) newChiCors() {
 			MaxAge:           300,
 		}))
 	}
+}
+
+func (r *HttpRouter) StartPrometheusHandlers() http.Handler {
+	router := chi.NewRouter()
+	router.Use(customMiddleware.PrometheusMiddleware)
+	router.Handle("/metrics", promhttp.Handler())
+	return router
 }

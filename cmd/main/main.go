@@ -19,27 +19,35 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	serve := httpserver.NewHttpServer(env.Config)
+	serve := httpserver.NewHTTPServer(env.Config.Host, env.Config.Port,
+		env.Config.Timeout, env.Config.IdleTimeout)
 	rout := chi.NewRouter()
 
-	var (
-		handlers = httphandlers.New(rout, env)
-	)
+	prometheusserver := httpserver.NewHTTPServer(env.Config.Prometheus.Host, env.Config.Prometheus.Port, env.Config.Prometheus.Timeout,
+		env.Config.Prometheus.IdleTimeout)
+	handlers := httphandlers.New(rout, env)
 	env.Logger.Info("start server", slog.String("port", env.Config.Port))
 
 	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGTERM, syscall.SIGINT, os.Interrupt)
 	defer cancel()
 
-	go func(ctx context.Context) {
+	go func() {
 		if err := serve.Run(handlers.StartHttpServer()); err != nil {
 			if !errors.Is(err, context.Canceled) {
 				env.Logger.Error("Listen server error", slog.String("error", err.Error()))
 				return
 			}
-
 		}
-	}(ctx)
-	go func(ctx context.Context) { env.GRPCSrv.MustRun() }(ctx)
+	}()
+	go func() {
+		if err := prometheusserver.Run(handlers.StartPrometheusHandlers()); err != nil {
+			if !errors.Is(err, context.Canceled) {
+				env.Logger.Error("Listen prometheus server error", slog.String("error", err.Error()))
+				return
+			}
+		}
+	}()
+	go func() { env.GRPCSrv.MustRun() }()
 	if err := env.Bot.Start(ctx); err != nil {
 		env.Logger.Error("error for get updates bot")
 	}

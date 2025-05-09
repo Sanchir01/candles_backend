@@ -1,12 +1,13 @@
 package config
 
 import (
-	"github.com/ilyakaznacheev/cleanenv"
-	"github.com/joho/godotenv"
 	"log"
 	"log/slog"
 	"os"
 	"time"
+
+	"github.com/ilyakaznacheev/cleanenv"
+	"github.com/joho/godotenv"
 )
 
 type Config struct {
@@ -15,8 +16,16 @@ type Config struct {
 	HttpServer `yaml:"http_server"`
 	Errors     `yaml:"errors"`
 	Grpc       GrpcOrder
-	DB         DataBase `yaml:"database"`
-	S3Store    S3Store  `yaml:"s3store"`
+	DB         DataBase   `yaml:"database"`
+	S3Store    S3Store    `yaml:"s3store"`
+	Prometheus Prometheus `yaml:"prometheus"`
+}
+type Prometheus struct {
+	Timeout     time.Duration `yaml:"timeout"  env-default:"4s"`
+	Host        string        `yaml:"host"  env-default:"localhost"`
+	Port        string        `yaml:"port"  env-default:"8081"`
+	Debug       bool          `yaml:"debug"  env-default:"true"`
+	IdleTimeout time.Duration `yaml:"idle_timeout"  env-default:"60s"`
 }
 type DataBase struct {
 	Host        string `yaml:"host"`
@@ -54,7 +63,7 @@ type ErrorsBody struct {
 }
 
 func InitConfig() *Config {
-	if err := godotenv.Load(".development.env"); err != nil {
+	if err := godotenv.Load(".env"); err != nil {
 		slog.Error("ошибка при инициализации переменных окружения", err.Error())
 	}
 	configPath := os.Getenv("CONFIG_PATH")

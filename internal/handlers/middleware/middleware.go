@@ -3,12 +3,34 @@ package customMiddleware
 import (
 	"context"
 	"errors"
+	"net/http"
+	"time"
+
 	"github.com/Sanchir01/candles_backend/internal/app"
 	userFeature "github.com/Sanchir01/candles_backend/internal/feature/user"
-	"net/http"
+	"github.com/prometheus/client_golang/prometheus"
 )
 
 const responseWriterKey = "responseWriter"
+
+var requestCount = prometheus.NewCounterVec(
+	prometheus.CounterOpts{
+		Namespace: "mahakala-count",
+		Subsystem: "http",
+		Name:      "request_total",
+		Help:      "Total number of HTTP requests",
+	},
+	[]string{"path", "method"},
+)
+
+var requesDuration = prometheus.NewHistogramVec(
+	prometheus.HistogramOpts{
+		Name:    "http_request_duration_seconds",
+		Help:    "Duration of HTTP requests.",
+		Buckets: prometheus.DefBuckets,
+	},
+	[]string{"method", "path"},
+)
 
 func GetJWTClaimsFromCtx(ctx context.Context) (*userFeature.Claims, error) {
 	claims, ok := ctx.Value(app.AccessTokenContextKey).(*userFeature.Claims)
@@ -24,6 +46,7 @@ func WithResponseWriter(next http.Handler) http.Handler {
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
+
 func GetResponseWriter(ctx context.Context) http.ResponseWriter {
 	return ctx.Value(responseWriterKey).(http.ResponseWriter)
 }
@@ -31,9 +54,7 @@ func GetResponseWriter(ctx context.Context) http.ResponseWriter {
 func AuthMiddleware(domain string) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-
 			access, err := r.Cookie("refreshToken")
-
 			if err != nil {
 				refresh, err := r.Cookie("accessToken")
 				if err != nil {
@@ -80,4 +101,14 @@ func NewDataLoadersMiddleware(env *app.Env) func(next http.Handler) http.Handler
 			next.ServeHTTP(w, r.WithContext(ctx))
 		})
 	}
+}
+
+func PrometheusMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		start := time.Now()
+		next.ServeHTTP(w, r)
+		duration := time.Since(start).Seconds()
+		requestCount.WithLabelValues(r.URL.Path, r.Method).Inc()
+		requesDuration.WithLabelValues(r.Method, r.URL.Path).Observe(duration)
+	})
 }

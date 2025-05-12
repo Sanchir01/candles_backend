@@ -3,6 +3,7 @@
 package model
 
 import (
+	"bytes"
 	"fmt"
 	"io"
 	"strconv"
@@ -130,7 +131,6 @@ type AllCandlesOk struct {
 	Candles    []*Candles                `json:"candles"`
 	NextPage   int                       `json:"nextPage"`
 	PrevPage   int                       `json:"prevPage"`
-	TotalPages int                       `json:"totalPages"`
 	TotalCount TotalCountResolvingResult `json:"totalCount"`
 }
 
@@ -538,6 +538,7 @@ type SortRankInput struct {
 
 type TotalCountResolvingOk struct {
 	TotalCount uint `json:"totalCount"`
+	TotalPages int  `json:"totalPages"`
 }
 
 func (TotalCountResolvingOk) IsTotalCountResolvingResult() {}
@@ -703,6 +704,20 @@ func (e CandlesSortEnum) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
+func (e *CandlesSortEnum) UnmarshalJSON(b []byte) error {
+	s, err := strconv.Unquote(string(b))
+	if err != nil {
+		return err
+	}
+	return e.UnmarshalGQL(s)
+}
+
+func (e CandlesSortEnum) MarshalJSON() ([]byte, error) {
+	var buf bytes.Buffer
+	e.MarshalGQL(&buf)
+	return buf.Bytes(), nil
+}
+
 type Role string
 
 const (
@@ -744,4 +759,18 @@ func (e *Role) UnmarshalGQL(v any) error {
 
 func (e Role) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+func (e *Role) UnmarshalJSON(b []byte) error {
+	s, err := strconv.Unquote(string(b))
+	if err != nil {
+		return err
+	}
+	return e.UnmarshalGQL(s)
+}
+
+func (e Role) MarshalJSON() ([]byte, error) {
+	var buf bytes.Buffer
+	e.MarshalGQL(&buf)
+	return buf.Bytes(), nil
 }

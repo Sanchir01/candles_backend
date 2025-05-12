@@ -67,7 +67,6 @@ type ComplexityRoot struct {
 		NextPage   func(childComplexity int) int
 		PrevPage   func(childComplexity int) int
 		TotalCount func(childComplexity int) int
-		TotalPages func(childComplexity int) int
 	}
 
 	AllColorOk struct {
@@ -293,6 +292,7 @@ type ComplexityRoot struct {
 
 	TotalCountResolvingOk struct {
 		TotalCount func(childComplexity int) int
+		TotalPages func(childComplexity int) int
 	}
 
 	UnauthorizedProblem struct {
@@ -409,7 +409,7 @@ func (e *executableSchema) Schema() *ast.Schema {
 	return parsedSchema
 }
 
-func (e *executableSchema) Complexity(typeName, field string, childComplexity int, rawArgs map[string]any) (int, bool) {
+func (e *executableSchema) Complexity(ctx context.Context, typeName, field string, childComplexity int, rawArgs map[string]any) (int, bool) {
 	ec := executionContext{nil, e, 0, 0, nil}
 	_ = ec
 	switch typeName + "." + field {
@@ -441,13 +441,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.AllCandlesOk.TotalCount(childComplexity), true
-
-	case "AllCandlesOk.totalPages":
-		if e.complexity.AllCandlesOk.TotalPages == nil {
-			break
-		}
-
-		return e.complexity.AllCandlesOk.TotalPages(childComplexity), true
 
 	case "AllColorOk.colors":
 		if e.complexity.AllColorOk.Colors == nil {
@@ -482,7 +475,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			break
 		}
 
-		args, err := ec.field_AuthMutations_login_args(context.TODO(), rawArgs)
+		args, err := ec.field_AuthMutations_login_args(ctx, rawArgs)
 		if err != nil {
 			return 0, false
 		}
@@ -501,7 +494,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			break
 		}
 
-		args, err := ec.field_AuthMutations_registrations_args(context.TODO(), rawArgs)
+		args, err := ec.field_AuthMutations_registrations_args(ctx, rawArgs)
 		if err != nil {
 			return 0, false
 		}
@@ -618,7 +611,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			break
 		}
 
-		args, err := ec.field_CandlesMutation_createCandle_args(context.TODO(), rawArgs)
+		args, err := ec.field_CandlesMutation_createCandle_args(ctx, rawArgs)
 		if err != nil {
 			return 0, false
 		}
@@ -630,7 +623,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			break
 		}
 
-		args, err := ec.field_CandlesMutation_deleteCandle_args(context.TODO(), rawArgs)
+		args, err := ec.field_CandlesMutation_deleteCandle_args(ctx, rawArgs)
 		if err != nil {
 			return 0, false
 		}
@@ -642,7 +635,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			break
 		}
 
-		args, err := ec.field_CandlesQuery_allCandles_args(context.TODO(), rawArgs)
+		args, err := ec.field_CandlesQuery_allCandles_args(ctx, rawArgs)
 		if err != nil {
 			return 0, false
 		}
@@ -654,7 +647,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			break
 		}
 
-		args, err := ec.field_CandlesQuery_candleById_args(context.TODO(), rawArgs)
+		args, err := ec.field_CandlesQuery_candleById_args(ctx, rawArgs)
 		if err != nil {
 			return 0, false
 		}
@@ -666,7 +659,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			break
 		}
 
-		args, err := ec.field_CandlesQuery_candleBySlug_args(context.TODO(), rawArgs)
+		args, err := ec.field_CandlesQuery_candleBySlug_args(ctx, rawArgs)
 		if err != nil {
 			return 0, false
 		}
@@ -755,7 +748,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			break
 		}
 
-		args, err := ec.field_CategoryMutation_createCategory_args(context.TODO(), rawArgs)
+		args, err := ec.field_CategoryMutation_createCategory_args(ctx, rawArgs)
 		if err != nil {
 			return 0, false
 		}
@@ -767,7 +760,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			break
 		}
 
-		args, err := ec.field_CategoryMutation_delete_args(context.TODO(), rawArgs)
+		args, err := ec.field_CategoryMutation_delete_args(ctx, rawArgs)
 		if err != nil {
 			return 0, false
 		}
@@ -779,7 +772,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			break
 		}
 
-		args, err := ec.field_CategoryMutation_updateCategory_args(context.TODO(), rawArgs)
+		args, err := ec.field_CategoryMutation_updateCategory_args(ctx, rawArgs)
 		if err != nil {
 			return 0, false
 		}
@@ -791,7 +784,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			break
 		}
 
-		args, err := ec.field_CategoryQuery_categoryById_args(context.TODO(), rawArgs)
+		args, err := ec.field_CategoryQuery_categoryById_args(ctx, rawArgs)
 		if err != nil {
 			return 0, false
 		}
@@ -803,7 +796,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			break
 		}
 
-		args, err := ec.field_CategoryQuery_categoryBySlug_args(context.TODO(), rawArgs)
+		args, err := ec.field_CategoryQuery_categoryBySlug_args(ctx, rawArgs)
 		if err != nil {
 			return 0, false
 		}
@@ -885,7 +878,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			break
 		}
 
-		args, err := ec.field_ColorMutation_createColor_args(context.TODO(), rawArgs)
+		args, err := ec.field_ColorMutation_createColor_args(ctx, rawArgs)
 		if err != nil {
 			return 0, false
 		}
@@ -897,7 +890,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			break
 		}
 
-		args, err := ec.field_ColorMutation_delete_args(context.TODO(), rawArgs)
+		args, err := ec.field_ColorMutation_delete_args(ctx, rawArgs)
 		if err != nil {
 			return 0, false
 		}
@@ -909,7 +902,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			break
 		}
 
-		args, err := ec.field_ColorMutation_updateColor_args(context.TODO(), rawArgs)
+		args, err := ec.field_ColorMutation_updateColor_args(ctx, rawArgs)
 		if err != nil {
 			return 0, false
 		}
@@ -928,7 +921,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			break
 		}
 
-		args, err := ec.field_ColorQuery_colorById_args(context.TODO(), rawArgs)
+		args, err := ec.field_ColorQuery_colorById_args(ctx, rawArgs)
 		if err != nil {
 			return 0, false
 		}
@@ -940,7 +933,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			break
 		}
 
-		args, err := ec.field_ColorQuery_colorBySlug_args(context.TODO(), rawArgs)
+		args, err := ec.field_ColorQuery_colorBySlug_args(ctx, rawArgs)
 		if err != nil {
 			return 0, false
 		}
@@ -1134,7 +1127,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			break
 		}
 
-		args, err := ec.field_OrderMutations_createOrder_args(context.TODO(), rawArgs)
+		args, err := ec.field_OrderMutations_createOrder_args(ctx, rawArgs)
 		if err != nil {
 			return 0, false
 		}
@@ -1273,6 +1266,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.TotalCountResolvingOk.TotalCount(childComplexity), true
+
+	case "TotalCountResolvingOk.totalPages":
+		if e.complexity.TotalCountResolvingOk.TotalPages == nil {
+			break
+		}
+
+		return e.complexity.TotalCountResolvingOk.TotalPages(childComplexity), true
 
 	case "UnauthorizedProblem.message":
 		if e.complexity.UnauthorizedProblem.Message == nil {
@@ -1733,18 +1733,19 @@ type AllCandlesOk {
     candles: [Candles!]!
     nextPage:Int!
     prevPage:Int!
-    totalPages:Int!
     totalCount:TotalCountResolvingResult! @goField(forceResolver: true)
 }
 
 type TotalCountResolvingOk{
     totalCount: UInt!
+    totalPages:Int!
 }
 
 union TotalCountResolvingResult =
     | TotalCountResolvingOk
     | VersionMismatchProblem
-    | InternalErrorProblem`, BuiltIn: false},
+    | InternalErrorProblem
+`, BuiltIn: false},
 	{Name: "../api/category/category.graphqls", Input: `type Category implements VersionInterface{
     id:Uuid!
     title:String!
@@ -2732,6 +2733,62 @@ func (ec *executionContext) field_Query___type_argsName(
 	return zeroVal, nil
 }
 
+func (ec *executionContext) field___Directive_args_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := ec.field___Directive_args_argsIncludeDeprecated(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["includeDeprecated"] = arg0
+	return args, nil
+}
+func (ec *executionContext) field___Directive_args_argsIncludeDeprecated(
+	ctx context.Context,
+	rawArgs map[string]any,
+) (*bool, error) {
+	if _, ok := rawArgs["includeDeprecated"]; !ok {
+		var zeroVal *bool
+		return zeroVal, nil
+	}
+
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("includeDeprecated"))
+	if tmp, ok := rawArgs["includeDeprecated"]; ok {
+		return ec.unmarshalOBoolean2ᚖbool(ctx, tmp)
+	}
+
+	var zeroVal *bool
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field___Field_args_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := ec.field___Field_args_argsIncludeDeprecated(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["includeDeprecated"] = arg0
+	return args, nil
+}
+func (ec *executionContext) field___Field_args_argsIncludeDeprecated(
+	ctx context.Context,
+	rawArgs map[string]any,
+) (*bool, error) {
+	if _, ok := rawArgs["includeDeprecated"]; !ok {
+		var zeroVal *bool
+		return zeroVal, nil
+	}
+
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("includeDeprecated"))
+	if tmp, ok := rawArgs["includeDeprecated"]; ok {
+		return ec.unmarshalOBoolean2ᚖbool(ctx, tmp)
+	}
+
+	var zeroVal *bool
+	return zeroVal, nil
+}
+
 func (ec *executionContext) field___Type_enumValues_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
@@ -2942,50 +2999,6 @@ func (ec *executionContext) _AllCandlesOk_prevPage(ctx context.Context, field gr
 }
 
 func (ec *executionContext) fieldContext_AllCandlesOk_prevPage(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "AllCandlesOk",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Int does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _AllCandlesOk_totalPages(ctx context.Context, field graphql.CollectedField, obj *model.AllCandlesOk) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_AllCandlesOk_totalPages(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.TotalPages, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(int)
-	fc.Result = res
-	return ec.marshalNInt2int(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_AllCandlesOk_totalPages(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "AllCandlesOk",
 		Field:      field,
@@ -8247,6 +8260,8 @@ func (ec *executionContext) fieldContext_Query___type(ctx context.Context, field
 				return ec.fieldContext___Type_name(ctx, field)
 			case "description":
 				return ec.fieldContext___Type_description(ctx, field)
+			case "specifiedByURL":
+				return ec.fieldContext___Type_specifiedByURL(ctx, field)
 			case "fields":
 				return ec.fieldContext___Type_fields(ctx, field)
 			case "interfaces":
@@ -8259,8 +8274,8 @@ func (ec *executionContext) fieldContext_Query___type(ctx context.Context, field
 				return ec.fieldContext___Type_inputFields(ctx, field)
 			case "ofType":
 				return ec.fieldContext___Type_ofType(ctx, field)
-			case "specifiedByURL":
-				return ec.fieldContext___Type_specifiedByURL(ctx, field)
+			case "isOneOf":
+				return ec.fieldContext___Type_isOneOf(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type __Type", field.Name)
 		},
@@ -8549,6 +8564,50 @@ func (ec *executionContext) fieldContext_TotalCountResolvingOk_totalCount(_ cont
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type UInt does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TotalCountResolvingOk_totalPages(ctx context.Context, field graphql.CollectedField, obj *model.TotalCountResolvingOk) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TotalCountResolvingOk_totalPages(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.TotalPages, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TotalCountResolvingOk_totalPages(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TotalCountResolvingOk",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
 		},
 	}
 	return fc, nil
@@ -9346,6 +9405,50 @@ func (ec *executionContext) fieldContext___Directive_description(_ context.Conte
 	return fc, nil
 }
 
+func (ec *executionContext) ___Directive_isRepeatable(ctx context.Context, field graphql.CollectedField, obj *introspection.Directive) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext___Directive_isRepeatable(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.IsRepeatable, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext___Directive_isRepeatable(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "__Directive",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) ___Directive_locations(ctx context.Context, field graphql.CollectedField, obj *introspection.Directive) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext___Directive_locations(ctx, field)
 	if err != nil {
@@ -9421,7 +9524,7 @@ func (ec *executionContext) ___Directive_args(ctx context.Context, field graphql
 	return ec.marshalN__InputValue2ᚕgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐInputValueᚄ(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext___Directive_args(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext___Directive_args(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "__Directive",
 		Field:      field,
@@ -9437,53 +9540,24 @@ func (ec *executionContext) fieldContext___Directive_args(_ context.Context, fie
 				return ec.fieldContext___InputValue_type(ctx, field)
 			case "defaultValue":
 				return ec.fieldContext___InputValue_defaultValue(ctx, field)
+			case "isDeprecated":
+				return ec.fieldContext___InputValue_isDeprecated(ctx, field)
+			case "deprecationReason":
+				return ec.fieldContext___InputValue_deprecationReason(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type __InputValue", field.Name)
 		},
 	}
-	return fc, nil
-}
-
-func (ec *executionContext) ___Directive_isRepeatable(ctx context.Context, field graphql.CollectedField, obj *introspection.Directive) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext___Directive_isRepeatable(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
 	defer func() {
 		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.IsRepeatable, nil
-	})
-	if err != nil {
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field___Directive_args_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(bool)
-	fc.Result = res
-	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext___Directive_isRepeatable(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "__Directive",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Boolean does not have child fields")
-		},
+		return fc, err
 	}
 	return fc, nil
 }
@@ -9774,7 +9848,7 @@ func (ec *executionContext) ___Field_args(ctx context.Context, field graphql.Col
 	return ec.marshalN__InputValue2ᚕgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐInputValueᚄ(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext___Field_args(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext___Field_args(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "__Field",
 		Field:      field,
@@ -9790,9 +9864,24 @@ func (ec *executionContext) fieldContext___Field_args(_ context.Context, field g
 				return ec.fieldContext___InputValue_type(ctx, field)
 			case "defaultValue":
 				return ec.fieldContext___InputValue_defaultValue(ctx, field)
+			case "isDeprecated":
+				return ec.fieldContext___InputValue_isDeprecated(ctx, field)
+			case "deprecationReason":
+				return ec.fieldContext___InputValue_deprecationReason(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type __InputValue", field.Name)
 		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field___Field_args_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
 	}
 	return fc, nil
 }
@@ -9842,6 +9931,8 @@ func (ec *executionContext) fieldContext___Field_type(_ context.Context, field g
 				return ec.fieldContext___Type_name(ctx, field)
 			case "description":
 				return ec.fieldContext___Type_description(ctx, field)
+			case "specifiedByURL":
+				return ec.fieldContext___Type_specifiedByURL(ctx, field)
 			case "fields":
 				return ec.fieldContext___Type_fields(ctx, field)
 			case "interfaces":
@@ -9854,8 +9945,8 @@ func (ec *executionContext) fieldContext___Field_type(_ context.Context, field g
 				return ec.fieldContext___Type_inputFields(ctx, field)
 			case "ofType":
 				return ec.fieldContext___Type_ofType(ctx, field)
-			case "specifiedByURL":
-				return ec.fieldContext___Type_specifiedByURL(ctx, field)
+			case "isOneOf":
+				return ec.fieldContext___Type_isOneOf(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type __Type", field.Name)
 		},
@@ -10078,6 +10169,8 @@ func (ec *executionContext) fieldContext___InputValue_type(_ context.Context, fi
 				return ec.fieldContext___Type_name(ctx, field)
 			case "description":
 				return ec.fieldContext___Type_description(ctx, field)
+			case "specifiedByURL":
+				return ec.fieldContext___Type_specifiedByURL(ctx, field)
 			case "fields":
 				return ec.fieldContext___Type_fields(ctx, field)
 			case "interfaces":
@@ -10090,8 +10183,8 @@ func (ec *executionContext) fieldContext___InputValue_type(_ context.Context, fi
 				return ec.fieldContext___Type_inputFields(ctx, field)
 			case "ofType":
 				return ec.fieldContext___Type_ofType(ctx, field)
-			case "specifiedByURL":
-				return ec.fieldContext___Type_specifiedByURL(ctx, field)
+			case "isOneOf":
+				return ec.fieldContext___Type_isOneOf(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type __Type", field.Name)
 		},
@@ -10132,6 +10225,91 @@ func (ec *executionContext) fieldContext___InputValue_defaultValue(_ context.Con
 		Object:     "__InputValue",
 		Field:      field,
 		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) ___InputValue_isDeprecated(ctx context.Context, field graphql.CollectedField, obj *introspection.InputValue) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext___InputValue_isDeprecated(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.IsDeprecated(), nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext___InputValue_isDeprecated(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "__InputValue",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) ___InputValue_deprecationReason(ctx context.Context, field graphql.CollectedField, obj *introspection.InputValue) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext___InputValue_deprecationReason(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.DeprecationReason(), nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext___InputValue_deprecationReason(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "__InputValue",
+		Field:      field,
+		IsMethod:   true,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type String does not have child fields")
@@ -10226,6 +10404,8 @@ func (ec *executionContext) fieldContext___Schema_types(_ context.Context, field
 				return ec.fieldContext___Type_name(ctx, field)
 			case "description":
 				return ec.fieldContext___Type_description(ctx, field)
+			case "specifiedByURL":
+				return ec.fieldContext___Type_specifiedByURL(ctx, field)
 			case "fields":
 				return ec.fieldContext___Type_fields(ctx, field)
 			case "interfaces":
@@ -10238,8 +10418,8 @@ func (ec *executionContext) fieldContext___Schema_types(_ context.Context, field
 				return ec.fieldContext___Type_inputFields(ctx, field)
 			case "ofType":
 				return ec.fieldContext___Type_ofType(ctx, field)
-			case "specifiedByURL":
-				return ec.fieldContext___Type_specifiedByURL(ctx, field)
+			case "isOneOf":
+				return ec.fieldContext___Type_isOneOf(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type __Type", field.Name)
 		},
@@ -10292,6 +10472,8 @@ func (ec *executionContext) fieldContext___Schema_queryType(_ context.Context, f
 				return ec.fieldContext___Type_name(ctx, field)
 			case "description":
 				return ec.fieldContext___Type_description(ctx, field)
+			case "specifiedByURL":
+				return ec.fieldContext___Type_specifiedByURL(ctx, field)
 			case "fields":
 				return ec.fieldContext___Type_fields(ctx, field)
 			case "interfaces":
@@ -10304,8 +10486,8 @@ func (ec *executionContext) fieldContext___Schema_queryType(_ context.Context, f
 				return ec.fieldContext___Type_inputFields(ctx, field)
 			case "ofType":
 				return ec.fieldContext___Type_ofType(ctx, field)
-			case "specifiedByURL":
-				return ec.fieldContext___Type_specifiedByURL(ctx, field)
+			case "isOneOf":
+				return ec.fieldContext___Type_isOneOf(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type __Type", field.Name)
 		},
@@ -10355,6 +10537,8 @@ func (ec *executionContext) fieldContext___Schema_mutationType(_ context.Context
 				return ec.fieldContext___Type_name(ctx, field)
 			case "description":
 				return ec.fieldContext___Type_description(ctx, field)
+			case "specifiedByURL":
+				return ec.fieldContext___Type_specifiedByURL(ctx, field)
 			case "fields":
 				return ec.fieldContext___Type_fields(ctx, field)
 			case "interfaces":
@@ -10367,8 +10551,8 @@ func (ec *executionContext) fieldContext___Schema_mutationType(_ context.Context
 				return ec.fieldContext___Type_inputFields(ctx, field)
 			case "ofType":
 				return ec.fieldContext___Type_ofType(ctx, field)
-			case "specifiedByURL":
-				return ec.fieldContext___Type_specifiedByURL(ctx, field)
+			case "isOneOf":
+				return ec.fieldContext___Type_isOneOf(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type __Type", field.Name)
 		},
@@ -10418,6 +10602,8 @@ func (ec *executionContext) fieldContext___Schema_subscriptionType(_ context.Con
 				return ec.fieldContext___Type_name(ctx, field)
 			case "description":
 				return ec.fieldContext___Type_description(ctx, field)
+			case "specifiedByURL":
+				return ec.fieldContext___Type_specifiedByURL(ctx, field)
 			case "fields":
 				return ec.fieldContext___Type_fields(ctx, field)
 			case "interfaces":
@@ -10430,8 +10616,8 @@ func (ec *executionContext) fieldContext___Schema_subscriptionType(_ context.Con
 				return ec.fieldContext___Type_inputFields(ctx, field)
 			case "ofType":
 				return ec.fieldContext___Type_ofType(ctx, field)
-			case "specifiedByURL":
-				return ec.fieldContext___Type_specifiedByURL(ctx, field)
+			case "isOneOf":
+				return ec.fieldContext___Type_isOneOf(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type __Type", field.Name)
 		},
@@ -10482,12 +10668,12 @@ func (ec *executionContext) fieldContext___Schema_directives(_ context.Context, 
 				return ec.fieldContext___Directive_name(ctx, field)
 			case "description":
 				return ec.fieldContext___Directive_description(ctx, field)
+			case "isRepeatable":
+				return ec.fieldContext___Directive_isRepeatable(ctx, field)
 			case "locations":
 				return ec.fieldContext___Directive_locations(ctx, field)
 			case "args":
 				return ec.fieldContext___Directive_args(ctx, field)
-			case "isRepeatable":
-				return ec.fieldContext___Directive_isRepeatable(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type __Directive", field.Name)
 		},
@@ -10621,6 +10807,47 @@ func (ec *executionContext) fieldContext___Type_description(_ context.Context, f
 	return fc, nil
 }
 
+func (ec *executionContext) ___Type_specifiedByURL(ctx context.Context, field graphql.CollectedField, obj *introspection.Type) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext___Type_specifiedByURL(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.SpecifiedByURL(), nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext___Type_specifiedByURL(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "__Type",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) ___Type_fields(ctx context.Context, field graphql.CollectedField, obj *introspection.Type) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext___Type_fields(ctx, field)
 	if err != nil {
@@ -10729,6 +10956,8 @@ func (ec *executionContext) fieldContext___Type_interfaces(_ context.Context, fi
 				return ec.fieldContext___Type_name(ctx, field)
 			case "description":
 				return ec.fieldContext___Type_description(ctx, field)
+			case "specifiedByURL":
+				return ec.fieldContext___Type_specifiedByURL(ctx, field)
 			case "fields":
 				return ec.fieldContext___Type_fields(ctx, field)
 			case "interfaces":
@@ -10741,8 +10970,8 @@ func (ec *executionContext) fieldContext___Type_interfaces(_ context.Context, fi
 				return ec.fieldContext___Type_inputFields(ctx, field)
 			case "ofType":
 				return ec.fieldContext___Type_ofType(ctx, field)
-			case "specifiedByURL":
-				return ec.fieldContext___Type_specifiedByURL(ctx, field)
+			case "isOneOf":
+				return ec.fieldContext___Type_isOneOf(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type __Type", field.Name)
 		},
@@ -10792,6 +11021,8 @@ func (ec *executionContext) fieldContext___Type_possibleTypes(_ context.Context,
 				return ec.fieldContext___Type_name(ctx, field)
 			case "description":
 				return ec.fieldContext___Type_description(ctx, field)
+			case "specifiedByURL":
+				return ec.fieldContext___Type_specifiedByURL(ctx, field)
 			case "fields":
 				return ec.fieldContext___Type_fields(ctx, field)
 			case "interfaces":
@@ -10804,8 +11035,8 @@ func (ec *executionContext) fieldContext___Type_possibleTypes(_ context.Context,
 				return ec.fieldContext___Type_inputFields(ctx, field)
 			case "ofType":
 				return ec.fieldContext___Type_ofType(ctx, field)
-			case "specifiedByURL":
-				return ec.fieldContext___Type_specifiedByURL(ctx, field)
+			case "isOneOf":
+				return ec.fieldContext___Type_isOneOf(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type __Type", field.Name)
 		},
@@ -10919,6 +11150,10 @@ func (ec *executionContext) fieldContext___Type_inputFields(_ context.Context, f
 				return ec.fieldContext___InputValue_type(ctx, field)
 			case "defaultValue":
 				return ec.fieldContext___InputValue_defaultValue(ctx, field)
+			case "isDeprecated":
+				return ec.fieldContext___InputValue_isDeprecated(ctx, field)
+			case "deprecationReason":
+				return ec.fieldContext___InputValue_deprecationReason(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type __InputValue", field.Name)
 		},
@@ -10968,6 +11203,8 @@ func (ec *executionContext) fieldContext___Type_ofType(_ context.Context, field 
 				return ec.fieldContext___Type_name(ctx, field)
 			case "description":
 				return ec.fieldContext___Type_description(ctx, field)
+			case "specifiedByURL":
+				return ec.fieldContext___Type_specifiedByURL(ctx, field)
 			case "fields":
 				return ec.fieldContext___Type_fields(ctx, field)
 			case "interfaces":
@@ -10980,8 +11217,8 @@ func (ec *executionContext) fieldContext___Type_ofType(_ context.Context, field 
 				return ec.fieldContext___Type_inputFields(ctx, field)
 			case "ofType":
 				return ec.fieldContext___Type_ofType(ctx, field)
-			case "specifiedByURL":
-				return ec.fieldContext___Type_specifiedByURL(ctx, field)
+			case "isOneOf":
+				return ec.fieldContext___Type_isOneOf(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type __Type", field.Name)
 		},
@@ -10989,8 +11226,8 @@ func (ec *executionContext) fieldContext___Type_ofType(_ context.Context, field 
 	return fc, nil
 }
 
-func (ec *executionContext) ___Type_specifiedByURL(ctx context.Context, field graphql.CollectedField, obj *introspection.Type) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext___Type_specifiedByURL(ctx, field)
+func (ec *executionContext) ___Type_isOneOf(ctx context.Context, field graphql.CollectedField, obj *introspection.Type) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext___Type_isOneOf(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -11003,7 +11240,7 @@ func (ec *executionContext) ___Type_specifiedByURL(ctx context.Context, field gr
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.SpecifiedByURL(), nil
+		return obj.IsOneOf(), nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -11012,19 +11249,19 @@ func (ec *executionContext) ___Type_specifiedByURL(ctx context.Context, field gr
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*string)
+	res := resTmp.(bool)
 	fc.Result = res
-	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+	return ec.marshalOBoolean2bool(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext___Type_specifiedByURL(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext___Type_isOneOf(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "__Type",
 		Field:      field,
 		IsMethod:   true,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
+			return nil, errors.New("field of type Boolean does not have child fields")
 		},
 	}
 	return fc, nil
@@ -11761,13 +11998,6 @@ func (ec *executionContext) _AllOrdersResult(ctx context.Context, sel ast.Select
 	switch obj := (obj).(type) {
 	case nil:
 		return graphql.Null
-	case model.InternalErrorProblem:
-		return ec._InternalErrorProblem(ctx, sel, &obj)
-	case *model.InternalErrorProblem:
-		if obj == nil {
-			return graphql.Null
-		}
-		return ec._InternalErrorProblem(ctx, sel, obj)
 	case model.UnauthorizedProblem:
 		return ec._UnauthorizedProblem(ctx, sel, &obj)
 	case *model.UnauthorizedProblem:
@@ -11775,6 +12005,13 @@ func (ec *executionContext) _AllOrdersResult(ctx context.Context, sel ast.Select
 			return graphql.Null
 		}
 		return ec._UnauthorizedProblem(ctx, sel, obj)
+	case model.InternalErrorProblem:
+		return ec._InternalErrorProblem(ctx, sel, &obj)
+	case *model.InternalErrorProblem:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._InternalErrorProblem(ctx, sel, obj)
 	case model.AllOrdersOk:
 		return ec._AllOrdersOk(ctx, sel, &obj)
 	case *model.AllOrdersOk:
@@ -11791,13 +12028,6 @@ func (ec *executionContext) _AllUserOrdersResult(ctx context.Context, sel ast.Se
 	switch obj := (obj).(type) {
 	case nil:
 		return graphql.Null
-	case model.InternalErrorProblem:
-		return ec._InternalErrorProblem(ctx, sel, &obj)
-	case *model.InternalErrorProblem:
-		if obj == nil {
-			return graphql.Null
-		}
-		return ec._InternalErrorProblem(ctx, sel, obj)
 	case model.UnauthorizedProblem:
 		return ec._UnauthorizedProblem(ctx, sel, &obj)
 	case *model.UnauthorizedProblem:
@@ -11805,6 +12035,13 @@ func (ec *executionContext) _AllUserOrdersResult(ctx context.Context, sel ast.Se
 			return graphql.Null
 		}
 		return ec._UnauthorizedProblem(ctx, sel, obj)
+	case model.InternalErrorProblem:
+		return ec._InternalErrorProblem(ctx, sel, &obj)
+	case *model.InternalErrorProblem:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._InternalErrorProblem(ctx, sel, obj)
 	case model.AllUserOrdersOk:
 		return ec._AllUserOrdersOk(ctx, sel, &obj)
 	case *model.AllUserOrdersOk:
@@ -11881,20 +12118,6 @@ func (ec *executionContext) _CandlesMutationResult(ctx context.Context, sel ast.
 	switch obj := (obj).(type) {
 	case nil:
 		return graphql.Null
-	case model.InternalErrorProblem:
-		return ec._InternalErrorProblem(ctx, sel, &obj)
-	case *model.InternalErrorProblem:
-		if obj == nil {
-			return graphql.Null
-		}
-		return ec._InternalErrorProblem(ctx, sel, obj)
-	case model.UnauthorizedProblem:
-		return ec._UnauthorizedProblem(ctx, sel, &obj)
-	case *model.UnauthorizedProblem:
-		if obj == nil {
-			return graphql.Null
-		}
-		return ec._UnauthorizedProblem(ctx, sel, obj)
 	case model.VersionMismatchProblem:
 		return ec._VersionMismatchProblem(ctx, sel, &obj)
 	case *model.VersionMismatchProblem:
@@ -11902,6 +12125,20 @@ func (ec *executionContext) _CandlesMutationResult(ctx context.Context, sel ast.
 			return graphql.Null
 		}
 		return ec._VersionMismatchProblem(ctx, sel, obj)
+	case model.UnauthorizedProblem:
+		return ec._UnauthorizedProblem(ctx, sel, &obj)
+	case *model.UnauthorizedProblem:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._UnauthorizedProblem(ctx, sel, obj)
+	case model.InternalErrorProblem:
+		return ec._InternalErrorProblem(ctx, sel, &obj)
+	case *model.InternalErrorProblem:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._InternalErrorProblem(ctx, sel, obj)
 	case model.CandlesCreateOk:
 		return ec._CandlesCreateOk(ctx, sel, &obj)
 	case *model.CandlesCreateOk:
@@ -11918,13 +12155,6 @@ func (ec *executionContext) _CategoryByIdResult(ctx context.Context, sel ast.Sel
 	switch obj := (obj).(type) {
 	case nil:
 		return graphql.Null
-	case model.InternalErrorProblem:
-		return ec._InternalErrorProblem(ctx, sel, &obj)
-	case *model.InternalErrorProblem:
-		if obj == nil {
-			return graphql.Null
-		}
-		return ec._InternalErrorProblem(ctx, sel, obj)
 	case model.VersionMismatchProblem:
 		return ec._VersionMismatchProblem(ctx, sel, &obj)
 	case *model.VersionMismatchProblem:
@@ -11932,6 +12162,13 @@ func (ec *executionContext) _CategoryByIdResult(ctx context.Context, sel ast.Sel
 			return graphql.Null
 		}
 		return ec._VersionMismatchProblem(ctx, sel, obj)
+	case model.InternalErrorProblem:
+		return ec._InternalErrorProblem(ctx, sel, &obj)
+	case *model.InternalErrorProblem:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._InternalErrorProblem(ctx, sel, obj)
 	case model.CategoryByIDOk:
 		return ec._CategoryByIdOk(ctx, sel, &obj)
 	case *model.CategoryByIDOk:
@@ -11948,13 +12185,6 @@ func (ec *executionContext) _CategoryBySlugResult(ctx context.Context, sel ast.S
 	switch obj := (obj).(type) {
 	case nil:
 		return graphql.Null
-	case model.InternalErrorProblem:
-		return ec._InternalErrorProblem(ctx, sel, &obj)
-	case *model.InternalErrorProblem:
-		if obj == nil {
-			return graphql.Null
-		}
-		return ec._InternalErrorProblem(ctx, sel, obj)
 	case model.VersionMismatchProblem:
 		return ec._VersionMismatchProblem(ctx, sel, &obj)
 	case *model.VersionMismatchProblem:
@@ -11962,6 +12192,13 @@ func (ec *executionContext) _CategoryBySlugResult(ctx context.Context, sel ast.S
 			return graphql.Null
 		}
 		return ec._VersionMismatchProblem(ctx, sel, obj)
+	case model.InternalErrorProblem:
+		return ec._InternalErrorProblem(ctx, sel, &obj)
+	case *model.InternalErrorProblem:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._InternalErrorProblem(ctx, sel, obj)
 	case model.CategoryBySlugOk:
 		return ec._CategoryBySlugOk(ctx, sel, &obj)
 	case *model.CategoryBySlugOk:
@@ -11978,20 +12215,6 @@ func (ec *executionContext) _CategoryCreateResult(ctx context.Context, sel ast.S
 	switch obj := (obj).(type) {
 	case nil:
 		return graphql.Null
-	case model.InternalErrorProblem:
-		return ec._InternalErrorProblem(ctx, sel, &obj)
-	case *model.InternalErrorProblem:
-		if obj == nil {
-			return graphql.Null
-		}
-		return ec._InternalErrorProblem(ctx, sel, obj)
-	case model.UnauthorizedProblem:
-		return ec._UnauthorizedProblem(ctx, sel, &obj)
-	case *model.UnauthorizedProblem:
-		if obj == nil {
-			return graphql.Null
-		}
-		return ec._UnauthorizedProblem(ctx, sel, obj)
 	case model.VersionMismatchProblem:
 		return ec._VersionMismatchProblem(ctx, sel, &obj)
 	case *model.VersionMismatchProblem:
@@ -11999,6 +12222,20 @@ func (ec *executionContext) _CategoryCreateResult(ctx context.Context, sel ast.S
 			return graphql.Null
 		}
 		return ec._VersionMismatchProblem(ctx, sel, obj)
+	case model.UnauthorizedProblem:
+		return ec._UnauthorizedProblem(ctx, sel, &obj)
+	case *model.UnauthorizedProblem:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._UnauthorizedProblem(ctx, sel, obj)
+	case model.InternalErrorProblem:
+		return ec._InternalErrorProblem(ctx, sel, &obj)
+	case *model.InternalErrorProblem:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._InternalErrorProblem(ctx, sel, obj)
 	case model.CategoryCreateOk:
 		return ec._CategoryCreateOk(ctx, sel, &obj)
 	case *model.CategoryCreateOk:
@@ -12038,13 +12275,6 @@ func (ec *executionContext) _ColorByIdResult(ctx context.Context, sel ast.Select
 	switch obj := (obj).(type) {
 	case nil:
 		return graphql.Null
-	case model.InternalErrorProblem:
-		return ec._InternalErrorProblem(ctx, sel, &obj)
-	case *model.InternalErrorProblem:
-		if obj == nil {
-			return graphql.Null
-		}
-		return ec._InternalErrorProblem(ctx, sel, obj)
 	case model.VersionMismatchProblem:
 		return ec._VersionMismatchProblem(ctx, sel, &obj)
 	case *model.VersionMismatchProblem:
@@ -12052,6 +12282,13 @@ func (ec *executionContext) _ColorByIdResult(ctx context.Context, sel ast.Select
 			return graphql.Null
 		}
 		return ec._VersionMismatchProblem(ctx, sel, obj)
+	case model.InternalErrorProblem:
+		return ec._InternalErrorProblem(ctx, sel, &obj)
+	case *model.InternalErrorProblem:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._InternalErrorProblem(ctx, sel, obj)
 	case model.ColorByIDOk:
 		return ec._ColorByIdOk(ctx, sel, &obj)
 	case *model.ColorByIDOk:
@@ -12068,13 +12305,6 @@ func (ec *executionContext) _ColorBySlugResult(ctx context.Context, sel ast.Sele
 	switch obj := (obj).(type) {
 	case nil:
 		return graphql.Null
-	case model.InternalErrorProblem:
-		return ec._InternalErrorProblem(ctx, sel, &obj)
-	case *model.InternalErrorProblem:
-		if obj == nil {
-			return graphql.Null
-		}
-		return ec._InternalErrorProblem(ctx, sel, obj)
 	case model.VersionMismatchProblem:
 		return ec._VersionMismatchProblem(ctx, sel, &obj)
 	case *model.VersionMismatchProblem:
@@ -12082,6 +12312,13 @@ func (ec *executionContext) _ColorBySlugResult(ctx context.Context, sel ast.Sele
 			return graphql.Null
 		}
 		return ec._VersionMismatchProblem(ctx, sel, obj)
+	case model.InternalErrorProblem:
+		return ec._InternalErrorProblem(ctx, sel, &obj)
+	case *model.InternalErrorProblem:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._InternalErrorProblem(ctx, sel, obj)
 	case model.ColorBySlugOk:
 		return ec._ColorBySlugOk(ctx, sel, &obj)
 	case *model.ColorBySlugOk:
@@ -12098,20 +12335,6 @@ func (ec *executionContext) _ColorCreateResult(ctx context.Context, sel ast.Sele
 	switch obj := (obj).(type) {
 	case nil:
 		return graphql.Null
-	case model.InternalErrorProblem:
-		return ec._InternalErrorProblem(ctx, sel, &obj)
-	case *model.InternalErrorProblem:
-		if obj == nil {
-			return graphql.Null
-		}
-		return ec._InternalErrorProblem(ctx, sel, obj)
-	case model.UnauthorizedProblem:
-		return ec._UnauthorizedProblem(ctx, sel, &obj)
-	case *model.UnauthorizedProblem:
-		if obj == nil {
-			return graphql.Null
-		}
-		return ec._UnauthorizedProblem(ctx, sel, obj)
 	case model.VersionMismatchProblem:
 		return ec._VersionMismatchProblem(ctx, sel, &obj)
 	case *model.VersionMismatchProblem:
@@ -12119,6 +12342,20 @@ func (ec *executionContext) _ColorCreateResult(ctx context.Context, sel ast.Sele
 			return graphql.Null
 		}
 		return ec._VersionMismatchProblem(ctx, sel, obj)
+	case model.UnauthorizedProblem:
+		return ec._UnauthorizedProblem(ctx, sel, &obj)
+	case *model.UnauthorizedProblem:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._UnauthorizedProblem(ctx, sel, obj)
+	case model.InternalErrorProblem:
+		return ec._InternalErrorProblem(ctx, sel, &obj)
+	case *model.InternalErrorProblem:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._InternalErrorProblem(ctx, sel, obj)
 	case model.ColorCreateOk:
 		return ec._ColorCreateOk(ctx, sel, &obj)
 	case *model.ColorCreateOk:
@@ -12135,13 +12372,6 @@ func (ec *executionContext) _CreateOrderResult(ctx context.Context, sel ast.Sele
 	switch obj := (obj).(type) {
 	case nil:
 		return graphql.Null
-	case model.InternalErrorProblem:
-		return ec._InternalErrorProblem(ctx, sel, &obj)
-	case *model.InternalErrorProblem:
-		if obj == nil {
-			return graphql.Null
-		}
-		return ec._InternalErrorProblem(ctx, sel, obj)
 	case model.UnauthorizedProblem:
 		return ec._UnauthorizedProblem(ctx, sel, &obj)
 	case *model.UnauthorizedProblem:
@@ -12149,6 +12379,13 @@ func (ec *executionContext) _CreateOrderResult(ctx context.Context, sel ast.Sele
 			return graphql.Null
 		}
 		return ec._UnauthorizedProblem(ctx, sel, obj)
+	case model.InternalErrorProblem:
+		return ec._InternalErrorProblem(ctx, sel, &obj)
+	case *model.InternalErrorProblem:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._InternalErrorProblem(ctx, sel, obj)
 	case model.CreateOrderOk:
 		return ec._CreateOrderOk(ctx, sel, &obj)
 	case *model.CreateOrderOk:
@@ -12165,20 +12402,6 @@ func (ec *executionContext) _DeleteCandleResult(ctx context.Context, sel ast.Sel
 	switch obj := (obj).(type) {
 	case nil:
 		return graphql.Null
-	case model.InternalErrorProblem:
-		return ec._InternalErrorProblem(ctx, sel, &obj)
-	case *model.InternalErrorProblem:
-		if obj == nil {
-			return graphql.Null
-		}
-		return ec._InternalErrorProblem(ctx, sel, obj)
-	case model.UnauthorizedProblem:
-		return ec._UnauthorizedProblem(ctx, sel, &obj)
-	case *model.UnauthorizedProblem:
-		if obj == nil {
-			return graphql.Null
-		}
-		return ec._UnauthorizedProblem(ctx, sel, obj)
 	case model.VersionMismatchProblem:
 		return ec._VersionMismatchProblem(ctx, sel, &obj)
 	case *model.VersionMismatchProblem:
@@ -12186,6 +12409,20 @@ func (ec *executionContext) _DeleteCandleResult(ctx context.Context, sel ast.Sel
 			return graphql.Null
 		}
 		return ec._VersionMismatchProblem(ctx, sel, obj)
+	case model.UnauthorizedProblem:
+		return ec._UnauthorizedProblem(ctx, sel, &obj)
+	case *model.UnauthorizedProblem:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._UnauthorizedProblem(ctx, sel, obj)
+	case model.InternalErrorProblem:
+		return ec._InternalErrorProblem(ctx, sel, &obj)
+	case *model.InternalErrorProblem:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._InternalErrorProblem(ctx, sel, obj)
 	case model.CanldesDeleteOk:
 		return ec._CanldesDeleteOk(ctx, sel, &obj)
 	case *model.CanldesDeleteOk:
@@ -12202,13 +12439,6 @@ func (ec *executionContext) _DeleteCategoryResult(ctx context.Context, sel ast.S
 	switch obj := (obj).(type) {
 	case nil:
 		return graphql.Null
-	case model.InternalErrorProblem:
-		return ec._InternalErrorProblem(ctx, sel, &obj)
-	case *model.InternalErrorProblem:
-		if obj == nil {
-			return graphql.Null
-		}
-		return ec._InternalErrorProblem(ctx, sel, obj)
 	case model.VersionMismatchProblem:
 		return ec._VersionMismatchProblem(ctx, sel, &obj)
 	case *model.VersionMismatchProblem:
@@ -12216,6 +12446,13 @@ func (ec *executionContext) _DeleteCategoryResult(ctx context.Context, sel ast.S
 			return graphql.Null
 		}
 		return ec._VersionMismatchProblem(ctx, sel, obj)
+	case model.InternalErrorProblem:
+		return ec._InternalErrorProblem(ctx, sel, &obj)
+	case *model.InternalErrorProblem:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._InternalErrorProblem(ctx, sel, obj)
 	case model.DeleteCategoryOk:
 		return ec._DeleteCategoryOk(ctx, sel, &obj)
 	case *model.DeleteCategoryOk:
@@ -12232,13 +12469,6 @@ func (ec *executionContext) _DeleteColorResult(ctx context.Context, sel ast.Sele
 	switch obj := (obj).(type) {
 	case nil:
 		return graphql.Null
-	case model.InternalErrorProblem:
-		return ec._InternalErrorProblem(ctx, sel, &obj)
-	case *model.InternalErrorProblem:
-		if obj == nil {
-			return graphql.Null
-		}
-		return ec._InternalErrorProblem(ctx, sel, obj)
 	case model.VersionMismatchProblem:
 		return ec._VersionMismatchProblem(ctx, sel, &obj)
 	case *model.VersionMismatchProblem:
@@ -12246,6 +12476,13 @@ func (ec *executionContext) _DeleteColorResult(ctx context.Context, sel ast.Sele
 			return graphql.Null
 		}
 		return ec._VersionMismatchProblem(ctx, sel, obj)
+	case model.InternalErrorProblem:
+		return ec._InternalErrorProblem(ctx, sel, &obj)
+	case *model.InternalErrorProblem:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._InternalErrorProblem(ctx, sel, obj)
 	case model.DeleteColorOk:
 		return ec._DeleteColorOk(ctx, sel, &obj)
 	case *model.DeleteColorOk:
@@ -12285,13 +12522,6 @@ func (ec *executionContext) _LoginResult(ctx context.Context, sel ast.SelectionS
 	switch obj := (obj).(type) {
 	case nil:
 		return graphql.Null
-	case model.InternalErrorProblem:
-		return ec._InternalErrorProblem(ctx, sel, &obj)
-	case *model.InternalErrorProblem:
-		if obj == nil {
-			return graphql.Null
-		}
-		return ec._InternalErrorProblem(ctx, sel, obj)
 	case model.VersionMismatchProblem:
 		return ec._VersionMismatchProblem(ctx, sel, &obj)
 	case *model.VersionMismatchProblem:
@@ -12299,6 +12529,13 @@ func (ec *executionContext) _LoginResult(ctx context.Context, sel ast.SelectionS
 			return graphql.Null
 		}
 		return ec._VersionMismatchProblem(ctx, sel, obj)
+	case model.InternalErrorProblem:
+		return ec._InternalErrorProblem(ctx, sel, &obj)
+	case *model.InternalErrorProblem:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._InternalErrorProblem(ctx, sel, obj)
 	case model.LoginOk:
 		return ec._LoginOk(ctx, sel, &obj)
 	case *model.LoginOk:
@@ -12338,20 +12575,6 @@ func (ec *executionContext) _ProblemInterface(ctx context.Context, sel ast.Selec
 	switch obj := (obj).(type) {
 	case nil:
 		return graphql.Null
-	case model.InternalErrorProblem:
-		return ec._InternalErrorProblem(ctx, sel, &obj)
-	case *model.InternalErrorProblem:
-		if obj == nil {
-			return graphql.Null
-		}
-		return ec._InternalErrorProblem(ctx, sel, obj)
-	case model.UnauthorizedProblem:
-		return ec._UnauthorizedProblem(ctx, sel, &obj)
-	case *model.UnauthorizedProblem:
-		if obj == nil {
-			return graphql.Null
-		}
-		return ec._UnauthorizedProblem(ctx, sel, obj)
 	case model.VersionMismatchProblem:
 		return ec._VersionMismatchProblem(ctx, sel, &obj)
 	case *model.VersionMismatchProblem:
@@ -12359,6 +12582,13 @@ func (ec *executionContext) _ProblemInterface(ctx context.Context, sel ast.Selec
 			return graphql.Null
 		}
 		return ec._VersionMismatchProblem(ctx, sel, obj)
+	case model.UnauthorizedProblem:
+		return ec._UnauthorizedProblem(ctx, sel, &obj)
+	case *model.UnauthorizedProblem:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._UnauthorizedProblem(ctx, sel, obj)
 	case model.InvalidSortRankProblem:
 		return ec._InvalidSortRankProblem(ctx, sel, &obj)
 	case *model.InvalidSortRankProblem:
@@ -12366,6 +12596,13 @@ func (ec *executionContext) _ProblemInterface(ctx context.Context, sel ast.Selec
 			return graphql.Null
 		}
 		return ec._InvalidSortRankProblem(ctx, sel, obj)
+	case model.InternalErrorProblem:
+		return ec._InternalErrorProblem(ctx, sel, &obj)
+	case *model.InternalErrorProblem:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._InternalErrorProblem(ctx, sel, obj)
 	default:
 		panic(fmt.Errorf("unexpected type %T", obj))
 	}
@@ -12375,13 +12612,6 @@ func (ec *executionContext) _RegistrationsResult(ctx context.Context, sel ast.Se
 	switch obj := (obj).(type) {
 	case nil:
 		return graphql.Null
-	case model.InternalErrorProblem:
-		return ec._InternalErrorProblem(ctx, sel, &obj)
-	case *model.InternalErrorProblem:
-		if obj == nil {
-			return graphql.Null
-		}
-		return ec._InternalErrorProblem(ctx, sel, obj)
 	case model.VersionMismatchProblem:
 		return ec._VersionMismatchProblem(ctx, sel, &obj)
 	case *model.VersionMismatchProblem:
@@ -12389,6 +12619,13 @@ func (ec *executionContext) _RegistrationsResult(ctx context.Context, sel ast.Se
 			return graphql.Null
 		}
 		return ec._VersionMismatchProblem(ctx, sel, obj)
+	case model.InternalErrorProblem:
+		return ec._InternalErrorProblem(ctx, sel, &obj)
+	case *model.InternalErrorProblem:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._InternalErrorProblem(ctx, sel, obj)
 	case model.RegistrationsOk:
 		return ec._RegistrationsOk(ctx, sel, &obj)
 	case *model.RegistrationsOk:
@@ -12435,13 +12672,6 @@ func (ec *executionContext) _UpdateCategoryResult(ctx context.Context, sel ast.S
 	switch obj := (obj).(type) {
 	case nil:
 		return graphql.Null
-	case model.InternalErrorProblem:
-		return ec._InternalErrorProblem(ctx, sel, &obj)
-	case *model.InternalErrorProblem:
-		if obj == nil {
-			return graphql.Null
-		}
-		return ec._InternalErrorProblem(ctx, sel, obj)
 	case model.VersionMismatchProblem:
 		return ec._VersionMismatchProblem(ctx, sel, &obj)
 	case *model.VersionMismatchProblem:
@@ -12449,6 +12679,13 @@ func (ec *executionContext) _UpdateCategoryResult(ctx context.Context, sel ast.S
 			return graphql.Null
 		}
 		return ec._VersionMismatchProblem(ctx, sel, obj)
+	case model.InternalErrorProblem:
+		return ec._InternalErrorProblem(ctx, sel, &obj)
+	case *model.InternalErrorProblem:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._InternalErrorProblem(ctx, sel, obj)
 	case model.UpdateCategoryOk:
 		return ec._UpdateCategoryOk(ctx, sel, &obj)
 	case *model.UpdateCategoryOk:
@@ -12465,13 +12702,6 @@ func (ec *executionContext) _UpdateColorResult(ctx context.Context, sel ast.Sele
 	switch obj := (obj).(type) {
 	case nil:
 		return graphql.Null
-	case model.InternalErrorProblem:
-		return ec._InternalErrorProblem(ctx, sel, &obj)
-	case *model.InternalErrorProblem:
-		if obj == nil {
-			return graphql.Null
-		}
-		return ec._InternalErrorProblem(ctx, sel, obj)
 	case model.VersionMismatchProblem:
 		return ec._VersionMismatchProblem(ctx, sel, &obj)
 	case *model.VersionMismatchProblem:
@@ -12479,6 +12709,13 @@ func (ec *executionContext) _UpdateColorResult(ctx context.Context, sel ast.Sele
 			return graphql.Null
 		}
 		return ec._VersionMismatchProblem(ctx, sel, obj)
+	case model.InternalErrorProblem:
+		return ec._InternalErrorProblem(ctx, sel, &obj)
+	case *model.InternalErrorProblem:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._InternalErrorProblem(ctx, sel, obj)
 	case model.UpdateColorOk:
 		return ec._UpdateColorOk(ctx, sel, &obj)
 	case *model.UpdateColorOk:
@@ -12495,13 +12732,6 @@ func (ec *executionContext) _UserProfileResult(ctx context.Context, sel ast.Sele
 	switch obj := (obj).(type) {
 	case nil:
 		return graphql.Null
-	case model.InternalErrorProblem:
-		return ec._InternalErrorProblem(ctx, sel, &obj)
-	case *model.InternalErrorProblem:
-		if obj == nil {
-			return graphql.Null
-		}
-		return ec._InternalErrorProblem(ctx, sel, obj)
 	case model.VersionMismatchProblem:
 		return ec._VersionMismatchProblem(ctx, sel, &obj)
 	case *model.VersionMismatchProblem:
@@ -12509,6 +12739,13 @@ func (ec *executionContext) _UserProfileResult(ctx context.Context, sel ast.Sele
 			return graphql.Null
 		}
 		return ec._VersionMismatchProblem(ctx, sel, obj)
+	case model.InternalErrorProblem:
+		return ec._InternalErrorProblem(ctx, sel, &obj)
+	case *model.InternalErrorProblem:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._InternalErrorProblem(ctx, sel, obj)
 	case model.UserProfileOk:
 		return ec._UserProfileOk(ctx, sel, &obj)
 	case *model.UserProfileOk:
@@ -12564,11 +12801,6 @@ func (ec *executionContext) _AllCandlesOk(ctx context.Context, sel ast.Selection
 			}
 		case "prevPage":
 			out.Values[i] = ec._AllCandlesOk_prevPage(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&out.Invalids, 1)
-			}
-		case "totalPages":
-			out.Values[i] = ec._AllCandlesOk_totalPages(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&out.Invalids, 1)
 			}
@@ -15332,6 +15564,11 @@ func (ec *executionContext) _TotalCountResolvingOk(ctx context.Context, sel ast.
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
+		case "totalPages":
+			out.Values[i] = ec._TotalCountResolvingOk_totalPages(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -15717,6 +15954,11 @@ func (ec *executionContext) ___Directive(ctx context.Context, sel ast.SelectionS
 			}
 		case "description":
 			out.Values[i] = ec.___Directive_description(ctx, field, obj)
+		case "isRepeatable":
+			out.Values[i] = ec.___Directive_isRepeatable(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		case "locations":
 			out.Values[i] = ec.___Directive_locations(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
@@ -15724,11 +15966,6 @@ func (ec *executionContext) ___Directive(ctx context.Context, sel ast.SelectionS
 			}
 		case "args":
 			out.Values[i] = ec.___Directive_args(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
-			}
-		case "isRepeatable":
-			out.Values[i] = ec.___Directive_isRepeatable(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
@@ -15886,6 +16123,13 @@ func (ec *executionContext) ___InputValue(ctx context.Context, sel ast.Selection
 			}
 		case "defaultValue":
 			out.Values[i] = ec.___InputValue_defaultValue(ctx, field, obj)
+		case "isDeprecated":
+			out.Values[i] = ec.___InputValue_isDeprecated(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "deprecationReason":
+			out.Values[i] = ec.___InputValue_deprecationReason(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -15984,6 +16228,8 @@ func (ec *executionContext) ___Type(ctx context.Context, sel ast.SelectionSet, o
 			out.Values[i] = ec.___Type_name(ctx, field, obj)
 		case "description":
 			out.Values[i] = ec.___Type_description(ctx, field, obj)
+		case "specifiedByURL":
+			out.Values[i] = ec.___Type_specifiedByURL(ctx, field, obj)
 		case "fields":
 			out.Values[i] = ec.___Type_fields(ctx, field, obj)
 		case "interfaces":
@@ -15996,8 +16242,8 @@ func (ec *executionContext) ___Type(ctx context.Context, sel ast.SelectionSet, o
 			out.Values[i] = ec.___Type_inputFields(ctx, field, obj)
 		case "ofType":
 			out.Values[i] = ec.___Type_ofType(ctx, field, obj)
-		case "specifiedByURL":
-			out.Values[i] = ec.___Type_specifiedByURL(ctx, field, obj)
+		case "isOneOf":
+			out.Values[i] = ec.___Type_isOneOf(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -16085,6 +16331,7 @@ func (ec *executionContext) unmarshalNBoolean2bool(ctx context.Context, v any) (
 }
 
 func (ec *executionContext) marshalNBoolean2bool(ctx context.Context, sel ast.SelectionSet, v bool) graphql.Marshaler {
+	_ = sel
 	res := graphql.MarshalBoolean(v)
 	if res == graphql.Null {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
@@ -16478,6 +16725,7 @@ func (ec *executionContext) unmarshalNDateTime2timeᚐTime(ctx context.Context, 
 }
 
 func (ec *executionContext) marshalNDateTime2timeᚐTime(ctx context.Context, sel ast.SelectionSet, v time.Time) graphql.Marshaler {
+	_ = sel
 	res := model.MarshalRfc3339Date(v)
 	if res == graphql.Null {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
@@ -16508,6 +16756,7 @@ func (ec *executionContext) unmarshalNInt2int(ctx context.Context, v any) (int, 
 }
 
 func (ec *executionContext) marshalNInt2int(ctx context.Context, sel ast.SelectionSet, v int) graphql.Marshaler {
+	_ = sel
 	res := graphql.MarshalInt(v)
 	if res == graphql.Null {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
@@ -16630,6 +16879,7 @@ func (ec *executionContext) unmarshalNPageNumber2uint(ctx context.Context, v any
 }
 
 func (ec *executionContext) marshalNPageNumber2uint(ctx context.Context, sel ast.SelectionSet, v uint) graphql.Marshaler {
+	_ = sel
 	res := model.MarshalPageNumber(v)
 	if res == graphql.Null {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
@@ -16645,6 +16895,7 @@ func (ec *executionContext) unmarshalNPageSize2uint(ctx context.Context, v any) 
 }
 
 func (ec *executionContext) marshalNPageSize2uint(ctx context.Context, sel ast.SelectionSet, v uint) graphql.Marshaler {
+	_ = sel
 	res := model.MarshalPageSize(v)
 	if res == graphql.Null {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
@@ -16685,6 +16936,7 @@ func (ec *executionContext) unmarshalNString2string(ctx context.Context, v any) 
 }
 
 func (ec *executionContext) marshalNString2string(ctx context.Context, sel ast.SelectionSet, v string) graphql.Marshaler {
+	_ = sel
 	res := graphql.MarshalString(v)
 	if res == graphql.Null {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
@@ -16696,9 +16948,7 @@ func (ec *executionContext) marshalNString2string(ctx context.Context, sel ast.S
 
 func (ec *executionContext) unmarshalNString2ᚕstringᚄ(ctx context.Context, v any) ([]string, error) {
 	var vSlice []any
-	if v != nil {
-		vSlice = graphql.CoerceList(v)
-	}
+	vSlice = graphql.CoerceList(v)
 	var err error
 	res := make([]string, len(vSlice))
 	for i := range vSlice {
@@ -16742,6 +16992,7 @@ func (ec *executionContext) unmarshalNUInt2uint(ctx context.Context, v any) (uin
 }
 
 func (ec *executionContext) marshalNUInt2uint(ctx context.Context, sel ast.SelectionSet, v uint) graphql.Marshaler {
+	_ = sel
 	res := model.MarshalUInt(v)
 	if res == graphql.Null {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
@@ -16783,9 +17034,7 @@ func (ec *executionContext) marshalNUpdateColorResult2githubᚗcomᚋSanchir01�
 
 func (ec *executionContext) unmarshalNUpload2ᚕᚖgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚐUploadᚄ(ctx context.Context, v any) ([]*graphql.Upload, error) {
 	var vSlice []any
-	if v != nil {
-		vSlice = graphql.CoerceList(v)
-	}
+	vSlice = graphql.CoerceList(v)
 	var err error
 	res := make([]*graphql.Upload, len(vSlice))
 	for i := range vSlice {
@@ -16825,6 +17074,7 @@ func (ec *executionContext) marshalNUpload2ᚖgithubᚗcomᚋ99designsᚋgqlgen�
 		}
 		return graphql.Null
 	}
+	_ = sel
 	res := graphql.MarshalUpload(*v)
 	if res == graphql.Null {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
@@ -16860,6 +17110,7 @@ func (ec *executionContext) unmarshalNUuid2githubᚗcomᚋgoogleᚋuuidᚐUUID(c
 }
 
 func (ec *executionContext) marshalNUuid2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx context.Context, sel ast.SelectionSet, v uuid.UUID) graphql.Marshaler {
+	_ = sel
 	res := model.MarshalUuid(v)
 	if res == graphql.Null {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
@@ -16923,6 +17174,7 @@ func (ec *executionContext) unmarshalN__DirectiveLocation2string(ctx context.Con
 }
 
 func (ec *executionContext) marshalN__DirectiveLocation2string(ctx context.Context, sel ast.SelectionSet, v string) graphql.Marshaler {
+	_ = sel
 	res := graphql.MarshalString(v)
 	if res == graphql.Null {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
@@ -16934,9 +17186,7 @@ func (ec *executionContext) marshalN__DirectiveLocation2string(ctx context.Conte
 
 func (ec *executionContext) unmarshalN__DirectiveLocation2ᚕstringᚄ(ctx context.Context, v any) ([]string, error) {
 	var vSlice []any
-	if v != nil {
-		vSlice = graphql.CoerceList(v)
-	}
+	vSlice = graphql.CoerceList(v)
 	var err error
 	res := make([]string, len(vSlice))
 	for i := range vSlice {
@@ -17113,6 +17363,7 @@ func (ec *executionContext) unmarshalN__TypeKind2string(ctx context.Context, v a
 }
 
 func (ec *executionContext) marshalN__TypeKind2string(ctx context.Context, sel ast.SelectionSet, v string) graphql.Marshaler {
+	_ = sel
 	res := graphql.MarshalString(v)
 	if res == graphql.Null {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
@@ -17128,6 +17379,8 @@ func (ec *executionContext) unmarshalOBoolean2bool(ctx context.Context, v any) (
 }
 
 func (ec *executionContext) marshalOBoolean2bool(ctx context.Context, sel ast.SelectionSet, v bool) graphql.Marshaler {
+	_ = sel
+	_ = ctx
 	res := graphql.MarshalBoolean(v)
 	return res
 }
@@ -17144,6 +17397,8 @@ func (ec *executionContext) marshalOBoolean2ᚖbool(ctx context.Context, sel ast
 	if v == nil {
 		return graphql.Null
 	}
+	_ = sel
+	_ = ctx
 	res := graphql.MarshalBoolean(*v)
 	return res
 }
@@ -17206,9 +17461,7 @@ func (ec *executionContext) unmarshalOCreateOrderItem2ᚕᚖgithubᚗcomᚋSanch
 		return nil, nil
 	}
 	var vSlice []any
-	if v != nil {
-		vSlice = graphql.CoerceList(v)
-	}
+	vSlice = graphql.CoerceList(v)
 	var err error
 	res := make([]*model.CreateOrderItem, len(vSlice))
 	for i := range vSlice {
@@ -17263,9 +17516,7 @@ func (ec *executionContext) unmarshalORole2ᚕᚖgithubᚗcomᚋSanchir01ᚋcand
 		return nil, nil
 	}
 	var vSlice []any
-	if v != nil {
-		vSlice = graphql.CoerceList(v)
-	}
+	vSlice = graphql.CoerceList(v)
 	var err error
 	res := make([]*model.Role, len(vSlice))
 	for i := range vSlice {
@@ -17340,9 +17591,7 @@ func (ec *executionContext) unmarshalOString2ᚕstringᚄ(ctx context.Context, v
 		return nil, nil
 	}
 	var vSlice []any
-	if v != nil {
-		vSlice = graphql.CoerceList(v)
-	}
+	vSlice = graphql.CoerceList(v)
 	var err error
 	res := make([]string, len(vSlice))
 	for i := range vSlice {
@@ -17385,6 +17634,8 @@ func (ec *executionContext) marshalOString2ᚖstring(ctx context.Context, sel as
 	if v == nil {
 		return graphql.Null
 	}
+	_ = sel
+	_ = ctx
 	res := graphql.MarshalString(*v)
 	return res
 }
@@ -17408,6 +17659,8 @@ func (ec *executionContext) marshalOUuid2ᚖgithubᚗcomᚋgoogleᚋuuidᚐUUID(
 	if v == nil {
 		return graphql.Null
 	}
+	_ = sel
+	_ = ctx
 	res := model.MarshalUuid(*v)
 	return res
 }

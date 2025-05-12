@@ -4,6 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log/slog"
+	"time"
+
 	sq "github.com/Masterminds/squirrel"
 	"github.com/Sanchir01/candles_backend/internal/app"
 	"github.com/Sanchir01/candles_backend/internal/gql/model"
@@ -12,8 +15,6 @@ import (
 	"github.com/go-faker/faker/v4"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
-	"log/slog"
-	"time"
 )
 
 func main() {
@@ -57,7 +58,7 @@ func main() {
 		return
 	}
 	slog.Error("category id", categoryId, "color id", colorId)
-	for i := 0; i < 10; i++ {
+	for i := 0; i < 100; i++ {
 		candleId, err := generateFakeCandle(colorId, categoryId, tx)
 		if err != nil {
 			slog.Error(err.Error())
@@ -70,6 +71,7 @@ func main() {
 		slog.Error(err.Error())
 	}
 }
+
 func generateFakeCandle(colorId, categoryId uuid.UUID, tr pgx.Tx) (uuid.UUID, error) {
 	var candle *model.Candles
 	var candleId uuid.UUID
@@ -90,7 +92,6 @@ func generateFakeCandle(colorId, categoryId uuid.UUID, tr pgx.Tx) (uuid.UUID, er
 		Suffix("RETURNING id").
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
-
 	if err != nil {
 		return uuid.Nil, fmt.Errorf("failed to build SQL query: %w", err)
 	}

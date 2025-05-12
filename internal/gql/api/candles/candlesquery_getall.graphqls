@@ -29,12 +29,12 @@ type AllCandlesOk {
     candles: [Candles!]!
     nextPage:Int!
     prevPage:Int!
-    totalPages:Int!
     totalCount:TotalCountResolvingResult! @goField(forceResolver: true)
 }
 
 type TotalCountResolvingOk{
     totalCount: UInt!
+    totalPages:Int!
 }
 
 union TotalCountResolvingResult =

@@ -4,13 +4,15 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/redis/go-redis/v9"
 	"log"
 	"log/slog"
 	"time"
 
+	"github.com/redis/go-redis/v9"
+
 	sq "github.com/Masterminds/squirrel"
 	"github.com/Sanchir01/candles_backend/internal/gql/model"
+	"github.com/Sanchir01/candles_backend/pkg/lib/utils"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -66,13 +68,14 @@ func (r *RepositoryCandles) CountCandles(ctx context.Context, filter *model.Cand
 }
 
 func (r *RepositoryCandles) AllCandles(ctx context.Context, sort *model.CandlesSortEnum, filter *model.CandlesFilterInput, pageSize uint, pageNumber uint) ([]model.Candles, error) {
-	cashedcandles, err := r.redisDB.Get(ctx, "candles").Result()
+	cachekey := utils.GenerateCacheKey(sort, filter, pageSize, pageNumber)
+	cashedcandles, err := r.redisDB.Get(ctx, cachekey).Result()
 	if err == nil {
 		var candles []model.Candles
-		time.Sleep(500 * time.Millisecond)
-		if err := json.Unmarshal([]byte(cashedcandles), &candles); err == nil {
-			return candles, nil
+		if err := json.Unmarshal([]byte(cashedcandles), &candles); err != nil {
+			fmt.Printf("failed to unmarshal candles: %v", err)
 		}
+		return candles, nil
 	}
 
 	conn, err := r.primaryDB.Acquire(ctx)
@@ -139,7 +142,7 @@ func (r *RepositoryCandles) AllCandles(ctx context.Context, sort *model.CandlesS
 	if err != nil {
 		return nil, fmt.Errorf("failed to marshal candles: %v", err)
 	}
-	if err := r.redisDB.Set(ctx, "candles", candlesJSON, time.Minute).Err(); err != nil {
+	if err := r.redisDB.Set(ctx, cachekey, candlesJSON, 5*time.Minute).Err(); err != nil {
 		log.Printf("Failed to cache candles: %v", err)
 	}
 	return candles, nil

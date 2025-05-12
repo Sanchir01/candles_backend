@@ -16,9 +16,16 @@ type Config struct {
 	HttpServer `yaml:"http_server"`
 	Errors     `yaml:"errors"`
 	Grpc       GrpcOrder
+	RedisDB    Redis      `yaml:"redis"`
 	DB         DataBase   `yaml:"database"`
 	S3Store    S3Store    `yaml:"s3store"`
 	Prometheus Prometheus `yaml:"prometheus"`
+}
+type Redis struct {
+	Host     string `yaml:"host"`
+	Password string `yaml:"password"`
+	Port     string `yaml:"port"`
+	DBNumber int    `yaml:"dbnumber"`
 }
 type Prometheus struct {
 	Timeout     time.Duration `yaml:"timeout"  env-default:"4s"`

@@ -13,6 +13,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"log/slog"
+	"time"
 )
 
 func main() {
@@ -22,8 +23,8 @@ func main() {
 		return
 	}
 
-	ctx := context.Background()
-
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
 	conn, err := env.DataBase.PrimaryDB.Acquire(ctx)
 	if err != nil {
 		slog.Error(err.Error())

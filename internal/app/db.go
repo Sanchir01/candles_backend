@@ -5,19 +5,25 @@ import (
 	"github.com/Sanchir01/candles_backend/internal/config"
 	"github.com/Sanchir01/candles_backend/pkg/lib/db/connect"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/redis/go-redis/v9"
 )
 
 type Database struct {
 	PrimaryDB *pgxpool.Pool
+	RedisDB   *redis.Client
 }
 
 func NewDataBases(cfg *config.Config) (*Database, error) {
 	pgxdb, err := connect.PGXNew(cfg, context.Background())
+
 	if err != nil {
 		return nil, err
 	}
-
-	return &Database{PrimaryDB: pgxdb}, nil
+	redisdb, err := connect.RedisConnect(context.Background(), cfg.RedisDB.Host, cfg.RedisDB.Port, cfg.RedisDB.DBNumber)
+	if err != nil {
+		return nil, err
+	}
+	return &Database{PrimaryDB: pgxdb, RedisDB: redisdb}, nil
 }
 
 func (databases *Database) Close() error {

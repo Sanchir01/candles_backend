@@ -20,7 +20,7 @@ func NewRepositories(databases *Database) *Repositories {
 	return &Repositories{
 		ColorRepository:    color.NewRepository(databases.PrimaryDB),
 		CategoryRepository: category.NewRepository(databases.PrimaryDB),
-		CandlesRepository:  candles.NewRepositoryCandles(databases.PrimaryDB),
+		CandlesRepository:  candles.NewRepositoryCandles(databases.PrimaryDB, databases.RedisDB),
 		UserRepository:     user.NewRepository(databases.PrimaryDB),
 		OrderRepository:    order.NewRepository(databases.PrimaryDB),
 	}

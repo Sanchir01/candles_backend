@@ -1,23 +1,4 @@
 services:
-  app:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    ports:
-      - "5000:5000"
-    depends_on:
-      - db
-      - prometheus
-      - localstack
-    environment:
-      - DATABASE_URL=postgres://postgres:postgres@db:5432/test?sslmode=disable
-      - AWS_ACCESS_KEY_ID=test
-      - AWS_SECRET_ACCESS_KEY=test
-      - AWS_REGION=us-east-1
-      - AWS_S3_BUCKET=14e29e5b-46a00c68-6e30-4d39-ae5e-35075eefe000
-      - AWS_ENDPOINT_URL=http://localstack:4566
-      - PORT=5000
-      - ENV=development
   db:
     restart: always
     image: postgres:latest
@@ -35,16 +16,34 @@ services:
       - AWS_ACCESS_KEY_ID=test
       - AWS_SECRET_ACCESS_KEY=test
     ports:
-      - "4566:4566" # Основной порт для LocalStack
+      - "4566:4566"  # Основной порт для LocalStack
     volumes:
       - "./localstack:/var/lib/localstack"
-  prometheus:
-    image: prom/prometheus:latest
-    volumes:
-      - ./config/prometheus.yaml:/etc/prometheus/prometheus.yml
+  clickhouse:
+    image: clickhouse/clickhouse-server:latest
     ports:
-      - "9090:9090"
-
+      - "8123:8123"
+      - "9000:9000"
+    environment:
+      - CLICKHOUSE_DB=default
+      - CLICKHOUSE_USER=default
+      - CLICKHOUSE_PASSWORD=clickhouse
+      - CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT=1  # Для управления пользователями
+    volumes:
+      - clickhouse_data:/var/lib/clickhouse
+      - clickhouse_config:/etc/clickhouse-server
+  redis:
+    image: redis:latest
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --save 60 1 --loglevel warning
 volumes:
-  db:
+  postgres_data:
   localstack:
+  clickhouse_data:
+  clickhouse_config:
+  redis_data:
+
+

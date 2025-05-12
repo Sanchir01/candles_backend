@@ -6,6 +6,7 @@ import (
 	"github.com/Sanchir01/candles_backend/pkg/lib/db/connect"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/redis/go-redis/v9"
+	"os"
 )
 
 type Database struct {
@@ -19,7 +20,7 @@ func NewDataBases(cfg *config.Config) (*Database, error) {
 	if err != nil {
 		return nil, err
 	}
-	redisdb, err := connect.RedisConnect(context.Background(), cfg.RedisDB.Host, cfg.RedisDB.Port, cfg.RedisDB.DBNumber)
+	redisdb, err := connect.RedisConnect(context.Background(), cfg.RedisDB.Host, cfg.RedisDB.Port, os.Getenv("REDIS_PASSWORD"), cfg.Env, cfg.RedisDB.DBNumber)
 	if err != nil {
 		return nil, err
 	}

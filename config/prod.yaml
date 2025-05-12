@@ -7,6 +7,11 @@ database:
   dbname: "default_db"
   max_attempts: 10
 
+redis:
+  host: "103.74.92.37"
+  port: "5433"
+  dbnumber: 0
+
 domain: "feature.backend.candles.emgushovs.ru"
 prometheus:
   host: 0.0.0.0

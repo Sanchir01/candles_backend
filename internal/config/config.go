@@ -25,6 +25,7 @@ type Redis struct {
 	Host     string `yaml:"host"`
 	Password string `yaml:"password"`
 	Port     string `yaml:"port"`
+	Retries  int    `yaml:"retries"`
 	DBNumber int    `yaml:"dbnumber"`
 }
 type Prometheus struct {

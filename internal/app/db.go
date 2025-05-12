@@ -2,11 +2,12 @@ package app
 
 import (
 	"context"
+	"os"
+
 	"github.com/Sanchir01/candles_backend/internal/config"
 	"github.com/Sanchir01/candles_backend/pkg/lib/db/connect"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/redis/go-redis/v9"
-	"os"
 )
 
 type Database struct {
@@ -16,11 +17,11 @@ type Database struct {
 
 func NewDataBases(cfg *config.Config) (*Database, error) {
 	pgxdb, err := connect.PGXNew(cfg, context.Background())
-
 	if err != nil {
 		return nil, err
 	}
-	redisdb, err := connect.RedisConnect(context.Background(), cfg.RedisDB.Host, cfg.RedisDB.Port, os.Getenv("REDIS_PASSWORD"), cfg.Env, cfg.RedisDB.DBNumber)
+	redisdb, err := connect.RedisConnect(context.Background(), cfg.RedisDB.Host, cfg.RedisDB.Port, os.Getenv("REDIS_PASSWORD"), cfg.Env,
+		cfg.RedisDB.DBNumber, cfg.RedisDB.Retries)
 	if err != nil {
 		return nil, err
 	}

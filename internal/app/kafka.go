@@ -1,57 +1,68 @@
 package app
 
 import (
+	"context"
 	"fmt"
-	"strings"
+	"time"
 
-	"github.com/confluentinc/confluent-kafka-go/v2/kafka"
+	kafka "github.com/segmentio/kafka-go"
 )
 
 type Producer struct {
-	producer *kafka.Producer
+	producer *kafka.Writer
 }
 
 var errUnknownType = fmt.Errorf("unknown type")
 
 var flushTimeout = 5000
 
-func NewProducer(address []string) (*Producer, error) {
-	conf := &kafka.ConfigMap{
-		"bootstrap.servers": strings.Join(address, ","),
-	}
-	p, err := kafka.NewProducer(conf)
+func ensureTopicExists(brokers []string, topic string, partitions int, replicationFactor int) error {
+	conn, err := kafka.Dial("tcp", brokers[0])
 	if err != nil {
-		return nil, fmt.Errorf("kafka.Producer: %w", err)
+		return fmt.Errorf("failed to dial kafka broker: %w", err)
 	}
-	return &Producer{producer: p}, nil
-}
+	defer conn.Close()
 
-func (p *Producer) Produce(message, topic string) error {
-	kafkaMsg := &kafka.Message{
-		TopicPartition: kafka.TopicPartition{
-			Topic:     &topic,
-			Partition: kafka.PartitionAny,
+	conn.SetWriteDeadline(time.Now().Add(10 * time.Second))
+
+	topicConfigs := []kafka.TopicConfig{
+		{
+			Topic:             topic,
+			NumPartitions:     partitions,
+			ReplicationFactor: replicationFactor,
 		},
-		Value: []byte(message),
-		Key:   nil,
 	}
-	kafkaChan := make(chan kafka.Event, 1)
-	if err := p.producer.Produce(kafkaMsg, kafkaChan); err != nil {
-		return fmt.Errorf("kafka.Producer.Produce: %w", err)
-	}
-	e := <-kafkaChan
 
-	switch ev := e.(type) {
-	case *kafka.Message:
-		return nil
-	case kafka.Error:
-		return ev
-	default:
-		return errUnknownType
+	return conn.CreateTopics(topicConfigs...)
+}
+func NewProducer(address []string, topic string) (*Producer, error) {
+	if len(address) == 0 {
+		return nil, fmt.Errorf("no Kafka brokers provided")
 	}
+	err := ensureTopicExists(address, topic, 1, 1)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create topic: %w", err)
+	}
+	writer := &kafka.Writer{
+		Addr:     kafka.TCP(address...),
+		Topic:    topic,
+		Balancer: &kafka.LeastBytes{},
+	}
+
+	return &Producer{
+		producer: writer,
+	}, nil
 }
 
-func (p *Producer) Close() {
-	p.producer.Flush(flushTimeout)
-	p.producer.Close()
+func (p *Producer) Produce(ctx context.Context, message string) error {
+
+	if err := p.producer.WriteMessages(ctx, kafka.Message{
+		Value: []byte(message),
+	}); err != nil {
+		return err
+	}
+	if err := p.producer.Close(); err != nil {
+		return err
+	}
+	return nil
 }

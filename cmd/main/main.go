@@ -30,7 +30,9 @@ func main() {
 
 	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGTERM, syscall.SIGINT, os.Interrupt)
 	defer cancel()
-
+	if err := env.KafkaProducer.Produce(ctx, "hello world"); err != nil {
+		slog.Error("error", err.Error())
+	}
 	go func() {
 		if err := serve.Run(handlers.StartHttpServer()); err != nil {
 			if !errors.Is(err, context.Canceled) {

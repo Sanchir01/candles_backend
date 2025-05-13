@@ -48,9 +48,7 @@ func main() {
 		}
 	}()
 	go func() { env.GRPCSrv.MustRun() }()
-	if err := env.Bot.Start(ctx); err != nil {
-		env.Logger.Error("error for get updates bot")
-	}
+	<-ctx.Done()
 	if err := serve.Gracefull(ctx); err != nil {
 		env.Logger.Error("Graphql serve gracefull")
 	}

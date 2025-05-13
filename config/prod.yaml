@@ -13,7 +13,8 @@ redis:
   retries: 5
   dbnumber: 0
 
-domain: "feature.backend.candles.emgushovs.ru"
+domain: "localhost"
+
 prometheus:
   host: 0.0.0.0
   port: 5000
@@ -36,14 +37,6 @@ s3store:
   url: "https://s3.timeweb.cloud"
   region: "ru-1"
   bucketname: "14e29e5b-46a00c68-6e30-4d39-ae5e-35075eefe000"
-
-gql_server:
-  port: "8080"
-  host: 0.0.0.0
-  timeout: 5s
-  debug: true
-  idle_timeout: 60s
-  max_attempts: 10
 
 errors:
   bad_request:

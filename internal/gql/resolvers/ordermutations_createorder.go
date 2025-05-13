@@ -7,11 +7,11 @@ package resolver
 import (
 	"context"
 	"errors"
+	"log/slog"
 
 	"github.com/Sanchir01/candles_backend/internal/gql/model"
 	customMiddleware "github.com/Sanchir01/candles_backend/internal/handlers/middleware"
 	responseErr "github.com/Sanchir01/candles_backend/pkg/lib/api/response"
-	"github.com/Sanchir01/candles_backend/pkg/lib/excel"
 	"github.com/google/uuid"
 	pgx "github.com/jackc/pgx/v5"
 )
@@ -56,16 +56,7 @@ func (r *orderMutationsResolver) CreateOrder(ctx context.Context, obj *model.Ord
 	//r.env.Logger.Warn("order items ids", ids)
 	product, err := r.env.Repositories.CandlesRepository.CandleByManyIds(ctx, tx, productsId)
 
-	if err = excel.CreateFileExcel(product, quantities, "products.xlsx", "Order"); err != nil {
-		r.env.Logger.Warn("error for create excel file", err.Error())
-		return responseErr.NewInternalErrorProblem("не удалось создать заказ"), nil
-	}
-
-	if err := r.env.Bot.OrderBot.SendOrder("products.xlsx"); err != nil {
-		r.env.Logger.Warn("order resolver", err)
-		return responseErr.NewInternalErrorProblem("не отправить заказ"), nil
-	}
-
+	slog.Any("produst", product)
 	if err := tx.Commit(ctx); err != nil {
 		r.env.Logger.Warn("Failed to commit transaction: %v", err.Error())
 		return nil, err

@@ -38,14 +38,6 @@ s3store:
   region: "ru-1"
   bucketname: "14e29e5b-46a00c68-6e30-4d39-ae5e-35075eefe000"
 
-gql_server:
-  port: "8080"
-  host: 0.0.0.0
-  timeout: 5s
-  debug: true
-  idle_timeout: 60s
-  max_attempts: 10
-
 errors:
   bad_request:
     message: "не правильный запрос"

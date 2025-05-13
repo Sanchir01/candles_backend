@@ -2,8 +2,9 @@ package app
 
 import (
 	"context"
-	grpcserver "github.com/Sanchir01/candles_backend/internal/app/grpc"
 	"log/slog"
+
+	grpcserver "github.com/Sanchir01/candles_backend/internal/app/grpc"
 
 	"github.com/Sanchir01/candles_backend/internal/config"
 )
@@ -16,7 +17,6 @@ type Env struct {
 	GRPCSrv      *grpcserver.App
 	Repositories *Repositories
 	Services     *Services
-	Bot          *Bot
 }
 
 func NewEnv() (*Env, error) {
@@ -32,11 +32,12 @@ func NewEnv() (*Env, error) {
 	s3client, err := NewStorages(ctx, lg, cfg)
 	if err != nil {
 		lg.Error("s3 error connect", err.Error())
+		return nil, err
 	}
+
 	repos := NewRepositories(pgxdb)
 	servises := NewServices(repos, s3client)
 	grpcApp := grpcserver.NewGrpc(lg, cfg.Grpc.Port)
-	bot := NewBot(servises)
 	env := Env{
 		Logger:       lg,
 		DataBase:     pgxdb,
@@ -45,7 +46,6 @@ func NewEnv() (*Env, error) {
 		GRPCSrv:      grpcApp,
 		Services:     servises,
 		Repositories: repos,
-		Bot:          bot,
 	}
 
 	return &env, nil

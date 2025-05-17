@@ -37,7 +37,7 @@ func NewEnv() (*Env, error) {
 		lg.Error("s3 error connect", err.Error())
 		return nil, err
 	}
-	kaf, err := NewProducer(address, "test-topic")
+	kaf, err := NewProducer(address, "order")
 	if err != nil {
 		lg.Error("kafka error connect", err.Error())
 

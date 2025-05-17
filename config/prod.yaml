@@ -17,7 +17,7 @@ domain: "localhost"
 
 prometheus:
   host: 0.0.0.0
-  port: 5000
+  port: 4001
   timeout: 4s
   debug: true
   idle_timeout: 60s

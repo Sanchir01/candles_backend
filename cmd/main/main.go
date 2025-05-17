@@ -3,15 +3,14 @@ package main
 import (
 	"context"
 	"errors"
-	"log/slog"
-	"os"
-	"os/signal"
-	"syscall"
-
 	"github.com/Sanchir01/candles_backend/internal/app"
 	httphandlers "github.com/Sanchir01/candles_backend/internal/handlers"
 	httpserver "github.com/Sanchir01/candles_backend/internal/server/http"
 	"github.com/go-chi/chi/v5"
+	"log/slog"
+	"os"
+	"os/signal"
+	"syscall"
 )
 
 func main() {
@@ -30,9 +29,8 @@ func main() {
 
 	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGTERM, syscall.SIGINT, os.Interrupt)
 	defer cancel()
-	if err := env.KafkaProducer.Produce(ctx, "hello world"); err != nil {
-		slog.Error("error", err.Error())
-	}
+	defer env.KafkaProducer.Close()
+
 	go func() {
 		if err := serve.Run(handlers.StartHttpServer()); err != nil {
 			if !errors.Is(err, context.Canceled) {
@@ -51,6 +49,7 @@ func main() {
 	}()
 	go func() { env.GRPCSrv.MustRun() }()
 	<-ctx.Done()
+
 	if err := serve.Gracefull(ctx); err != nil {
 		env.Logger.Error("Graphql serve gracefull")
 	}

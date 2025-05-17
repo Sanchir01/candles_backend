@@ -13,13 +13,13 @@ func RedisConnect(ctx context.Context, Host, Port, Password, Env string, dbnumbe
 	switch Env {
 	case "development":
 		rdb = redis.NewClient(&redis.Options{
-			Addr:       "localhost:6379", // или "redis:6379" внутри Docker-сети
+			Addr:       "localhost:6379",
 			MaxRetries: 5,
 			DB:         0,
 		})
 	case "production":
 		rdb = redis.NewClient(&redis.Options{
-			Addr:       addr, // или "redis:6379" внутри Docker-сети
+			Addr:       addr,
 			Password:   Password,
 			MaxRetries: retries,
 			DB:         dbnumber,

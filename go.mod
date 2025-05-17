@@ -31,10 +31,10 @@ require (
 )
 
 require (
-	github.com/confluentinc/confluent-kafka-go/v2 v2.10.0
 	github.com/makiyarodzy/mahakala_proto v0.0.0-20250127201533-9d1ca7c3d9ee
 	github.com/prometheus/client_golang v1.22.0
 	github.com/redis/go-redis/v9 v9.8.0
+	github.com/segmentio/kafka-go v0.4.47
 )
 
 require (
@@ -83,7 +83,6 @@ require (
 	github.com/richardlehane/mscfb v1.0.4 // indirect
 	github.com/richardlehane/msoleps v1.0.4 // indirect
 	github.com/rogpeppe/go-internal v1.12.0 // indirect
-	github.com/segmentio/kafka-go v0.4.47 // indirect
 	github.com/sosodev/duration v1.3.1 // indirect
 	github.com/xuri/efp v0.0.0-20240408161823-9ad904a10d6d // indirect
 	github.com/xuri/nfp v0.0.0-20240318013403-ab9948c2c4a7 // indirect

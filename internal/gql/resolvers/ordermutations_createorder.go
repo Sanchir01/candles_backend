@@ -6,11 +6,13 @@ package resolver
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
+	"github.com/Sanchir01/candles_backend/internal/feature/order"
+	customMiddleware "github.com/Sanchir01/candles_backend/internal/handlers/middleware"
 	"log/slog"
 
 	"github.com/Sanchir01/candles_backend/internal/gql/model"
-	customMiddleware "github.com/Sanchir01/candles_backend/internal/handlers/middleware"
 	responseErr "github.com/Sanchir01/candles_backend/pkg/lib/api/response"
 	"github.com/google/uuid"
 	pgx "github.com/jackc/pgx/v5"
@@ -18,6 +20,10 @@ import (
 
 // CreateOrder is the resolver for the createOrder field.
 func (r *orderMutationsResolver) CreateOrder(ctx context.Context, obj *model.OrderMutations, input model.CreateOrderInput) (model.CreateOrderResult, error) {
+	_, err := customMiddleware.GetJWTClaimsFromCtx(ctx)
+	if err != nil {
+		return responseErr.NewInternalErrorProblem("не удалось получить профиль"), err
+	}
 	conn, err := r.env.DataBase.PrimaryDB.Acquire(ctx)
 	if err != nil {
 		return responseErr.NewInternalErrorProblem("Database connection error"), nil
@@ -28,15 +34,11 @@ func (r *orderMutationsResolver) CreateOrder(ctx context.Context, obj *model.Ord
 			rollbackErr := tx.Rollback(ctx)
 			if rollbackErr != nil {
 				err = errors.Join(err, rollbackErr)
-				r.env.Logger.Warn("rollback transaction: %v", err.Error())
+				r.env.Logger.Error("rollback transaction: %v", err.Error())
 				return
 			}
 		}
 	}(ctx)
-	_, err = customMiddleware.GetJWTClaimsFromCtx(ctx)
-	if err != nil {
-		return responseErr.NewInternalErrorProblem("не удалось получить профиль"), err
-	}
 
 	var productsId []uuid.UUID
 	var quantities []int
@@ -55,8 +57,29 @@ func (r *orderMutationsResolver) CreateOrder(ctx context.Context, obj *model.Ord
 	//}
 	//r.env.Logger.Warn("order items ids", ids)
 	product, err := r.env.Repositories.CandlesRepository.CandleByManyIds(ctx, tx, productsId)
+	if err != nil {
+		r.env.Logger.Warn("Failed to get all candles many ids: %v", err.Error())
+		return nil, err
+	}
 
+	var productsWithQuantities []order.ProductWithQuantity
+	for i, p := range product {
+		productsWithQuantities = append(productsWithQuantities, order.ProductWithQuantity{
+			Title:    p,
+			Quantity: quantities[i],
+		})
+	}
 	slog.Any("produst", product)
+	jsondata, err := json.Marshal(productsWithQuantities)
+	if err != nil {
+		r.env.Logger.Warn("Failed to get all candles many ids: %v", err.Error())
+		return nil, err
+	}
+
+	if err := r.env.KafkaProducer.Produce("order.sendtg", jsondata); err != nil {
+		r.env.Logger.Warn("Failed to produce order.sendtg: %v", err.Error())
+		return nil, err
+	}
 	if err := tx.Commit(ctx); err != nil {
 		r.env.Logger.Warn("Failed to commit transaction: %v", err.Error())
 		return nil, err

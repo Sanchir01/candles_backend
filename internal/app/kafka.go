@@ -3,6 +3,7 @@ package app
 import (
 	"context"
 	"fmt"
+	"log"
 	"time"
 
 	kafka "github.com/segmentio/kafka-go"
@@ -10,11 +11,9 @@ import (
 
 type Producer struct {
 	producer *kafka.Writer
+	messages chan kafka.Message
+	done     chan struct{}
 }
-
-var errUnknownType = fmt.Errorf("unknown type")
-
-var flushTimeout = 5000
 
 func ensureTopicExists(brokers []string, topic string, partitions int, replicationFactor int) error {
 	conn, err := kafka.Dial("tcp", brokers[0])
@@ -35,34 +34,58 @@ func ensureTopicExists(brokers []string, topic string, partitions int, replicati
 
 	return conn.CreateTopics(topicConfigs...)
 }
-func NewProducer(address []string, topic string) (*Producer, error) {
-	if len(address) == 0 {
+
+func NewProducer(brokers []string, topic string) (*Producer, error) {
+	if len(brokers) == 0 {
 		return nil, fmt.Errorf("no Kafka brokers provided")
 	}
-	err := ensureTopicExists(address, topic, 1, 1)
+
+	err := ensureTopicExists(brokers, topic, 1, 1)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create topic: %w", err)
 	}
+
 	writer := &kafka.Writer{
-		Addr:     kafka.TCP(address...),
+		Addr:     kafka.TCP(brokers...),
 		Topic:    topic,
 		Balancer: &kafka.LeastBytes{},
 	}
 
-	return &Producer{
+	p := &Producer{
 		producer: writer,
-	}, nil
+		messages: make(chan kafka.Message, 100),
+		done:     make(chan struct{}),
+	}
+
+	go p.run()
+
+	return p, nil
 }
-
-func (p *Producer) Produce(ctx context.Context, message string) error {
-
-	if err := p.producer.WriteMessages(ctx, kafka.Message{
-		Value: []byte(message),
-	}); err != nil {
-		return err
+func (p *Producer) Produce(message string, value []byte) error {
+	select {
+	case p.messages <- kafka.Message{Value: value, Key: []byte(message)}:
+		return nil
+	default:
+		return fmt.Errorf("канал сообщений переполнен")
 	}
-	if err := p.producer.Close(); err != nil {
-		return err
+}
+func (p *Producer) run() {
+	for {
+		select {
+		case msg := <-p.messages:
+			err := p.producer.WriteMessages(context.Background(), msg)
+			if err != nil {
+				log.Printf("❌ Kafka write error: %v", err)
+			} else {
+				log.Printf("✅ Kafka message sent: key=%s value=%s", string(msg.Key), string(msg.Value))
+			}
+		case <-p.done:
+			return
+		}
 	}
-	return nil
+}
+func (p *Producer) Close() error {
+	defer close(p.done)
+	defer close(p.messages)
+	return p.producer.Close()
 }

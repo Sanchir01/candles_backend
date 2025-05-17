@@ -1,13 +1,17 @@
 package order
 
 import (
+	"github.com/Sanchir01/candles_backend/internal/gql/model"
 	"github.com/google/uuid"
 	"time"
 )
 
 type DBOrderItems struct {
 }
-
+type ProductWithQuantity struct {
+	Title    model.Candles `json:"candles"`
+	Quantity int           `json:"quantity"`
+}
 type DBOrders struct {
 	ID          uuid.UUID `db:"id"`
 	CreatedAt   time.Time `db:"createdAt"`

@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"log"
 	"log/slog"
 	"os"
@@ -82,8 +83,9 @@ type ErrorsBody struct {
 func InitConfig() *Config {
 	envFile := os.Getenv("ENV_FILE")
 	if envFile == "" {
-		envFile = ".env.dev" // дефолт, если не передан
+		envFile = ".env.dev"
 	}
+	fmt.Println("env name", envFile)
 	if err := godotenv.Load(envFile); err != nil {
 		slog.Error("ошибка при инициализации переменных окружения", err.Error())
 	}

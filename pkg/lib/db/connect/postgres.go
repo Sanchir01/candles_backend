@@ -3,17 +3,16 @@ package connect
 import (
 	"context"
 	"fmt"
+	"os"
+	"time"
+
 	"github.com/Sanchir01/candles_backend/internal/config"
 	"github.com/Sanchir01/candles_backend/pkg/lib/utils"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"log/slog"
-	"os"
-	"time"
 )
 
 func PGXNew(cfg *config.Config, ctx context.Context) (*pgxpool.Pool, error) {
 	var dsn string
-	fmt.Println("Prod DB password:", os.Getenv("DB_PASSWORD_PROD"))
 
 	switch cfg.Env {
 	case "development":
@@ -27,7 +26,6 @@ func PGXNew(cfg *config.Config, ctx context.Context) (*pgxpool.Pool, error) {
 			cfg.DB.Host, cfg.DB.Port, cfg.DB.Database,
 		)
 	}
-	slog.Error("Connecting to PostgreSQL", slog.String("dsn", dsn))
 	var pool *pgxpool.Pool
 	var err error
 

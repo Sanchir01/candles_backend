@@ -9,6 +9,12 @@ import (
 
 func RedisConnect(ctx context.Context, Host, Port, Password, Env string, dbnumber, retries int) (*redis.Client, error) {
 	addr := fmt.Sprintf("%s:%s", Host, Port)
+	url := BuildRedisURL("default", Password, Host, Port, 0)
+	opt, err := redis.ParseURL(url)
+	if err != nil {
+		return nil, err
+	}
+	opt.MaxRetries = retries
 	var rdb *redis.Client
 	switch Env {
 	case "development":
@@ -18,19 +24,21 @@ func RedisConnect(ctx context.Context, Host, Port, Password, Env string, dbnumbe
 			DB:         0,
 		})
 	case "production":
-		rdb = redis.NewClient(&redis.Options{
-			Addr:       addr,
-			Password:   Password,
-			MaxRetries: retries,
-			DB:         dbnumber,
-		})
+		rdb = redis.NewClient(opt)
 	}
-
-	// Проверка подключения
+	fmt.Println("redis dsn", rdb, "addres", addr)
 	ping, err := rdb.Ping(ctx).Result()
 	if err != nil {
 		return nil, err
 	}
 	fmt.Println("Redis connect success:", ping)
 	return rdb, nil
+}
+func BuildRedisURL(username, password, host, port string, db int) string {
+	if username != "" && password != "" {
+		return fmt.Sprintf("redis://%s:%s@%s:%s/%d", username, password, host, port, db)
+	} else if password != "" {
+		return fmt.Sprintf("redis://:%s@%s:%s/%d", password, host, port, db)
+	}
+	return fmt.Sprintf("redis://%s:%s/%d", host, port, db)
 }

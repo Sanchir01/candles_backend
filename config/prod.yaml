@@ -13,7 +13,7 @@ kafka:
     brokers:
       - "kafka.emgushovs.ru"
 redis:
-  host: "103.74.92.37"
+  host: 103.74.92.37
   port: "5433"
   retries: 5
   dbnumber: 0

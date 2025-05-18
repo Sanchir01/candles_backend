@@ -20,7 +20,8 @@ func NewDataBases(cfg *config.Config) (*Database, error) {
 	if err != nil {
 		return nil, err
 	}
-	redisdb, err := connect.RedisConnect(context.Background(), cfg.RedisDB.Host, cfg.RedisDB.Port, os.Getenv("REDIS_PASSWORD"), cfg.Env,
+	redisdb, err := connect.RedisConnect(context.Background(), cfg.RedisDB.Host, cfg.RedisDB.Port,
+		os.Getenv("REDIS_PASSWORD"), cfg.Env,
 		cfg.RedisDB.DBNumber, cfg.RedisDB.Retries)
 	if err != nil {
 		return nil, err

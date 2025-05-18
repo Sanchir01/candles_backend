@@ -20,6 +20,15 @@ type Config struct {
 	DB         DataBase   `yaml:"database"`
 	S3Store    S3Store    `yaml:"s3store"`
 	Prometheus Prometheus `yaml:"prometheus"`
+	Kafka      Kafka      `yaml:"kafka"`
+}
+type Kafka struct {
+	Producer Producer `yaml:"producer"`
+}
+
+type Producer struct {
+	Topic string   `yaml:"topic"`
+	Broke []string `yaml:"brokers"`
 }
 type Redis struct {
 	Host     string `yaml:"host"`

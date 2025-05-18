@@ -7,6 +7,12 @@ database:
   dbname: "test"
   max_attempts: 10
 
+kafka:
+  producer:
+    topic: "order"
+    brokers:
+      - "localhost:9092"
+
 redis:
   host: "localhost"
   port: "6379"

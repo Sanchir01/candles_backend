@@ -1,12 +1,17 @@
 env: "production"
 
 database:
-  host: 92.118.114.96
+  host: 103.74.92.37
   port: "5432"
-  user: "gen_user"
-  dbname: "default_db"
+  user: "postgres"
+  dbname: "postgres"
   max_attempts: 10
 
+kafka:
+  producer:
+    topic: "order"
+    brokers:
+      - "kafka.emgushovs.ru"
 redis:
   host: "103.74.92.37"
   port: "5433"
@@ -14,12 +19,6 @@ redis:
   dbnumber: 0
 
 domain: "localhost"
-
-kafka:
-  producer:
-    topic: "order"
-    brokers:
-      - "kafka.emgushovs.ru"
 
 prometheus:
   host: 0.0.0.0

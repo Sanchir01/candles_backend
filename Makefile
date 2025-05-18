@@ -1,10 +1,10 @@
 PHONY:
 SILENT:
-
+include .env.prod
+export
 MIGRATION_NAME ?= new_migration
 
-build:
-	go build -o ./.bin/main ./cmd/main/main.go
+DB_CONN_PROD = host=$(DB_HOST_PROD) user=$(DB_USER_PROD) password=$(DB_PASSWORD_PROD) port=$(DB_PORT_PROD) dbname=$(DB_NAME_PROD) sslmode=disable
 
 
 generate-dataloaders:
@@ -12,7 +12,8 @@ generate-dataloaders:
 
 gql:
 	go get github.com/99designs/gqlgen@latest && go run github.com/99designs/gqlgen generate
-
+build:
+	go build -o ./.bin/main ./cmd/main/main.go
 run: build
 	./.bin/main
 
@@ -30,14 +31,13 @@ migrations-new:
 	goose -dir migrations create $(MIGRATION_NAME) sql
 
 migrations-up-prod:
-	goose -dir migrations postgres "host=92.118.114.96 user=gen_user password=lzGFBsM~#Z%8Qv port=5432 dbname=default_db"  up
+	goose -dir migrations postgres "$(DB_CONN_PROD)" up
 
 migrations-down-prod:
-	goose -dir migrations postgres  "host=92.118.114.96 user=gen_user password=lzGFBsM~#Z%8Qv port=5432 dbname=default_db"  down
-
+	goose -dir migrations postgres "$(DB_CONN_PROD)" down
 
 migrations-status-prod:
-	goose -dir migrations postgres  "host=92.118.114.96 user=gen_user password=lzGFBsM~#Z%8Qv port=5432 dbname=default_db" status
+	goose -dir migrations postgres "$(DB_CONN_PROD)" status
 
 docker-build:
 	docker build -t candles .
@@ -52,3 +52,4 @@ seed:
 
 compose-prod:
 	docker compose -f docker-compose.prod.yaml up --build -d
+

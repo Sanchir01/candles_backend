@@ -80,7 +80,11 @@ type ErrorsBody struct {
 }
 
 func InitConfig() *Config {
-	if err := godotenv.Load(".env"); err != nil {
+	envFile := os.Getenv("ENV_FILE")
+	if envFile == "" {
+		envFile = ".env.dev" // дефолт, если не передан
+	}
+	if err := godotenv.Load(envFile); err != nil {
 		slog.Error("ошибка при инициализации переменных окружения", err.Error())
 	}
 	configPath := os.Getenv("CONFIG_PATH")

@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
 
 	grpcserver "github.com/Sanchir01/candles_backend/internal/app/grpc"
@@ -24,6 +25,7 @@ type Env struct {
 
 func NewEnv() (*Env, error) {
 	cfg := config.InitConfig()
+	fmt.Println(cfg)
 	lg := setupLogger(cfg.Env)
 	ctx := context.Background()
 	pgxdb, err := NewDataBases(cfg)
@@ -37,6 +39,7 @@ func NewEnv() (*Env, error) {
 		lg.Error("s3 error connect", err.Error())
 		return nil, err
 	}
+
 	kaf, err := NewProducer(cfg.Kafka.Producer.Broke, cfg.Kafka.Producer.Topic)
 	if err != nil {
 		lg.Error("kafka error connect", err.Error())

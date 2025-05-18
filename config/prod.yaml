@@ -11,7 +11,7 @@ kafka:
   producer:
     topic: "order"
     brokers:
-      - "kafka.emgushovs.ru"
+      - "103.74.92.37:9092"
 redis:
   host: 103.74.92.37
   port: "5433"

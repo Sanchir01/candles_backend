@@ -8,7 +8,6 @@ import (
 )
 
 func RedisConnect(ctx context.Context, Host, Port, Password, Env string, dbnumber, retries int) (*redis.Client, error) {
-	addr := fmt.Sprintf("%s:%s", Host, Port)
 	url := BuildRedisURL("default", Password, Host, Port, 0)
 	opt, err := redis.ParseURL(url)
 	if err != nil {
@@ -26,7 +25,7 @@ func RedisConnect(ctx context.Context, Host, Port, Password, Env string, dbnumbe
 	case "production":
 		rdb = redis.NewClient(opt)
 	}
-	fmt.Println("redis dsn", rdb, "addres", addr)
+
 	ping, err := rdb.Ping(ctx).Result()
 	if err != nil {
 		return nil, err

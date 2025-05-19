@@ -8,11 +8,11 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"github.com/Sanchir01/candles_backend/internal/feature/order"
-	customMiddleware "github.com/Sanchir01/candles_backend/internal/handlers/middleware"
 	"log/slog"
 
+	"github.com/Sanchir01/candles_backend/internal/feature/order"
 	"github.com/Sanchir01/candles_backend/internal/gql/model"
+	customMiddleware "github.com/Sanchir01/candles_backend/internal/handlers/middleware"
 	responseErr "github.com/Sanchir01/candles_backend/pkg/lib/api/response"
 	"github.com/google/uuid"
 	pgx "github.com/jackc/pgx/v5"

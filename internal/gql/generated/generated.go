@@ -82,10 +82,11 @@ type ComplexityRoot struct {
 	}
 
 	AuthMutations struct {
-		DeleteToken   func(childComplexity int) int
-		Login         func(childComplexity int, input model.LoginInput) int
-		NewTokens     func(childComplexity int) int
-		Registrations func(childComplexity int, input model.RegistrationsInput) int
+		ConfirmAccount func(childComplexity int, input model.ConfirmAccountInput) int
+		DeleteToken    func(childComplexity int) int
+		Login          func(childComplexity int, input model.LoginInput) int
+		NewTokens      func(childComplexity int) int
+		Registrations  func(childComplexity int, input model.RegistrationsInput) int
 	}
 
 	Candles struct {
@@ -200,6 +201,13 @@ type ComplexityRoot struct {
 		ColorBySlug func(childComplexity int, input model.ColorBySlugInput) int
 	}
 
+	ConfirmAccountOk struct {
+		Email func(childComplexity int) int
+		Phone func(childComplexity int) int
+		Role  func(childComplexity int) int
+		Title func(childComplexity int) int
+	}
+
 	CreateOrderOk struct {
 		Ok func(childComplexity int) int
 	}
@@ -284,10 +292,7 @@ type ComplexityRoot struct {
 	}
 
 	RegistrationsOk struct {
-		Email func(childComplexity int) int
-		Phone func(childComplexity int) int
-		Role  func(childComplexity int) int
-		Title func(childComplexity int) int
+		Ok func(childComplexity int) int
 	}
 
 	TotalCountResolvingOk struct {
@@ -339,6 +344,7 @@ type AuthMutationsResolver interface {
 	DeleteToken(ctx context.Context, obj *model.AuthMutations) (model.DeleteTokensResult, error)
 	Login(ctx context.Context, obj *model.AuthMutations, input model.LoginInput) (model.LoginResult, error)
 	Registrations(ctx context.Context, obj *model.AuthMutations, input model.RegistrationsInput) (model.RegistrationsResult, error)
+	ConfirmAccount(ctx context.Context, obj *model.AuthMutations, input model.ConfirmAccountInput) (model.ConfirmAccountResult, error)
 	NewTokens(ctx context.Context, obj *model.AuthMutations) (model.NewTokensResult, error)
 }
 type CandlesMutationResolver interface {
@@ -462,6 +468,18 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.complexity.AllUserOrdersOk.Orders(childComplexity), true
+
+	case "AuthMutations.confirmAccount":
+		if e.complexity.AuthMutations.ConfirmAccount == nil {
+			break
+		}
+
+		args, err := ec.field_AuthMutations_confirmAccount_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.AuthMutations.ConfirmAccount(childComplexity, args["input"].(model.ConfirmAccountInput)), true
 
 	case "AuthMutations.deleteToken":
 		if e.complexity.AuthMutations.DeleteToken == nil {
@@ -940,6 +958,34 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.complexity.ColorQuery.ColorBySlug(childComplexity, args["input"].(model.ColorBySlugInput)), true
 
+	case "ConfirmAccountOk.email":
+		if e.complexity.ConfirmAccountOk.Email == nil {
+			break
+		}
+
+		return e.complexity.ConfirmAccountOk.Email(childComplexity), true
+
+	case "ConfirmAccountOk.phone":
+		if e.complexity.ConfirmAccountOk.Phone == nil {
+			break
+		}
+
+		return e.complexity.ConfirmAccountOk.Phone(childComplexity), true
+
+	case "ConfirmAccountOk.role":
+		if e.complexity.ConfirmAccountOk.Role == nil {
+			break
+		}
+
+		return e.complexity.ConfirmAccountOk.Role(childComplexity), true
+
+	case "ConfirmAccountOk.title":
+		if e.complexity.ConfirmAccountOk.Title == nil {
+			break
+		}
+
+		return e.complexity.ConfirmAccountOk.Title(childComplexity), true
+
 	case "CreateOrderOk.ok":
 		if e.complexity.CreateOrderOk.Ok == nil {
 			break
@@ -1232,33 +1278,12 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.complexity.Query.User(childComplexity), true
 
-	case "RegistrationsOk.email":
-		if e.complexity.RegistrationsOk.Email == nil {
+	case "RegistrationsOk.ok":
+		if e.complexity.RegistrationsOk.Ok == nil {
 			break
 		}
 
-		return e.complexity.RegistrationsOk.Email(childComplexity), true
-
-	case "RegistrationsOk.phone":
-		if e.complexity.RegistrationsOk.Phone == nil {
-			break
-		}
-
-		return e.complexity.RegistrationsOk.Phone(childComplexity), true
-
-	case "RegistrationsOk.role":
-		if e.complexity.RegistrationsOk.Role == nil {
-			break
-		}
-
-		return e.complexity.RegistrationsOk.Role(childComplexity), true
-
-	case "RegistrationsOk.title":
-		if e.complexity.RegistrationsOk.Title == nil {
-			break
-		}
-
-		return e.complexity.RegistrationsOk.Title(childComplexity), true
+		return e.complexity.RegistrationsOk.Ok(childComplexity), true
 
 	case "TotalCountResolvingOk.totalCount":
 		if e.complexity.TotalCountResolvingOk.TotalCount == nil {
@@ -1394,6 +1419,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 		ec.unmarshalInputCategoryBySlugInput,
 		ec.unmarshalInputColorByIdInput,
 		ec.unmarshalInputColorBySlugInput,
+		ec.unmarshalInputConfirmAccountInput,
 		ec.unmarshalInputCreateCandleInput,
 		ec.unmarshalInputCreateCategoryInput,
 		ec.unmarshalInputCreateColorInput,
@@ -1574,6 +1600,9 @@ type LoginOk {
 }`, BuiltIn: false},
 	{Name: "../api/auth/authmutation_register.graphqls", Input: `extend type AuthMutations {
     registrations(input:RegistrationsInput!): RegistrationsResult! @goField(forceResolver: true)
+    confirmAccount(
+        input: ConfirmAccountInput!
+    ): ConfirmAccountResult! @goField(forceResolver: true)
 }
 
 input RegistrationsInput {
@@ -1589,6 +1618,22 @@ union RegistrationsResult =
     | VersionMismatchProblem
 
 type RegistrationsOk {
+    ok:String!
+}
+union ConfirmAccountResult =
+    | ConfirmAccountOk
+    | InternalErrorProblem
+    | VersionMismatchProblem
+
+input ConfirmAccountInput{
+    email:String!
+    phone:String!
+    title:String!
+    password:String!
+    code:String!
+}
+
+type ConfirmAccountOk {
     email:String!
     phone:String!
     title:String!
@@ -2129,6 +2174,34 @@ func (ec *executionContext) dir_hasRole_argsRole(
 	}
 
 	var zeroVal []*model.Role
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_AuthMutations_confirmAccount_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := ec.field_AuthMutations_confirmAccount_argsInput(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["input"] = arg0
+	return args, nil
+}
+func (ec *executionContext) field_AuthMutations_confirmAccount_argsInput(
+	ctx context.Context,
+	rawArgs map[string]any,
+) (model.ConfirmAccountInput, error) {
+	if _, ok := rawArgs["input"]; !ok {
+		var zeroVal model.ConfirmAccountInput
+		return zeroVal, nil
+	}
+
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+	if tmp, ok := rawArgs["input"]; ok {
+		return ec.unmarshalNConfirmAccountInput2githubᚗcomᚋSanchir01ᚋcandles_backendᚋinternalᚋgqlᚋmodelᚐConfirmAccountInput(ctx, tmp)
+	}
+
+	var zeroVal model.ConfirmAccountInput
 	return zeroVal, nil
 }
 
@@ -3405,6 +3478,61 @@ func (ec *executionContext) fieldContext_AuthMutations_registrations(ctx context
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_AuthMutations_registrations_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _AuthMutations_confirmAccount(ctx context.Context, field graphql.CollectedField, obj *model.AuthMutations) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_AuthMutations_confirmAccount(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.AuthMutations().ConfirmAccount(rctx, obj, fc.Args["input"].(model.ConfirmAccountInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(model.ConfirmAccountResult)
+	fc.Result = res
+	return ec.marshalNConfirmAccountResult2githubᚗcomᚋSanchir01ᚋcandles_backendᚋinternalᚋgqlᚋmodelᚐConfirmAccountResult(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_AuthMutations_confirmAccount(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "AuthMutations",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type ConfirmAccountResult does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_AuthMutations_confirmAccount_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -6261,6 +6389,182 @@ func (ec *executionContext) fieldContext_ColorQuery_colorBySlug(ctx context.Cont
 	return fc, nil
 }
 
+func (ec *executionContext) _ConfirmAccountOk_email(ctx context.Context, field graphql.CollectedField, obj *model.ConfirmAccountOk) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ConfirmAccountOk_email(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Email, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_ConfirmAccountOk_email(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ConfirmAccountOk",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ConfirmAccountOk_phone(ctx context.Context, field graphql.CollectedField, obj *model.ConfirmAccountOk) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ConfirmAccountOk_phone(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Phone, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_ConfirmAccountOk_phone(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ConfirmAccountOk",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ConfirmAccountOk_title(ctx context.Context, field graphql.CollectedField, obj *model.ConfirmAccountOk) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ConfirmAccountOk_title(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Title, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_ConfirmAccountOk_title(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ConfirmAccountOk",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ConfirmAccountOk_role(ctx context.Context, field graphql.CollectedField, obj *model.ConfirmAccountOk) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ConfirmAccountOk_role(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Role, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(model.Role)
+	fc.Result = res
+	return ec.marshalNRole2githubᚗcomᚋSanchir01ᚋcandles_backendᚋinternalᚋgqlᚋmodelᚐRole(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_ConfirmAccountOk_role(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ConfirmAccountOk",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Role does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _CreateOrderOk_ok(ctx context.Context, field graphql.CollectedField, obj *model.CreateOrderOk) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_CreateOrderOk_ok(ctx, field)
 	if err != nil {
@@ -6746,6 +7050,8 @@ func (ec *executionContext) fieldContext_Mutation_auth(_ context.Context, field 
 				return ec.fieldContext_AuthMutations_login(ctx, field)
 			case "registrations":
 				return ec.fieldContext_AuthMutations_registrations(ctx, field)
+			case "confirmAccount":
+				return ec.fieldContext_AuthMutations_confirmAccount(ctx, field)
 			case "newTokens":
 				return ec.fieldContext_AuthMutations_newTokens(ctx, field)
 			}
@@ -8349,8 +8655,8 @@ func (ec *executionContext) fieldContext_Query___schema(_ context.Context, field
 	return fc, nil
 }
 
-func (ec *executionContext) _RegistrationsOk_email(ctx context.Context, field graphql.CollectedField, obj *model.RegistrationsOk) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_RegistrationsOk_email(ctx, field)
+func (ec *executionContext) _RegistrationsOk_ok(ctx context.Context, field graphql.CollectedField, obj *model.RegistrationsOk) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_RegistrationsOk_ok(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -8363,7 +8669,7 @@ func (ec *executionContext) _RegistrationsOk_email(ctx context.Context, field gr
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Email, nil
+		return obj.Ok, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -8380,7 +8686,7 @@ func (ec *executionContext) _RegistrationsOk_email(ctx context.Context, field gr
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_RegistrationsOk_email(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_RegistrationsOk_ok(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "RegistrationsOk",
 		Field:      field,
@@ -8388,138 +8694,6 @@ func (ec *executionContext) fieldContext_RegistrationsOk_email(_ context.Context
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type String does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _RegistrationsOk_phone(ctx context.Context, field graphql.CollectedField, obj *model.RegistrationsOk) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_RegistrationsOk_phone(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Phone, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(string)
-	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_RegistrationsOk_phone(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "RegistrationsOk",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _RegistrationsOk_title(ctx context.Context, field graphql.CollectedField, obj *model.RegistrationsOk) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_RegistrationsOk_title(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Title, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(string)
-	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_RegistrationsOk_title(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "RegistrationsOk",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _RegistrationsOk_role(ctx context.Context, field graphql.CollectedField, obj *model.RegistrationsOk) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_RegistrationsOk_role(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Role, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(model.Role)
-	fc.Result = res
-	return ec.marshalNRole2githubᚗcomᚋSanchir01ᚋcandles_backendᚋinternalᚋgqlᚋmodelᚐRole(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_RegistrationsOk_role(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "RegistrationsOk",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Role does not have child fields")
 		},
 	}
 	return fc, nil
@@ -11467,6 +11641,61 @@ func (ec *executionContext) unmarshalInputColorBySlugInput(ctx context.Context, 
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputConfirmAccountInput(ctx context.Context, obj any) (model.ConfirmAccountInput, error) {
+	var it model.ConfirmAccountInput
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"email", "phone", "title", "password", "code"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "email":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("email"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Email = data
+		case "phone":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("phone"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Phone = data
+		case "title":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("title"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Title = data
+		case "password":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("password"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Password = data
+		case "code":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("code"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Code = data
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputCreateCandleInput(ctx context.Context, obj any) (model.CreateCandleInput, error) {
 	var it model.CreateCandleInput
 	asMap := map[string]any{}
@@ -12368,6 +12597,36 @@ func (ec *executionContext) _ColorCreateResult(ctx context.Context, sel ast.Sele
 	}
 }
 
+func (ec *executionContext) _ConfirmAccountResult(ctx context.Context, sel ast.SelectionSet, obj model.ConfirmAccountResult) graphql.Marshaler {
+	switch obj := (obj).(type) {
+	case nil:
+		return graphql.Null
+	case model.VersionMismatchProblem:
+		return ec._VersionMismatchProblem(ctx, sel, &obj)
+	case *model.VersionMismatchProblem:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._VersionMismatchProblem(ctx, sel, obj)
+	case model.InternalErrorProblem:
+		return ec._InternalErrorProblem(ctx, sel, &obj)
+	case *model.InternalErrorProblem:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._InternalErrorProblem(ctx, sel, obj)
+	case model.ConfirmAccountOk:
+		return ec._ConfirmAccountOk(ctx, sel, &obj)
+	case *model.ConfirmAccountOk:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._ConfirmAccountOk(ctx, sel, obj)
+	default:
+		panic(fmt.Errorf("unexpected type %T", obj))
+	}
+}
+
 func (ec *executionContext) _CreateOrderResult(ctx context.Context, sel ast.SelectionSet, obj model.CreateOrderResult) graphql.Marshaler {
 	switch obj := (obj).(type) {
 	case nil:
@@ -13070,6 +13329,42 @@ func (ec *executionContext) _AuthMutations(ctx context.Context, sel ast.Selectio
 					}
 				}()
 				res = ec._AuthMutations_registrations(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "confirmAccount":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._AuthMutations_confirmAccount(ctx, field, obj)
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}
@@ -14610,6 +14905,60 @@ func (ec *executionContext) _ColorQuery(ctx context.Context, sel ast.SelectionSe
 	return out
 }
 
+var confirmAccountOkImplementors = []string{"ConfirmAccountOk", "ConfirmAccountResult"}
+
+func (ec *executionContext) _ConfirmAccountOk(ctx context.Context, sel ast.SelectionSet, obj *model.ConfirmAccountOk) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, confirmAccountOkImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("ConfirmAccountOk")
+		case "email":
+			out.Values[i] = ec._ConfirmAccountOk_email(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "phone":
+			out.Values[i] = ec._ConfirmAccountOk_phone(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "title":
+			out.Values[i] = ec._ConfirmAccountOk_title(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "role":
+			out.Values[i] = ec._ConfirmAccountOk_role(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
 var createOrderOkImplementors = []string{"CreateOrderOk", "CreateOrderResult"}
 
 func (ec *executionContext) _CreateOrderOk(ctx context.Context, sel ast.SelectionSet, obj *model.CreateOrderOk) graphql.Marshaler {
@@ -14766,7 +15115,7 @@ func (ec *executionContext) _DeleteTokensOk(ctx context.Context, sel ast.Selecti
 	return out
 }
 
-var internalErrorProblemImplementors = []string{"InternalErrorProblem", "DeleteTokensResult", "LoginResult", "RegistrationsResult", "NewTokensResult", "CandlesMutationResult", "DeleteCandleResult", "CandlesByIdResult", "CandlesBySlugResult", "AllCategoryResult", "TotalCountResolvingResult", "CategoryCreateResult", "DeleteCategoryResult", "UpdateCategoryResult", "CategoryBySlugResult", "CategoryByIdResult", "CategoryGetAllResult", "ColorCreateResult", "DeleteColorResult", "UpdateColorResult", "AllColorResult", "ColorByIdResult", "ColorBySlugResult", "CreateOrderResult", "AllOrdersResult", "AllUserOrdersResult", "ProblemInterface", "UserProfileResult"}
+var internalErrorProblemImplementors = []string{"InternalErrorProblem", "DeleteTokensResult", "LoginResult", "RegistrationsResult", "ConfirmAccountResult", "NewTokensResult", "CandlesMutationResult", "DeleteCandleResult", "CandlesByIdResult", "CandlesBySlugResult", "AllCategoryResult", "TotalCountResolvingResult", "CategoryCreateResult", "DeleteCategoryResult", "UpdateCategoryResult", "CategoryBySlugResult", "CategoryByIdResult", "CategoryGetAllResult", "ColorCreateResult", "DeleteColorResult", "UpdateColorResult", "AllColorResult", "ColorByIdResult", "ColorBySlugResult", "CreateOrderResult", "AllOrdersResult", "AllUserOrdersResult", "ProblemInterface", "UserProfileResult"}
 
 func (ec *executionContext) _InternalErrorProblem(ctx context.Context, sel ast.SelectionSet, obj *model.InternalErrorProblem) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, internalErrorProblemImplementors)
@@ -15505,23 +15854,8 @@ func (ec *executionContext) _RegistrationsOk(ctx context.Context, sel ast.Select
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("RegistrationsOk")
-		case "email":
-			out.Values[i] = ec._RegistrationsOk_email(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
-			}
-		case "phone":
-			out.Values[i] = ec._RegistrationsOk_phone(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
-			}
-		case "title":
-			out.Values[i] = ec._RegistrationsOk_title(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
-			}
-		case "role":
-			out.Values[i] = ec._RegistrationsOk_role(ctx, field, obj)
+		case "ok":
+			out.Values[i] = ec._RegistrationsOk_ok(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
@@ -15897,7 +16231,7 @@ func (ec *executionContext) _UserQuery(ctx context.Context, sel ast.SelectionSet
 	return out
 }
 
-var versionMismatchProblemImplementors = []string{"VersionMismatchProblem", "LoginResult", "RegistrationsResult", "CandlesMutationResult", "DeleteCandleResult", "CandlesByIdResult", "CandlesBySlugResult", "AllCategoryResult", "TotalCountResolvingResult", "CategoryCreateResult", "DeleteCategoryResult", "UpdateCategoryResult", "CategoryBySlugResult", "CategoryByIdResult", "ColorCreateResult", "DeleteColorResult", "UpdateColorResult", "AllColorResult", "ColorByIdResult", "ColorBySlugResult", "ProblemInterface", "UserProfileResult"}
+var versionMismatchProblemImplementors = []string{"VersionMismatchProblem", "LoginResult", "RegistrationsResult", "ConfirmAccountResult", "CandlesMutationResult", "DeleteCandleResult", "CandlesByIdResult", "CandlesBySlugResult", "AllCategoryResult", "TotalCountResolvingResult", "CategoryCreateResult", "DeleteCategoryResult", "UpdateCategoryResult", "CategoryBySlugResult", "CategoryByIdResult", "ColorCreateResult", "DeleteColorResult", "UpdateColorResult", "AllColorResult", "ColorByIdResult", "ColorBySlugResult", "ProblemInterface", "UserProfileResult"}
 
 func (ec *executionContext) _VersionMismatchProblem(ctx context.Context, sel ast.SelectionSet, obj *model.VersionMismatchProblem) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, versionMismatchProblemImplementors)
@@ -16687,6 +17021,21 @@ func (ec *executionContext) marshalNColorQuery2ᚖgithubᚗcomᚋSanchir01ᚋcan
 		return graphql.Null
 	}
 	return ec._ColorQuery(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNConfirmAccountInput2githubᚗcomᚋSanchir01ᚋcandles_backendᚋinternalᚋgqlᚋmodelᚐConfirmAccountInput(ctx context.Context, v any) (model.ConfirmAccountInput, error) {
+	res, err := ec.unmarshalInputConfirmAccountInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNConfirmAccountResult2githubᚗcomᚋSanchir01ᚋcandles_backendᚋinternalᚋgqlᚋmodelᚐConfirmAccountResult(ctx context.Context, sel ast.SelectionSet, v model.ConfirmAccountResult) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._ConfirmAccountResult(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNCreateCandleInput2githubᚗcomᚋSanchir01ᚋcandles_backendᚋinternalᚋgqlᚋmodelᚐCreateCandleInput(ctx context.Context, v any) (model.CreateCandleInput, error) {

@@ -39,7 +39,7 @@ func NewEnv() (*Env, error) {
 		lg.Error("s3 error connect", err.Error())
 		return nil, err
 	}
-	kaf, err := NewProducer(cfg.Kafka.Producer.Broke, "order")
+	kaf, err := NewProducer(cfg.Kafka.Producer.Broke, cfg.Kafka.Producer.Topic)
 	if err != nil {
 		lg.Error("kafka error connect", err.Error())
 		return nil, err
@@ -47,6 +47,7 @@ func NewEnv() (*Env, error) {
 	repos := NewRepositories(pgxdb)
 	servises := NewServices(repos, s3client)
 	grpcApp := grpcserver.NewGrpc(lg, cfg.Grpc.Port)
+
 	env := Env{
 		Logger:        lg,
 		DataBase:      pgxdb,

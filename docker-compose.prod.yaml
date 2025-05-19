@@ -5,7 +5,7 @@ services:
       dockerfile: Dockerfile
     ports:
       - "5000:5000"
-    command: /app/entrypoint.sh
+    command: /app/predeploy.sh
     restart: always
     depends_on:
       - zookeeper

@@ -4,23 +4,28 @@ import (
 	"context"
 	"encoding/base64"
 	"fmt"
+	"time"
+
 	sq "github.com/Masterminds/squirrel"
 	"github.com/Sanchir01/candles_backend/internal/gql/model"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/redis/go-redis/v9"
 )
 
-type Repository struct {
+type RepositoryUser struct {
 	primartDB *pgxpool.Pool
+	redisDB   *redis.Client
 }
 
-func NewRepository(primartDB *pgxpool.Pool) *Repository {
-	return &Repository{
+func NewRepositoryUser(primartDB *pgxpool.Pool, redisDB *redis.Client) *RepositoryUser {
+	return &RepositoryUser{
 		primartDB,
+		redisDB,
 	}
 }
-func (r *Repository) GetByPhone(ctx context.Context, phone string) (*model.User, error) {
+func (r *RepositoryUser) GetByPhone(ctx context.Context, phone string) (*model.User, error) {
 	conn, err := r.primartDB.Acquire(ctx)
 	if err != nil {
 		return nil, err
@@ -51,7 +56,7 @@ func (r *Repository) GetByPhone(ctx context.Context, phone string) (*model.User,
 		UpdatedAt: user.UpdatedAt,
 	}, nil
 }
-func (r *Repository) GetByEmail(ctx context.Context, email string) (*model.User, error) {
+func (r *RepositoryUser) GetByEmail(ctx context.Context, email string) (*model.User, error) {
 	conn, err := r.primartDB.Acquire(ctx)
 	if err != nil {
 		return nil, err
@@ -87,7 +92,7 @@ func (r *Repository) GetByEmail(ctx context.Context, email string) (*model.User,
 		UpdatedAt: user.UpdatedAt,
 	}, nil
 }
-func (r *Repository) GetBySlug(ctx context.Context, slug string) (*model.User, error) {
+func (r *RepositoryUser) GetBySlug(ctx context.Context, slug string) (*model.User, error) {
 	conn, err := r.primartDB.Acquire(ctx)
 	if err != nil {
 		return nil, err
@@ -119,7 +124,7 @@ func (r *Repository) GetBySlug(ctx context.Context, slug string) (*model.User, e
 	}, nil
 }
 
-func (r *Repository) GetById(ctx context.Context, userId uuid.UUID) (*model.User, error) {
+func (r *RepositoryUser) GetById(ctx context.Context, userId uuid.UUID) (*model.User, error) {
 	conn, err := r.primartDB.Acquire(ctx)
 	if err != nil {
 		return nil, err
@@ -151,7 +156,7 @@ func (r *Repository) GetById(ctx context.Context, userId uuid.UUID) (*model.User
 	}, nil
 }
 
-func (r *Repository) CreateUser(ctx context.Context, title, phone, email, role string, password []byte, tx pgx.Tx) (*model.User, error) {
+func (r *RepositoryUser) CreateUser(ctx context.Context, title, phone, email, role string, password []byte, tx pgx.Tx) (*model.User, error) {
 	query, arg, err := sq.
 		Insert("users").
 		Columns("title", "phone", "email", "role", "password").
@@ -183,4 +188,20 @@ func (r *Repository) CreateUser(ctx context.Context, title, phone, email, role s
 		CreatedAt: users.CreatedAt,
 		UpdatedAt: users.UpdatedAt,
 	}, nil
+}
+
+func (r *RepositoryUser) SetConfirmationCode(ctx context.Context, email string, code int) error {
+
+	if err := r.redisDB.Set(ctx, "verify:"+email, code, 2*time.Minute).Err(); err != nil {
+		return err
+	}
+
+	return nil
+}
+func (r *RepositoryUser) GetUserCodeByEmail(ctx context.Context, email string) (string, error) {
+	code, err := r.redisDB.Get(ctx, "verify:"+email).Result()
+	if err != nil {
+		return "", err
+	}
+	return code, nil
 }

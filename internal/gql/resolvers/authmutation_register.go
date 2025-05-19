@@ -17,7 +17,6 @@ import (
 
 // Registrations is the resolver for the registrations field.
 func (r *authMutationsResolver) Registrations(ctx context.Context, obj *model.AuthMutations, input model.RegistrationsInput) (model.RegistrationsResult, error) {
-	//todo:need created sms verification
 	conn, err := r.env.DataBase.PrimaryDB.Acquire(ctx)
 	if err != nil {
 		return nil, err
@@ -37,10 +36,42 @@ func (r *authMutationsResolver) Registrations(ctx context.Context, obj *model.Au
 		}
 	}()
 
-	usersdb, err := r.env.Services.UserService.Registrations(ctx, input.Password, input.Phone, input.Title, input.Email, tx)
+	err = r.env.Services.UserService.Registrations(ctx, input.Password, input.Phone, input.Title, input.Email, tx)
 	if err != nil {
 		r.env.Logger.Error("register errors", err.Error())
 		return responseErr.NewInternalErrorProblem("не удалось зарегистрироваться"), nil
+	}
+
+	if err := tx.Commit(ctx); err != nil {
+		return nil, err
+	}
+	return model.RegistrationsOk{Ok: "success"}, err
+}
+
+// ConfirmAccount is the resolver for the confirmAccount field.
+func (r *authMutationsResolver) ConfirmAccount(ctx context.Context, obj *model.AuthMutations, input model.ConfirmAccountInput) (model.ConfirmAccountResult, error) {
+	conn, err := r.env.DataBase.PrimaryDB.Acquire(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer conn.Release()
+	tx, err := conn.BeginTx(ctx, pgx.TxOptions{})
+	if err != nil {
+		return nil, err
+	}
+	defer func() {
+		if err != nil {
+			rollbackErr := tx.Rollback(ctx)
+			if rollbackErr != nil {
+				err = errors.Join(err, rollbackErr)
+				return
+			}
+		}
+	}()
+	usersdb, err := r.env.Services.UserService.ConfirmRegister(ctx, input.Password, input.Phone, input.Email, input.Title, input.Code, tx)
+	if err != nil {
+		r.env.Logger.Error("register errors", err.Error())
+		return responseErr.NewInternalErrorProblem("не удалось подтвердить аккаунт"), nil
 	}
 	w := customMiddleware.GetResponseWriter(ctx)
 	if err = user.AddCookieTokens(usersdb.ID, usersdb.Role, w, r.env.Config.Domain); err != nil {
@@ -50,5 +81,5 @@ func (r *authMutationsResolver) Registrations(ctx context.Context, obj *model.Au
 	if err := tx.Commit(ctx); err != nil {
 		return nil, err
 	}
-	return model.RegistrationsOk{Email: usersdb.Email, Phone: usersdb.Phone, Title: usersdb.Title, Role: usersdb.Role}, err
+	return model.ConfirmAccountOk{Phone: usersdb.Phone, Email: usersdb.Email, Title: usersdb.Title, Role: usersdb.Role}, nil
 }

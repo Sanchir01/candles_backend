@@ -12,7 +12,7 @@ type Repositories struct {
 	ColorRepository    *color.Repository
 	CategoryRepository *category.Repository
 	CandlesRepository  *candles.RepositoryCandles
-	UserRepository     *user.Repository
+	UserRepository     *user.RepositoryUser
 	OrderRepository    *order.Repository
 }
 
@@ -21,7 +21,7 @@ func NewRepositories(databases *Database) *Repositories {
 		ColorRepository:    color.NewRepository(databases.PrimaryDB),
 		CategoryRepository: category.NewRepository(databases.PrimaryDB),
 		CandlesRepository:  candles.NewRepositoryCandles(databases.PrimaryDB, databases.RedisDB),
-		UserRepository:     user.NewRepository(databases.PrimaryDB),
+		UserRepository:     user.NewRepositoryUser(databases.PrimaryDB, databases.RedisDB),
 		OrderRepository:    order.NewRepository(databases.PrimaryDB),
 	}
 }

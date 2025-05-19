@@ -69,6 +69,10 @@ type ColorCreateResult interface {
 	IsColorCreateResult()
 }
 
+type ConfirmAccountResult interface {
+	IsConfirmAccountResult()
+}
+
 type CreateOrderResult interface {
 	IsCreateOrderResult()
 }
@@ -155,10 +159,11 @@ type AllUserOrdersOk struct {
 func (AllUserOrdersOk) IsAllUserOrdersResult() {}
 
 type AuthMutations struct {
-	DeleteToken   DeleteTokensResult  `json:"deleteToken,omitempty"`
-	Login         LoginResult         `json:"login"`
-	Registrations RegistrationsResult `json:"registrations"`
-	NewTokens     NewTokensResult     `json:"newTokens"`
+	DeleteToken    DeleteTokensResult   `json:"deleteToken,omitempty"`
+	Login          LoginResult          `json:"login"`
+	Registrations  RegistrationsResult  `json:"registrations"`
+	ConfirmAccount ConfirmAccountResult `json:"confirmAccount"`
+	NewTokens      NewTokensResult      `json:"newTokens"`
 }
 
 type Candles struct {
@@ -327,6 +332,23 @@ type ColorQuery struct {
 	ColorBySlug ColorBySlugResult `json:"colorBySlug"`
 }
 
+type ConfirmAccountInput struct {
+	Email    string `json:"email"`
+	Phone    string `json:"phone"`
+	Title    string `json:"title"`
+	Password string `json:"password"`
+	Code     string `json:"code"`
+}
+
+type ConfirmAccountOk struct {
+	Email string `json:"email"`
+	Phone string `json:"phone"`
+	Title string `json:"title"`
+	Role  Role   `json:"role"`
+}
+
+func (ConfirmAccountOk) IsConfirmAccountResult() {}
+
 type CreateCandleInput struct {
 	Title       string            `json:"title"`
 	Price       int               `json:"price"`
@@ -400,6 +422,8 @@ func (InternalErrorProblem) IsDeleteTokensResult() {}
 func (InternalErrorProblem) IsLoginResult() {}
 
 func (InternalErrorProblem) IsRegistrationsResult() {}
+
+func (InternalErrorProblem) IsConfirmAccountResult() {}
 
 func (InternalErrorProblem) IsNewTokensResult() {}
 
@@ -523,10 +547,7 @@ type RegistrationsInput struct {
 }
 
 type RegistrationsOk struct {
-	Email string `json:"email"`
-	Phone string `json:"phone"`
-	Title string `json:"title"`
-	Role  Role   `json:"role"`
+	Ok string `json:"ok"`
 }
 
 func (RegistrationsOk) IsRegistrationsResult() {}
@@ -615,6 +636,8 @@ type VersionMismatchProblem struct {
 func (VersionMismatchProblem) IsLoginResult() {}
 
 func (VersionMismatchProblem) IsRegistrationsResult() {}
+
+func (VersionMismatchProblem) IsConfirmAccountResult() {}
 
 func (VersionMismatchProblem) IsCandlesMutationResult() {}
 

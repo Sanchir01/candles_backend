@@ -1,5 +1,8 @@
 extend type AuthMutations {
     registrations(input:RegistrationsInput!): RegistrationsResult! @goField(forceResolver: true)
+    confirmAccount(
+        input: ConfirmAccountInput!
+    ): ConfirmAccountResult! @goField(forceResolver: true)
 }
 
 input RegistrationsInput {
@@ -15,6 +18,22 @@ union RegistrationsResult =
     | VersionMismatchProblem
 
 type RegistrationsOk {
+    ok:String!
+}
+union ConfirmAccountResult =
+    | ConfirmAccountOk
+    | InternalErrorProblem
+    | VersionMismatchProblem
+
+input ConfirmAccountInput{
+    email:String!
+    phone:String!
+    title:String!
+    password:String!
+    code:String!
+}
+
+type ConfirmAccountOk {
     email:String!
     phone:String!
     title:String!

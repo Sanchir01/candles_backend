@@ -9,7 +9,7 @@ database:
 
 kafka:
   producer:
-    topic: "order"
+    topic: "order-topic"
     brokers:
       - "localhost:9092"
 

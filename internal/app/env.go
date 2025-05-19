@@ -39,7 +39,6 @@ func NewEnv() (*Env, error) {
 		lg.Error("s3 error connect", err.Error())
 		return nil, err
 	}
-	lg.Warn("kafka topic", "topic", cfg.Kafka.Producer.Topic)
 	kaf, err := NewProducer(cfg.Kafka.Producer.Broke, "order")
 	if err != nil {
 		lg.Error("kafka error connect", err.Error())

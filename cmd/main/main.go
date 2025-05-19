@@ -3,14 +3,16 @@ package main
 import (
 	"context"
 	"errors"
-	"github.com/Sanchir01/candles_backend/internal/app"
-	httphandlers "github.com/Sanchir01/candles_backend/internal/handlers"
-	httpserver "github.com/Sanchir01/candles_backend/internal/server/http"
-	"github.com/go-chi/chi/v5"
 	"log/slog"
 	"os"
 	"os/signal"
 	"syscall"
+
+	"github.com/Sanchir01/candles_backend/internal/app"
+	httphandlers "github.com/Sanchir01/candles_backend/internal/handlers"
+	httpserver "github.com/Sanchir01/candles_backend/internal/server/http"
+	"github.com/go-chi/chi/v5"
+	_ "gopkg.in/gomail.v2"
 )
 
 func main() {
@@ -26,6 +28,25 @@ func main() {
 		env.Config.Prometheus.IdleTimeout)
 	handlers := httphandlers.New(rout, env)
 	env.Logger.Info("start server", slog.String("port", env.Config.Port))
+
+	// m := gomail.NewMessage()
+	// m.SetHeader("From", "emgushovs.ru")
+	// m.SetHeader("To", "emgushovs@mail.ru")
+	// m.SetHeader("Subject", "My letter subject")
+	// m.SetBody("text/html", "<html>This is the HTML message body</html>")
+
+	// d := gomail.NewDialer(
+	// 	"connect.smtp.bz",
+	// 	465,
+	// 	"emgushovs@mail.ru",
+	// 	"tWYoeqsXUB1A",
+	// )
+
+	// d.SSL = true
+
+	// if err := d.DialAndSend(m); err != nil {
+	// 	panic(err)
+	// }
 
 	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGTERM, syscall.SIGINT, os.Interrupt)
 	defer cancel()

@@ -1,9 +1,10 @@
 package app
 
 import (
-	"github.com/Sanchir01/candles_backend/pkg/lib/logger/handlers/slogpretty"
 	"log/slog"
 	"os"
+
+	"github.com/Sanchir01/candles_backend/pkg/lib/logger/handlers/slogpretty"
 )
 
 var (
@@ -15,9 +16,9 @@ func setupLogger(env string) *slog.Logger {
 	var lg *slog.Logger
 	switch env {
 	case production:
-		lg = setupPrettySlog()
-	case development:
 		lg = slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo}))
+	case development:
+		lg = setupPrettySlog()
 	}
 	return lg
 }

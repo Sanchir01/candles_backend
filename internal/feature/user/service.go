@@ -10,7 +10,6 @@ import (
 	"time"
 
 	"github.com/Sanchir01/candles_backend/internal/gql/model"
-	"github.com/Sanchir01/candles_backend/pkg/lib/utils"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 )
@@ -90,21 +89,22 @@ func (s *Service) Registrations(ctx context.Context, password, phone, title, ema
 	return nil
 }
 func (s *Service) ConfirmRegister(ctx context.Context, password, phone, title, email, code string, tx pgx.Tx) (*model.User, error) {
-	slug, err := utils.Slugify(title)
-	if err != nil {
-		return nil, err
-	}
-	slog.Warn("slug", slug)
-	_, err = s.RepositoryUser.GetUserCodeByEmail(ctx, email)
+	oldcode, err := s.RepositoryUser.GetUserCodeByEmail(ctx, email)
 	if err != nil {
 		return nil, err
 	}
 
+	if oldcode != code {
+		return nil, errors.New("confirmation code is invalid")
+	}
+	if err := s.RepositoryUser.DeleteUserCodeByEmail(ctx, email); err != nil {
+		return nil, err
+	}
 	hashedPassword, err := GeneratePasswordHash(password)
 	if err != nil {
 		return nil, err
 	}
-	user, err := s.RepositoryUser.CreateUser(ctx, title, phone, email, "", hashedPassword, tx)
+	user, err := s.RepositoryUser.CreateUser(ctx, title, phone, email, "user", hashedPassword, tx)
 	if err != nil {
 		return nil, err
 	}

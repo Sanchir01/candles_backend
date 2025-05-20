@@ -68,7 +68,7 @@ func (r *authMutationsResolver) ConfirmAccount(ctx context.Context, obj *model.A
 			}
 		}
 	}()
-	usersdb, err := r.env.Services.UserService.ConfirmRegister(ctx, input.Password, input.Phone, input.Email, input.Title, input.Code, tx)
+	usersdb, err := r.env.Services.UserService.ConfirmRegister(ctx, input.Password, input.Phone, input.Title, input.Email, input.Code, tx)
 	if err != nil {
 		r.env.Logger.Error("register errors", err.Error())
 		return responseErr.NewInternalErrorProblem("не удалось подтвердить аккаунт"), nil

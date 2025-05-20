@@ -205,3 +205,10 @@ func (r *RepositoryUser) GetUserCodeByEmail(ctx context.Context, email string) (
 	}
 	return code, nil
 }
+func (r *RepositoryUser) DeleteUserCodeByEmail(ctx context.Context, email string) error {
+	_, err := r.redisDB.Del(ctx, "verify:"+email).Result()
+	if err != nil {
+		return err
+	}
+	return nil
+}

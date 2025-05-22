@@ -6,6 +6,9 @@ package resolver
 
 import (
 	"context"
+	"encoding/json"
+	"log/slog"
+	"time"
 
 	"github.com/Sanchir01/candles_backend/internal/feature/user"
 	"github.com/Sanchir01/candles_backend/internal/gql/model"
@@ -20,13 +23,32 @@ func (r *authMutationsResolver) Login(ctx context.Context, obj *model.AuthMutati
 		r.env.Logger.Error("login error", err.Error())
 		return responseErr.NewInternalErrorProblem("не удалось залогининться"), err
 	}
+	userredis, err := r.env.DataBase.RedisDB.Get(ctx, input.Email).Result()
+	if err == nil {
+		var usercash model.User
+		if err := json.Unmarshal([]byte(userredis), &usercash); err != nil {
+			r.env.Logger.Warn("failed to unmarshal user from redis", slog.String("error", err.Error()))
 
-	userdb, err := r.env.Services.UserService.UserByEmail(ctx, input.Email, input.Password)
+		}
+		w := customMiddleware.GetResponseWriter(ctx)
+		if err = user.AddCookieTokens(usercash.ID, usercash.Role, w, r.env.Config.Domain); err != nil {
+			r.env.Logger.Error("login error", err.Error())
+		}
+		return model.LoginOk{
+			Phone: usercash.Phone,
+			Email: usercash.Email,
+			Title: usercash.Title,
+			Role:  usercash.Role,
+		}, nil
+	}
+	userdb, err := r.env.GRPCAuth.Login(ctx, input.Email, input.Password)
 	if err != nil {
 		r.env.Logger.Error("login error", err.Error())
 		return responseErr.NewInternalErrorProblem("не удалось залогининться"), err
 	}
-
+	if userJson, err := json.Marshal(userdb); err == nil {
+		r.env.DataBase.RedisDB.Set(ctx, input.Email, userJson, 5*time.Minute)
+	}
 	w := customMiddleware.GetResponseWriter(ctx)
 	if err = user.AddCookieTokens(userdb.ID, userdb.Role, w, r.env.Config.Domain); err != nil {
 		r.env.Logger.Error("login error", err.Error())

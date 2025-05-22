@@ -35,9 +35,12 @@ http_server:
   debug: true
   idle_timeout: 60s
 
-grpc:
-  port: 7000
-  timeout: 360
+grpc_auth:
+  grpc_auth:
+    host: "localhost"
+    port: "44049"
+    timeout: 360s
+    retries: 5
 
 s3store:
   url: "https://s3.timeweb.cloud"

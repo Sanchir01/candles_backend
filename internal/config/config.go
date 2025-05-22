@@ -12,16 +12,16 @@ import (
 )
 
 type Config struct {
-	Env        string `yaml:"env"`
-	Domain     string `yaml:"domain"`
-	HttpServer `yaml:"http_server"`
-	Errors     `yaml:"errors"`
-	Grpc       GrpcOrder
-	RedisDB    Redis      `yaml:"redis"`
-	DB         DataBase   `yaml:"database"`
-	S3Store    S3Store    `yaml:"s3store"`
-	Prometheus Prometheus `yaml:"prometheus"`
-	Kafka      Kafka      `yaml:"kafka"`
+	Env         string `yaml:"env"`
+	Domain      string `yaml:"domain"`
+	HttpServer  `yaml:"http_server"`
+	Errors      `yaml:"errors"`
+	GrpcClients GRPCClients `yaml:"grpc_clients"`
+	RedisDB     Redis       `yaml:"redis"`
+	DB          DataBase    `yaml:"database"`
+	S3Store     S3Store     `yaml:"s3store"`
+	Prometheus  Prometheus  `yaml:"prometheus"`
+	Kafka       Kafka       `yaml:"kafka"`
 }
 type Kafka struct {
 	Producer Producer `yaml:"producer"`
@@ -56,6 +56,15 @@ type DataBase struct {
 type GrpcOrder struct {
 	Timeout int `yaml:"timeout"`
 	Port    int `yaml:"port"`
+}
+type GRPCAuth struct {
+	Host    string        `yaml:"host"`
+	Port    string        `yaml:"port"`
+	Timeout time.Duration `yaml:"timeout"`
+	Retries int           `yaml:"retries"`
+}
+type GRPCClients struct {
+	GRPCAuth GRPCAuth `yaml:"grpc_auth"`
 }
 type S3Store struct {
 	Key        string `yaml:"key"`

@@ -49,11 +49,11 @@ func main() {
 			}
 		}
 	}()
-	go func() { env.GRPCSrv.MustRun() }()
+	//go func() { env.GRPCSrv.MustRun() }()
 	<-ctx.Done()
 
 	if err := serve.Gracefull(ctx); err != nil {
 		env.Logger.Error("Graphql serve gracefull")
 	}
-	env.GRPCSrv.Stop()
+
 }

@@ -63,7 +63,6 @@ func (s *Service) UserByPhone(ctx context.Context, phone string) (*model.User, e
 }
 
 func (s *Service) Registrations(ctx context.Context, password, phone, title, email string, tx pgx.Tx) error {
-
 	_, err := s.RepositoryUser.GetByPhone(ctx, phone)
 	if err == nil {
 		slog.Error("User with this phone already exists")

@@ -48,12 +48,14 @@ func New(
 func (r *HttpRouter) StartHttpServer() http.Handler {
 	r.newChiCors()
 	r.chiRouter.Use(middleware.RequestID)
-	r.chiRouter.Use(customMiddleware.NewDataLoadersMiddleware(r.env))
-
+	r.chiRouter.Use(customMiddleware.PrometheusMiddleware)
 	r.chiRouter.Use(customMiddleware.WithResponseWriter, customMiddleware.AuthMiddleware(r.env.Config.Domain))
 
 	r.chiRouter.Handle("/graphql", playground.ApolloSandboxHandler("Candles", "/"))
 	r.chiRouter.Handle("/", r.NewGraphQLHandler())
+	r.chiRouter.Get("/hello", func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte("Hello, Prometheus!"))
+	})
 	return r.chiRouter
 }
 
@@ -117,7 +119,6 @@ func (r *HttpRouter) newChiCors() {
 
 func (r *HttpRouter) StartPrometheusHandlers() http.Handler {
 	router := chi.NewRouter()
-	router.Use(customMiddleware.PrometheusMiddleware)
 	router.Handle("/metrics", promhttp.Handler())
 	return router
 }

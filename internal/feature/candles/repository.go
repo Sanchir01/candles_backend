@@ -142,7 +142,7 @@ func (r *RepositoryCandles) AllCandles(ctx context.Context, sort *model.CandlesS
 	if err != nil {
 		return nil, fmt.Errorf("failed to marshal candles: %v", err)
 	}
-	if err := r.redisDB.Set(ctx, cachekey, candlesJSON, 5*time.Minute).Err(); err != nil {
+	if err := r.redisDB.Set(ctx, cachekey, candlesJSON, 6*time.Hour).Err(); err != nil {
 		log.Printf("Failed to cache candles: %v", err)
 	}
 	return candles, nil

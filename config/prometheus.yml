@@ -10,11 +10,11 @@ scrape_configs:
     scrape_timeout: 15s
 
     static_configs:
-      - targets: ["0.0.0.0:8081"]
-  - job_name: "auth-micro"
+      - targets: ["localhost:9090"]
+  - job_name: "mahakala"
 
     scrape_interval: 15s
     scrape_timeout: 15s
 
     static_configs:
-      - targets: ["app:44049"]
+      - targets: ["host.docker.internal:8081"]

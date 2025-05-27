@@ -3,6 +3,7 @@ package app
 import (
 	"context"
 	"fmt"
+	"github.com/Sanchir01/candles_backend/pkg/lib/utils"
 	"log"
 	"time"
 
@@ -15,13 +16,18 @@ type Producer struct {
 	done     chan struct{}
 }
 
-func ensureTopicExists(brokers []string, topic string, partitions int, replicationFactor int) error {
-	conn, err := kafka.Dial("tcp", brokers[0])
+func ensureTopicExists(brokers []string, topic string, partitions int, replicationFactor int, ctx context.Context) error {
+	conn, err := kafka.DialContext(ctx, "tcp", brokers[0])
 	if err != nil {
 		return fmt.Errorf("failed to dial kafka broker: %w", err)
 	}
 	defer conn.Close()
-
+	deadline, hasDeadline := ctx.Deadline()
+	if hasDeadline {
+		conn.SetWriteDeadline(deadline)
+	} else {
+		conn.SetWriteDeadline(time.Now().Add(10 * time.Second))
+	}
 	conn.SetWriteDeadline(time.Now().Add(10 * time.Second))
 
 	topicConfigs := []kafka.TopicConfig{
@@ -35,12 +41,22 @@ func ensureTopicExists(brokers []string, topic string, partitions int, replicati
 	return conn.CreateTopics(topicConfigs...)
 }
 
-func NewProducer(brokers []string, topic string) (*Producer, error) {
+func NewProducer(brokers []string, topic string, retries int, ctx context.Context) (*Producer, error) {
 	if len(brokers) == 0 {
 		return nil, fmt.Errorf("no Kafka brokers provided")
 	}
 
-	err := ensureTopicExists(brokers, topic, 1, 1)
+	err := utils.DoWithTries(func() error {
+		ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+		defer cancel()
+		var err error
+		err = ensureTopicExists(brokers, topic, 1, 1, ctx)
+		if err != nil {
+			return err
+		}
+		return nil
+	}, retries, 5*time.Second)
+
 	if err != nil {
 		return nil, fmt.Errorf("failed to create topic: %w", err)
 	}

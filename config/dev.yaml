@@ -9,6 +9,7 @@ database:
 
 kafka:
   producer:
+    retries: 5
     topic: "order-topic"
     brokers:
       - "localhost:9092"
@@ -35,7 +36,7 @@ http_server:
   debug: true
   idle_timeout: 60s
 
-grpc_auth:
+grpc_clients:
   grpc_auth:
     host: "localhost"
     port: "44049"

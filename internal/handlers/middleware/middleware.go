@@ -13,9 +13,14 @@ import (
 
 const responseWriterKey = "responseWriter"
 
+func init() {
+	prometheus.MustRegister(requestCount)
+	prometheus.MustRegister(requesDuration)
+}
+
 var requestCount = prometheus.NewCounterVec(
 	prometheus.CounterOpts{
-		Namespace: "mahakala-count",
+		Namespace: "count-requests",
 		Subsystem: "http",
 		Name:      "request_total",
 		Help:      "Total number of HTTP requests",
@@ -25,9 +30,10 @@ var requestCount = prometheus.NewCounterVec(
 
 var requesDuration = prometheus.NewHistogramVec(
 	prometheus.HistogramOpts{
-		Name:    "http_request_duration_seconds",
-		Help:    "Duration of HTTP requests.",
-		Buckets: prometheus.DefBuckets,
+		Namespace: "duration",
+		Name:      "http_request_duration_seconds",
+		Help:      "Duration of HTTP requests.",
+		Buckets:   prometheus.DefBuckets,
 	},
 	[]string{"method", "path"},
 )
@@ -84,20 +90,6 @@ func AuthMiddleware(domain string) func(http.Handler) http.Handler {
 
 			ctx := context.WithValue(r.Context(), app.AccessTokenContextKey, validAccessToken)
 
-			next.ServeHTTP(w, r.WithContext(ctx))
-		})
-	}
-}
-
-func NewDataLoadersMiddleware(env *app.Env) func(next http.Handler) http.Handler {
-	return func(next http.Handler) http.Handler {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			loaders := app.NewDataLoaders(env.Repositories)
-
-			// Добавляем DataLoaders в контекст запроса
-			ctx := context.WithValue(r.Context(), app.DataLoadersContextKey, loaders)
-
-			// Передаем контекст дальше по цепочке
 			next.ServeHTTP(w, r.WithContext(ctx))
 		})
 	}

@@ -8,17 +8,6 @@ services:
       - POSTGRES_DB=test
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_USER=postgres
-  localstack:
-    image: localstack/localstack
-    environment:
-      - SERVICES=s3
-      - AWS_DEFAULT_REGION=us-east-1
-      - AWS_ACCESS_KEY_ID=test
-      - AWS_SECRET_ACCESS_KEY=test
-    ports:
-      - "4566:4566" # Основной порт для LocalStack
-    volumes:
-      - "./localstack:/var/lib/localstack"
   clickhouse:
     image: clickhouse/clickhouse-server:latest
     ports:
@@ -28,7 +17,7 @@ services:
       - CLICKHOUSE_DB=default
       - CLICKHOUSE_USER=default
       - CLICKHOUSE_PASSWORD=clickhouse
-      - CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT=1 # Для управления пользователями
+      - CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT=1
     volumes:
       - clickhouse_data:/var/lib/clickhouse
       - clickhouse_config:/etc/clickhouse-server
@@ -78,7 +67,7 @@ services:
     image: prom/prometheus:latest
     container_name: prometheus
     volumes:
-      - ./config/prometheus.yaml:/etc/prometheus/prometheus.yaml
+      - ./config/prometheus.yml:/etc/prometheus/prometheus.yml
     ports:
       - "9090:9090"
 

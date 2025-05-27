@@ -34,7 +34,7 @@ http_server:
   debug: true
   idle_timeout: 60s
 
-grpc_auth:
+grpc_clients:
   grpc_auth:
     host: "0.0.0.0"
     port: "7000"

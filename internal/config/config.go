@@ -28,8 +28,9 @@ type Kafka struct {
 }
 
 type Producer struct {
-	Topic string   `yaml:"topic"`
-	Broke []string `yaml:"brokers"`
+	Retries int      `yaml:"retries"`
+	Topic   string   `yaml:"topic"`
+	Broke   []string `yaml:"brokers"`
 }
 type Redis struct {
 	Host     string `yaml:"host"`

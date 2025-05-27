@@ -36,14 +36,15 @@ func NewEnv() (*Env, error) {
 		lg.Error("s3 error connect", err.Error())
 		return nil, err
 	}
-	topic := cfg.Kafka.Producer.Topic
-	kaf, err := NewProducer(cfg.Kafka.Producer.Broke, topic)
+
+	kaf, err := NewProducer(cfg.Kafka.Producer.Broke, cfg.Kafka.Producer.Topic, cfg.Kafka.Producer.Retries, ctx)
 	if err != nil {
 		lg.Error("kafka error connect", err.Error())
 		return nil, err
 	}
+	authgrpcurl := fmt.Sprintf("%s:%s", cfg.GrpcClients.GRPCAuth.Host, cfg.GrpcClients.GRPCAuth.Port)
 
-	authgrpc, err := grpclientauth.NewClientAuthGRPC(lg, "0.0.0.0:44049", cfg.GrpcClients.GRPCAuth.Timeout, cfg.GrpcClients.GRPCAuth.Retries)
+	authgrpc, err := grpclientauth.NewClientAuthGRPC(lg, authgrpcurl, cfg.GrpcClients.GRPCAuth.Timeout, cfg.GrpcClients.GRPCAuth.Retries)
 	if err != nil {
 		return nil, err
 	}

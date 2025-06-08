@@ -4,3 +4,4 @@
 .vscode
 localstack
 /tmp/
+.vs

@@ -30,6 +30,7 @@ func GenerateJwtToken(id uuid.UUID, role model.Role, expire time.Time) (string, 
 	tokens := jwt.NewWithClaims(jwt.SigningMethodHS256, claim)
 	tokenString, err := tokens.SignedString(secretKey)
 
+	slog.Warn("Token generated: ", role)
 	if err != nil {
 		slog.Error("error generate jwt token", err.Error())
 		return "", err

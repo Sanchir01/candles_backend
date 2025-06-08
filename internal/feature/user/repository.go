@@ -191,7 +191,6 @@ func (r *RepositoryUser) CreateUser(ctx context.Context, title, phone, email, ro
 }
 
 func (r *RepositoryUser) SetConfirmationCode(ctx context.Context, email string, code int) error {
-
 	if err := r.redisDB.Set(ctx, "verify:"+email, code, 2*time.Minute).Err(); err != nil {
 		return err
 	}

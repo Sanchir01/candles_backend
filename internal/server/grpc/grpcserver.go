@@ -56,11 +56,13 @@ func (gr *ClientAuthGRPC) Login(ctx context.Context, email, password string) (*m
 	if err != nil {
 		return nil, err
 	}
+	userrole := model.Role(resp.GetRole())
+	gr.log.Warn("user role", userrole)
 	return &model.User{
 		Email:     resp.GetEmail(),
 		Phone:     resp.GetPhone(),
 		Title:     resp.GetTitle(),
-		Role:      "user",
+		Role:      userrole,
 		Version:   1,
 		ID:        uuid.New(),
 		CreatedAt: time.Now(),

@@ -4,7 +4,7 @@ schema:
 
 # Where should the generated server code go?
 exec:
-  filename:  internal/gql/generated/generated.go
+  filename: internal/gql/generated/generated.go
   package: runtime
 
 # Uncomment to enable federation
@@ -61,7 +61,7 @@ resolver:
 # skip_validation: true
 
 # Optional: set to skip running `go mod tidy` when generating server code
-# skip_mod_tidy: true
+skip_mod_tidy: true
 
 # gqlgen will search for any type names in the schema in these go packages
 # if they match it will use them, otherwise it will generate them.

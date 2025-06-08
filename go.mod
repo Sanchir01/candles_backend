@@ -63,6 +63,8 @@ require (
 	github.com/go-playground/universal-translator v0.18.1 // indirect
 	github.com/go-viper/mapstructure/v2 v2.2.1 // indirect
 	github.com/gorilla/websocket v1.5.1 // indirect
+	github.com/grafana/pyroscope-go v1.2.2 // indirect
+	github.com/grafana/pyroscope-go/godeltaprof v0.1.8 // indirect
 	github.com/hashicorp/golang-lru/v2 v2.0.7 // indirect
 	github.com/hbollon/go-edlib v1.6.0 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect

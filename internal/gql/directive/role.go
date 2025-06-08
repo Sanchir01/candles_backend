@@ -24,7 +24,6 @@ func RoleDirective() RoleDirectiveFunc {
 		if err != nil {
 			return nil, &gqlerror.Error{Message: "Unauthorized"}
 		}
-
 		if ctxUserID == nil {
 			return nil, &gqlerror.Error{Message: "Unauthorized: user ID is nil"}
 		}

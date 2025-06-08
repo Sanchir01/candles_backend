@@ -8,19 +8,14 @@ services:
       - POSTGRES_DB=test
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_USER=postgres
-  clickhouse:
-    image: clickhouse/clickhouse-server:latest
+
+  pyroscope:
+    image: pyroscope/pyroscope:latest
     ports:
-      - "8123:8123"
-      - "9000:9000"
-    environment:
-      - CLICKHOUSE_DB=default
-      - CLICKHOUSE_USER=default
-      - CLICKHOUSE_PASSWORD=clickhouse
-      - CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT=1
+      - "4040:4040"
+    command: server
     volumes:
-      - clickhouse_data:/var/lib/clickhouse
-      - clickhouse_config:/etc/clickhouse-server
+      - pyroscope-data:/var/lib/pyroscope
   redis:
     image: redis:latest
     restart: always
@@ -86,10 +81,9 @@ services:
 volumes:
   postgres_data:
   localstack:
-  clickhouse_data:
-  clickhouse_config:
   redis_data:
   zookeeper:
   kafka:
   kafka-ui:
   grafana_data:
+  pyroscope-data:

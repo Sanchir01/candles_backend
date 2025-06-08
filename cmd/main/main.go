@@ -3,15 +3,18 @@ package main
 import (
 	"context"
 	"errors"
+	"log"
 	"log/slog"
 	"os"
 	"os/signal"
+	"runtime"
 	"syscall"
 
 	"github.com/Sanchir01/candles_backend/internal/app"
 	httphandlers "github.com/Sanchir01/candles_backend/internal/handlers"
 	httpserver "github.com/Sanchir01/candles_backend/internal/server/http"
 	"github.com/go-chi/chi/v5"
+	"github.com/grafana/pyroscope-go"
 )
 
 func main() {
@@ -22,7 +25,28 @@ func main() {
 	serve := httpserver.NewHTTPServer(env.Config.Host, env.Config.Port,
 		env.Config.Timeout, env.Config.IdleTimeout)
 	rout := chi.NewRouter()
-
+	runtime.SetMutexProfileFraction(1)
+	runtime.SetBlockProfileRate(1)
+	_, err = pyroscope.Start(pyroscope.Config{
+		ApplicationName: "candles.backend",
+		ServerAddress:   "http://host.docker.internal:4040",
+		Logger:          pyroscope.StandardLogger,
+		ProfileTypes: []pyroscope.ProfileType{
+			pyroscope.ProfileCPU,
+			pyroscope.ProfileAllocObjects,
+			pyroscope.ProfileAllocSpace,
+			pyroscope.ProfileInuseObjects,
+			pyroscope.ProfileInuseSpace,
+			pyroscope.ProfileGoroutines,
+			pyroscope.ProfileMutexCount,
+			pyroscope.ProfileMutexDuration,
+			pyroscope.ProfileBlockCount,
+			pyroscope.ProfileBlockDuration,
+		},
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
 	prometheusserver := httpserver.NewHTTPServer(env.Config.Prometheus.Host, env.Config.Prometheus.Port, env.Config.Prometheus.Timeout,
 		env.Config.Prometheus.IdleTimeout)
 	handlers := httphandlers.New(rout, env)
@@ -49,7 +73,6 @@ func main() {
 			}
 		}
 	}()
-	//go func() { env.GRPCSrv.MustRun() }()
 	<-ctx.Done()
 
 	if err := serve.Gracefull(ctx); err != nil {

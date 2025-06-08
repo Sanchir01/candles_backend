@@ -1,7 +1,6 @@
 PHONY:
 SILENT:
-include .env.prod
-export
+
 MIGRATION_NAME ?= new_migration
 
 DB_CONN_PROD = host=$(DB_HOST_PROD) user=$(DB_USER_PROD) password=$(DB_PASSWORD_PROD) port=$(DB_PORT_PROD) dbname=$(DB_NAME_PROD) sslmode=disable
@@ -15,7 +14,7 @@ gql:
 build:
 	go build -o ./.bin/main ./cmd/main/main.go
 run: build
-	ENV_FILE=".env.prod" ./.bin/main
+	./.bin/main
 
 migrations-up:
 	goose -dir migrations postgres "host=localhost user=postgres password=postgres port=5435 dbname=test sslmode=disable"  up
@@ -52,4 +51,3 @@ seed:
 
 compose-prod:
 	docker compose -f docker-compose.prod.yaml up --build -d
-

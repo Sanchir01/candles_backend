@@ -7,7 +7,6 @@ package resolver
 import (
 	"context"
 	"errors"
-
 	"github.com/Sanchir01/candles_backend/internal/feature/user"
 	"github.com/Sanchir01/candles_backend/internal/gql/model"
 	customMiddleware "github.com/Sanchir01/candles_backend/internal/handlers/middleware"
@@ -69,6 +68,7 @@ func (r *authMutationsResolver) ConfirmAccount(ctx context.Context, obj *model.A
 		}
 	}()
 	usersdb, err := r.env.Services.UserService.ConfirmRegister(ctx, input.Password, input.Phone, input.Title, input.Email, input.Code, tx)
+
 	if err != nil {
 		r.env.Logger.Error("register errors", err.Error())
 		return responseErr.NewInternalErrorProblem("не удалось подтвердить аккаунт"), nil

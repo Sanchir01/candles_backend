@@ -6,9 +6,11 @@ RUN apk --no-cache add bash git make gcc gettext musl-dev
 
 RUN go version
 
-COPY . .
+COPY go.mod go.sum ./
 
 RUN go mod download
+
+COPY . .
 
 RUN make build
 

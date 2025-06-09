@@ -50,7 +50,13 @@ services:
       - ./config/prometheus.prod.yml:/etc/prometheus/prometheus.prod.yml
     ports:
       - "9090:9090"
-
+  pyroscope:
+    image: pyroscope/pyroscope:latest
+    ports:
+      - "4040:4040"
+    command: server
+    volumes:
+      - pyroscope-data:/var/lib/pyroscope
   grafana:
     image: grafana/grafana:latest
     container_name: grafana
@@ -65,6 +71,7 @@ services:
       - GF_SECURITY_ADMIN_PASSWORD=admin
 volumes:
   app:
+  pyroscope-data:
   postgres_data:
   redis_data:
   grafana_data:

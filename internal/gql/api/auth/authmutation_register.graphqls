@@ -37,5 +37,5 @@ type ConfirmAccountOk {
     email:String!
     phone:String!
     title:String!
-    role:Role!
+    role:String!
 }

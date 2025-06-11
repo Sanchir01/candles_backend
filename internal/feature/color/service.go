@@ -2,20 +2,26 @@ package color
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
-
+	"github.com/Sanchir01/candles_backend/internal/feature/events"
 	"github.com/Sanchir01/candles_backend/internal/gql/model"
 	"github.com/Sanchir01/candles_backend/pkg/lib/utils"
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
+	"log/slog"
 )
 
 type Service struct {
 	repository *Repository
+	eventrepo  *events.Repository
+	primaryDB  *pgxpool.Pool
 }
 
-func NewService(repository *Repository) *Service {
+func NewService(repository *Repository, eventrepo *events.Repository, primaryDB *pgxpool.Pool) *Service {
 	return &Service{
-		repository,
+		repository, eventrepo, primaryDB,
 	}
 }
 
@@ -31,7 +37,24 @@ func (s *Service) AllColor(ctx context.Context) ([]*model.Color, error) {
 	return gqlcolors, nil
 }
 
-func (s *Service) CreateColor(ctx context.Context, title string) (uuid.UUID, error) {
+func (s *Service) CreateColor(ctx context.Context, title string) (id uuid.UUID, err error) {
+	conn, err := s.primaryDB.Acquire(ctx)
+	if err != nil {
+		return uuid.Nil, err
+	}
+	defer conn.Release()
+	tx, err := conn.BeginTx(ctx, pgx.TxOptions{})
+	if err != nil {
+		return uuid.Nil, err
+	}
+
+	defer func() {
+		if err != nil {
+			_ = tx.Rollback(ctx)
+			return
+		}
+	}()
+
 	slug, err := utils.Slugify(title)
 	if err != nil {
 		return uuid.Nil, err
@@ -40,9 +63,20 @@ func (s *Service) CreateColor(ctx context.Context, title string) (uuid.UUID, err
 	if err == nil {
 		return uuid.Nil, fmt.Errorf("цвет с slug: %s уже существует", isExistColor.Slug)
 	}
-	id, err := s.repository.CreateColor(ctx, title, slug)
+	id, err = s.repository.CreateColor(ctx, title, slug, tx)
 	if err != nil {
 		return uuid.Nil, err
+	}
+	colordata, err := json.Marshal(id)
+	if err != nil {
+		return uuid.Nil, err
+	}
+	_, err = s.eventrepo.CreateEvent(ctx, utils.EventSavedColor, string(colordata), tx)
+	if err != nil {
+		return uuid.Nil, err
+	}
+	if err := tx.Commit(ctx); err != nil {
+		slog.Error("failed to commit transaction", "error", err)
 	}
 	return id, nil
 }

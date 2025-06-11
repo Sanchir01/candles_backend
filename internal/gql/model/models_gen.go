@@ -344,7 +344,7 @@ type ConfirmAccountOk struct {
 	Email string `json:"email"`
 	Phone string `json:"phone"`
 	Title string `json:"title"`
-	Role  Role   `json:"role"`
+	Role  string `json:"role"`
 }
 
 func (ConfirmAccountOk) IsConfirmAccountResult() {}
@@ -490,7 +490,7 @@ type LoginOk struct {
 	Email string `json:"email"`
 	Phone string `json:"phone"`
 	Title string `json:"title"`
-	Role  Role   `json:"role"`
+	Role  string `json:"role"`
 }
 
 func (LoginOk) IsLoginResult() {}
@@ -616,7 +616,7 @@ type User struct {
 	Phone     string    `json:"phone"`
 	Email     string    `json:"email"`
 	Password  string    `json:"password"`
-	Role      Role      `json:"role"`
+	Role      string    `json:"role"`
 }
 
 type UserProfileOk struct {

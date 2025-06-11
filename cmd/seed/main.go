@@ -52,13 +52,12 @@ func main() {
 		return
 	}
 
-	categoryId, err := env.Services.CategoryService.CreateCategory(ctx, gofakeit.Word())
-	if err != nil {
-		slog.Error(err.Error())
-		return
-	}
-	slog.Error("category id", categoryId, "color id", colorId)
 	for i := 0; i < 100; i++ {
+		categoryId, err := env.Services.CategoryService.CreateCategory(ctx, gofakeit.Word())
+		if err != nil {
+			slog.Error(err.Error())
+			return
+		}
 		candleId, err := generateFakeCandle(colorId, categoryId, tx)
 		if err != nil {
 			slog.Error(err.Error())

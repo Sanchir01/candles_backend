@@ -10,6 +10,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials/insecure"
+	"strings"
 
 	"log/slog"
 	"time"
@@ -56,8 +57,7 @@ func (gr *ClientAuthGRPC) Login(ctx context.Context, email, password string) (*m
 	if err != nil {
 		return nil, err
 	}
-	userrole := model.Role(resp.GetRole())
-	gr.log.Warn("user role", userrole)
+	userrole := strings.ToLower(resp.GetRole().String())
 	return &model.User{
 		Email:     resp.GetEmail(),
 		Phone:     resp.GetPhone(),

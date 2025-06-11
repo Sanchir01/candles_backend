@@ -3,6 +3,7 @@ package customMiddleware
 import (
 	"context"
 	"errors"
+	"log/slog"
 	"net/http"
 	"time"
 
@@ -74,9 +75,11 @@ func AuthMiddleware(domain string) func(http.Handler) http.Handler {
 				}
 				token, err := userFeature.ParseToken(accessToken)
 				if err != nil {
+					slog.Error("failed parse token middleware", err.Error())
 					next.ServeHTTP(w, r)
 					return
 				}
+
 				ctx := context.WithValue(r.Context(), app.AccessTokenContextKey, token)
 				next.ServeHTTP(w, r.WithContext(ctx))
 				return
@@ -84,12 +87,11 @@ func AuthMiddleware(domain string) func(http.Handler) http.Handler {
 
 			validAccessToken, err := userFeature.ParseToken(access.Value)
 			if err != nil {
+				slog.Error("failed parse token middleware", err.Error())
 				next.ServeHTTP(w, r)
 				return
 			}
-
 			ctx := context.WithValue(r.Context(), app.AccessTokenContextKey, validAccessToken)
-
 			next.ServeHTTP(w, r.WithContext(ctx))
 		})
 	}

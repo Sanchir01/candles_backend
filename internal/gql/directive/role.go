@@ -19,9 +19,9 @@ func RoleDirective() RoleDirectiveFunc {
 		next graphql.Resolver,
 		role []*model.Role,
 	) (res interface{}, err error) {
-
 		ctxUserID, err := customMiddleware.GetJWTClaimsFromCtx(ctx)
 		if err != nil {
+			slog.Error("role error:", err.Error())
 			return nil, &gqlerror.Error{Message: "Unauthorized"}
 		}
 		if ctxUserID == nil {
@@ -42,9 +42,9 @@ func RoleDirective() RoleDirectiveFunc {
 		return nil, &gqlerror.Error{Message: "Role not admin"}
 	}
 }
-func hasRole(ctxUser *user.Claims, role []*model.Role) bool {
-	for _, r := range role {
-		if ctxUser.Role == *r {
+func hasRole(ctxUser *user.Claims, roles []*model.Role) bool {
+	for _, r := range roles {
+		if ctxUser.Role == r.String() {
 			return true
 		}
 	}

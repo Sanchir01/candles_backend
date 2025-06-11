@@ -1596,7 +1596,7 @@ type LoginOk {
     email:String!
     phone:String!
     title:String!
-    role:Role!
+    role:String!
 }`, BuiltIn: false},
 	{Name: "../api/auth/authmutation_register.graphqls", Input: `extend type AuthMutations {
     registrations(input:RegistrationsInput!): RegistrationsResult! @goField(forceResolver: true)
@@ -1637,7 +1637,7 @@ type ConfirmAccountOk {
     email:String!
     phone:String!
     title:String!
-    role:Role!
+    role:String!
 }`, BuiltIn: false},
 	{Name: "../api/auth/authmutations_newtokens.graphqls", Input: `extend type AuthMutations {
     newTokens: NewTokensResult! @goField(forceResolver: true) @hasRole(role: [user,admin])
@@ -2121,7 +2121,7 @@ type InvalidSortRankProblem implements ProblemInterface {
   phone:String!
   email:String!
   password:String!
-  role:Role!
+  role:String!
 }
 
 `, BuiltIn: false},
@@ -6547,9 +6547,9 @@ func (ec *executionContext) _ConfirmAccountOk_role(ctx context.Context, field gr
 		}
 		return graphql.Null
 	}
-	res := resTmp.(model.Role)
+	res := resTmp.(string)
 	fc.Result = res
-	return ec.marshalNRole2githubᚗcomᚋSanchir01ᚋcandles_backendᚋinternalᚋgqlᚋmodelᚐRole(ctx, field.Selections, res)
+	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_ConfirmAccountOk_role(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -6559,7 +6559,7 @@ func (ec *executionContext) fieldContext_ConfirmAccountOk_role(_ context.Context
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Role does not have child fields")
+			return nil, errors.New("field of type String does not have child fields")
 		},
 	}
 	return fc, nil
@@ -6987,9 +6987,9 @@ func (ec *executionContext) _LoginOk_role(ctx context.Context, field graphql.Col
 		}
 		return graphql.Null
 	}
-	res := resTmp.(model.Role)
+	res := resTmp.(string)
 	fc.Result = res
-	return ec.marshalNRole2githubᚗcomᚋSanchir01ᚋcandles_backendᚋinternalᚋgqlᚋmodelᚐRole(ctx, field.Selections, res)
+	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_LoginOk_role(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -6999,7 +6999,7 @@ func (ec *executionContext) fieldContext_LoginOk_role(_ context.Context, field g
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Role does not have child fields")
+			return nil, errors.New("field of type String does not have child fields")
 		},
 	}
 	return fc, nil
@@ -9297,9 +9297,9 @@ func (ec *executionContext) _User_role(ctx context.Context, field graphql.Collec
 		}
 		return graphql.Null
 	}
-	res := resTmp.(model.Role)
+	res := resTmp.(string)
 	fc.Result = res
-	return ec.marshalNRole2githubᚗcomᚋSanchir01ᚋcandles_backendᚋinternalᚋgqlᚋmodelᚐRole(ctx, field.Selections, res)
+	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_User_role(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -9309,7 +9309,7 @@ func (ec *executionContext) fieldContext_User_role(_ context.Context, field grap
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Role does not have child fields")
+			return nil, errors.New("field of type String does not have child fields")
 		},
 	}
 	return fc, nil
@@ -17267,16 +17267,6 @@ func (ec *executionContext) marshalNRegistrationsResult2githubᚗcomᚋSanchir01
 		return graphql.Null
 	}
 	return ec._RegistrationsResult(ctx, sel, v)
-}
-
-func (ec *executionContext) unmarshalNRole2githubᚗcomᚋSanchir01ᚋcandles_backendᚋinternalᚋgqlᚋmodelᚐRole(ctx context.Context, v any) (model.Role, error) {
-	var res model.Role
-	err := res.UnmarshalGQL(v)
-	return res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalNRole2githubᚗcomᚋSanchir01ᚋcandles_backendᚋinternalᚋgqlᚋmodelᚐRole(ctx context.Context, sel ast.SelectionSet, v model.Role) graphql.Marshaler {
-	return v
 }
 
 func (ec *executionContext) unmarshalNString2string(ctx context.Context, v any) (string, error) {

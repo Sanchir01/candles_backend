@@ -47,10 +47,13 @@ func (r *HttpRouter) StartHttpServer() http.Handler {
 		}
 	}()
 	r.newChiCors()
-	r.chiRouter.Use(middleware.RequestID)
-	r.chiRouter.Use(customMiddleware.PrometheusMiddleware)
-	r.chiRouter.Use(customMiddleware.WithResponseWriter, customMiddleware.AuthMiddleware(r.env.Config.Domain))
-	r.chiRouter.Use(customMiddleware.RecoverMiddleware)
+	r.chiRouter.Use(
+		middleware.RequestID,
+		customMiddleware.PrometheusMiddleware,
+		customMiddleware.WithResponseWriter,
+		customMiddleware.AuthMiddleware("localhost"),
+		customMiddleware.RecoverMiddleware,
+	)
 	r.chiRouter.Handle("/graphql", playground.ApolloSandboxHandler("Candles", "/"))
 	r.chiRouter.Handle("/", r.NewGraphQLHandler())
 	r.chiRouter.Get("/hello", func(w http.ResponseWriter, r *http.Request) {

@@ -2,7 +2,6 @@ package user
 
 import (
 	"errors"
-	"github.com/Sanchir01/candles_backend/internal/gql/model"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 	"log/slog"
@@ -12,12 +11,12 @@ import (
 )
 
 type Claims struct {
-	ID   uuid.UUID  `json:"id"`
-	Role model.Role `json:"role"`
+	ID   uuid.UUID `json:"id"`
+	Role string    `json:"role"`
 	jwt.RegisteredClaims
 }
 
-func GenerateJwtToken(id uuid.UUID, role model.Role, expire time.Time) (string, error) {
+func GenerateJwtToken(id uuid.UUID, role string, expire time.Time) (string, error) {
 	claim := &Claims{
 		ID:   id,
 		Role: role,
@@ -38,7 +37,7 @@ func GenerateJwtToken(id uuid.UUID, role model.Role, expire time.Time) (string, 
 	return tokenString, nil
 }
 
-func AddCookieTokens(id uuid.UUID, Role model.Role, w http.ResponseWriter, domain string) error {
+func AddCookieTokens(id uuid.UUID, Role string, w http.ResponseWriter, domain string) error {
 	expirationTimeAccess := time.Now().Add(4 * time.Hour)
 	expirationTimeRefresh := time.Now().Add(14 * 24 * time.Hour)
 	refreshToken, err := GenerateJwtToken(id, Role, expirationTimeRefresh)
@@ -55,41 +54,46 @@ func AddCookieTokens(id uuid.UUID, Role model.Role, w http.ResponseWriter, domai
 	return nil
 }
 func ParseToken(tokenString string) (*Claims, error) {
-	// Парсинг токена с использованием функции обратного вызова для получения секретного ключа
 	token, err := jwt.ParseWithClaims(tokenString, &Claims{}, func(token *jwt.Token) (interface{}, error) {
-		// Проверка используемого метода подписи
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			slog.Error("Unexpected signing method", "method", token.Header["alg"])
 			return nil, errors.New("unexpected signing method")
 		}
-		// Возвращаем секретный ключ
 		return []byte(os.Getenv("JWT_SECRET")), nil
 	})
 
 	if err != nil {
+		slog.Error("JWT parse error", "err", err)
 		return nil, err
 	}
 
-	// Проверка валидности токена и получение claims
-	if claims, ok := token.Claims.(*Claims); ok && token.Valid {
-		return claims, nil
-	} else {
+	if !token.Valid {
+		slog.Error("JWT token invalid")
 		return nil, errors.New("invalid token")
 	}
+
+	claims, ok := token.Claims.(*Claims)
+	if !ok {
+		slog.Error("Token claims type assertion failed")
+		return nil, errors.New("invalid token claims")
+	}
+
+	slog.Info("JWT token successfully parsed", "claims", claims)
+	return claims, nil
 }
+
 func NewAccessToken(tokenString string, threshold time.Duration, w http.ResponseWriter, domain string) (string, error) {
 	claims, err := ParseToken(tokenString)
 	if err != nil {
 		return "", err
 	}
 
-	// Проверка оставшегося времени жизни токена
 	remainingTime := time.Until(claims.ExpiresAt.Time)
 	if remainingTime > threshold {
 		return tokenString, nil
 	}
 
-	// Генерация нового токена с обновленным временем истечения
-	newExpire := time.Now().Add(4 * time.Hour) // Задайте желаемое время жизни нового токена
+	newExpire := time.Now().Add(4 * time.Hour)
 	newToken, err := GenerateJwtToken(claims.ID, claims.Role, newExpire)
 	if err != nil {
 		return "", err

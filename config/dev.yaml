@@ -6,7 +6,7 @@ database:
   user: "postgres"
   dbname: "test"
   max_attempts: 10
-
+  
 kafka:
   producer:
     retries: 5

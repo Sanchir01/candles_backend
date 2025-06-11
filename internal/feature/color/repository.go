@@ -5,6 +5,7 @@ import (
 	sq "github.com/Masterminds/squirrel"
 	"github.com/Sanchir01/candles_backend/internal/gql/model"
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"log"
 )
@@ -49,12 +50,7 @@ func (r *Repository) AllColor(ctx context.Context) ([]model.Color, error) {
 	return colors, nil
 }
 
-func (r *Repository) CreateColor(ctx context.Context, title, slug string) (uuid.UUID, error) {
-	conn, err := r.primaryDB.Acquire(ctx)
-	if err != nil {
-		return uuid.Nil, err
-	}
-	defer conn.Release()
+func (r *Repository) CreateColor(ctx context.Context, title, slug string, tx pgx.Tx) (uuid.UUID, error) {
 	query, args, err := sq.Insert("color").
 		Columns("title", "slug").
 		Values(title, slug).
@@ -65,7 +61,7 @@ func (r *Repository) CreateColor(ctx context.Context, title, slug string) (uuid.
 	}
 
 	var id uuid.UUID
-	if err = conn.QueryRow(ctx, query, args...).Scan(&id); err != nil {
+	if err = tx.QueryRow(ctx, query, args...).Scan(&id); err != nil {
 		return uuid.Nil, err
 	}
 	return id, nil

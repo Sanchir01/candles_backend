@@ -37,7 +37,7 @@ func NewEnv() (*Env, error) {
 		return nil, err
 	}
 
-	kaf, err := NewProducer(cfg.Kafka.Producer.Broke, cfg.Kafka.Producer.Topic, cfg.Kafka.Producer.Retries, ctx)
+	kaf, err := NewProducer(cfg.Kafka.Outbox.Broke, cfg.Kafka.Outbox.Topic, cfg.Kafka.Outbox.Retries, ctx)
 	if err != nil {
 		lg.Error("kafka error connect", err.Error())
 		return nil, err
@@ -49,7 +49,7 @@ func NewEnv() (*Env, error) {
 		return nil, err
 	}
 	repos := NewRepositories(pgxdb)
-	servises := NewServices(repos, s3client, pgxdb, lg)
+	servises := NewServices(repos, s3client, pgxdb, kaf, lg)
 
 	env := Env{
 		Logger:        lg,

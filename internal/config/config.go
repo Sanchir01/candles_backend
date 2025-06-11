@@ -24,7 +24,7 @@ type Config struct {
 	Kafka       Kafka       `yaml:"kafka"`
 }
 type Kafka struct {
-	Producer Producer `yaml:"producer"`
+	Outbox Producer `yaml:"outbox"`
 }
 
 type Producer struct {

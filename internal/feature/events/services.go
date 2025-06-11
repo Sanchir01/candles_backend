@@ -2,6 +2,7 @@ package events
 
 import (
 	"context"
+	"encoding/json"
 	"github.com/Sanchir01/candles_backend/pkg/lib/logger/sl"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -14,19 +15,24 @@ type EventRepositoryInterface interface {
 	GetManyEvents(ctx context.Context, limit uint64) ([]*EventDB, error)
 	SetDone(ctx context.Context, ids []uuid.UUID) error
 }
+type EventSender interface {
+	Produce(message string, value []byte) error
+}
 type EventService struct {
 	log  *slog.Logger
 	repo EventRepositoryInterface
+	kaf  EventSender
 }
 
-func NewEventService(log *slog.Logger, repo EventRepositoryInterface) *EventService {
+func NewEventService(log *slog.Logger, repo EventRepositoryInterface, kaf EventSender) *EventService {
 	return &EventService{
-		log:  log,
-		repo: repo,
+		log,
+		repo,
+		kaf,
 	}
 }
 
-func (e *EventService) StartCreateEvent(ctx context.Context, handlePeriod time.Duration, limitEvents uint64) {
+func (e *EventService) StartCreateEvent(ctx context.Context, handlePeriod time.Duration, limitEvents uint64, topic string) {
 	const op = "EventService.StartCreateEvent"
 
 	log := e.log.With(slog.String("op", op))
@@ -59,7 +65,12 @@ func (e *EventService) StartCreateEvent(ctx context.Context, handlePeriod time.D
 				for _, event := range events {
 					ids = append(ids, event.ID)
 				}
-				e.SendMessage(events[0])
+				for _, event := range events {
+					if err := e.SendMessage(event, topic); err != nil {
+						log.Error("failed to send event", sl.Err(err))
+					}
+				}
+
 				if err := e.repo.SetDone(ctx, ids); err != nil {
 					log.Error("failed to set events done", sl.Err(err))
 					continue
@@ -70,10 +81,17 @@ func (e *EventService) StartCreateEvent(ctx context.Context, handlePeriod time.D
 		}
 	}()
 }
-func (e *EventService) SendMessage(event *EventDB) {
+func (e *EventService) SendMessage(event *EventDB, topic string) error {
 	const op = "services.event-sender.SendMessage"
 
 	log := e.log.With(slog.String("op", op))
-	log.Info("sending message", slog.Any("event", event))
-
+	jsondata, err := json.Marshal(event)
+	if err != nil {
+		return err
+	}
+	if err := e.kaf.Produce(topic, jsondata); err != nil {
+		return err
+	}
+	log.Info("successfully sent message", slog.Int("count", len(jsondata)))
+	return err
 }

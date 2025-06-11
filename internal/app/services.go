@@ -19,13 +19,13 @@ type Services struct {
 	EventService    *events.EventService
 }
 
-func NewServices(repos *Repositories, storages *Storages, db *Database, l *slog.Logger) *Services {
+func NewServices(repos *Repositories, storages *Storages, db *Database, kaf *Producer, l *slog.Logger) *Services {
 	return &Services{
 		ColorService:    color.NewService(repos.ColorRepository, repos.EventRepository, db.PrimaryDB),
 		CategoryService: category.NewService(repos.CategoryRepository),
 		CandlesService:  candles.NewServiceCandles(repos.CandlesRepository, storages.CandlesStorage),
 		UserService:     user.NewService(repos.UserRepository),
 		OrderService:    order.NewService(repos.OrderRepository),
-		EventService:    events.NewEventService(l, repos.EventRepository),
+		EventService:    events.NewEventService(l, repos.EventRepository, kaf),
 	}
 }

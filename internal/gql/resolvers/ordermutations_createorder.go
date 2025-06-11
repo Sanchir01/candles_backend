@@ -8,8 +8,6 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"log/slog"
-
 	"github.com/Sanchir01/candles_backend/internal/feature/order"
 	"github.com/Sanchir01/candles_backend/internal/gql/model"
 	customMiddleware "github.com/Sanchir01/candles_backend/internal/handlers/middleware"
@@ -69,7 +67,6 @@ func (r *orderMutationsResolver) CreateOrder(ctx context.Context, obj *model.Ord
 			Quantity: quantities[i],
 		})
 	}
-	slog.Any("produst", product)
 	jsondata, err := json.Marshal(productsWithQuantities)
 	if err != nil {
 		r.env.Logger.Warn("Failed to get all candles many ids: %v", err.Error())

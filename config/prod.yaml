@@ -8,10 +8,12 @@ database:
   max_attempts: 10
 
 kafka:
-  producer:
-    topic: "order"
+  outbox:
+    retries: 5
+    topic: "outbox"
     brokers:
       - "103.74.92.37:9092"
+
 redis:
   host: 103.74.92.37
   port: "5433"

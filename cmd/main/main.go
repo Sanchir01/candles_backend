@@ -51,7 +51,7 @@ func main() {
 	env.Logger.Info("start server", slog.String("port", env.Config.Port))
 
 	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGTERM, syscall.SIGINT, os.Interrupt)
-	env.Services.EventService.StartCreateEvent(ctx, 5*time.Second, 10)
+	env.Services.EventService.StartCreateEvent(ctx, 5*time.Second, 10, env.Config.Kafka.Outbox.Topic)
 	defer cancel()
 	defer env.KafkaProducer.Close()
 

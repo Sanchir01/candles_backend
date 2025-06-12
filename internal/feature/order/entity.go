@@ -9,7 +9,7 @@ import (
 type DBOrderItems struct {
 }
 type ProductWithQuantity struct {
-	Title    model.Candles `json:"candles"`
+	Candle   model.Candles `json:"candles"`
 	Quantity int           `json:"quantity"`
 }
 type DBOrders struct {

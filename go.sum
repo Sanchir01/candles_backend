@@ -11,6 +11,10 @@ github.com/PuerkitoBio/goquery v1.10.3 h1:pFYcNSqHxBD06Fpj/KsbStFRsgRATgnf3LeXiU
 github.com/PuerkitoBio/goquery v1.10.3/go.mod h1:tMUX0zDMHXYlAQk6p35XxQMqMweEKB7iK7iLNd4RH4Y=
 github.com/Sanchir01/auth-proto v0.0.0-20250521013006-07ef143150f4 h1:lRaHDPMEzz4UFGux0kkFo9Tr+XeVoLr6lCdA6/fekyg=
 github.com/Sanchir01/auth-proto v0.0.0-20250521013006-07ef143150f4/go.mod h1:6x22bIbUJhYVAnNj34PPAWGBaFRJVHONTvOWv1sZ9Qg=
+github.com/Sanchir01/auth-proto v0.0.0-20250609132441-a75e9e323ef1 h1:EETBDbas44g/AhuNZPd9LV63apXixCc86mnLpWnhyrQ=
+github.com/Sanchir01/auth-proto v0.0.0-20250609132441-a75e9e323ef1/go.mod h1:6x22bIbUJhYVAnNj34PPAWGBaFRJVHONTvOWv1sZ9Qg=
+github.com/Sanchir01/auth-proto v0.0.0-20250612064348-fb29a910b0c0 h1:nHvdAPWKyvZZGv5oK8aaInEh+cGFcalzmwmNikzUlLU=
+github.com/Sanchir01/auth-proto v0.0.0-20250612064348-fb29a910b0c0/go.mod h1:6x22bIbUJhYVAnNj34PPAWGBaFRJVHONTvOWv1sZ9Qg=
 github.com/agnivade/levenshtein v1.2.1 h1:EHBY3UOn1gwdy/VbFwgo4cxecRznFk7fKWN1KOX7eoM=
 github.com/agnivade/levenshtein v1.2.1/go.mod h1:QVVI16kDrtSuwcpd0p1+xMC6Z/VfhtCyDIjcwga4/DU=
 github.com/andreyvit/diff v0.0.0-20170406064948-c7f18ee00883 h1:bvNMNQO63//z+xNgfBlViaCIJKLlCJ6/fmUseuG0wVQ=

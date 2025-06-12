@@ -1,9 +1,10 @@
-package grpclientauth
+package grpcclientauth
 
 import (
 	"context"
 	authv1 "github.com/Sanchir01/auth-proto/gen/go/auth"
 	"github.com/Sanchir01/candles_backend/internal/gql/model"
+	"github.com/Sanchir01/candles_backend/pkg/lib/logger/sl"
 	"github.com/google/uuid"
 	grpclog "github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/logging"
 	grpcretry "github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/retry"
@@ -36,7 +37,7 @@ func NewClientAuthGRPC(l *slog.Logger, addr string, timeout time.Duration, retri
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 		grpc.WithChainUnaryInterceptor(
 			grpcretry.UnaryClientInterceptor(retryOpts...),
-			grpclog.UnaryClientInterceptor(InterceptorsLogger(l), logOpts...),
+			grpclog.UnaryClientInterceptor(sl.InterceptorsLogger(l), logOpts...),
 		),
 	)
 	if err != nil {
@@ -69,10 +70,4 @@ func (gr *ClientAuthGRPC) Login(ctx context.Context, email, password string) (*m
 		UpdatedAt: time.Now(),
 		Password:  "",
 	}, err
-}
-
-func InterceptorsLogger(l *slog.Logger) grpclog.Logger {
-	return grpclog.LoggerFunc(func(ctx context.Context, lvl grpclog.Level, msg string, opts ...any) {
-		l.Log(ctx, slog.Level(lvl), msg, opts...)
-	})
 }

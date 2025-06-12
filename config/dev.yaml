@@ -10,7 +10,9 @@ database:
 kafka:
   outbox:
     retries: 5
-    topic: "outbox"
+    topic:
+      - "order"
+      - "metrics"
     brokers:
       - "localhost:9092"
 
@@ -40,6 +42,11 @@ grpc_clients:
   grpc_auth:
     host: "localhost"
     port: "44049"
+    timeout: 360s
+    retries: 5
+  grpc_order:
+    host: "localhost"
+    port: "11011"
     timeout: 360s
     retries: 5
 

@@ -10,7 +10,7 @@ database:
 kafka:
   outbox:
     retries: 5
-    topic: "outbox"
+    topic: ["order",'metrics']
     brokers:
       - "103.74.92.37:9092"
 

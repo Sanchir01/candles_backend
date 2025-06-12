@@ -25,7 +25,7 @@ func NewServices(repos *Repositories, storages *Storages, db *Database, kaf *Pro
 		CategoryService: category.NewService(repos.CategoryRepository),
 		CandlesService:  candles.NewServiceCandles(repos.CandlesRepository, storages.CandlesStorage),
 		UserService:     user.NewService(repos.UserRepository),
-		OrderService:    order.NewService(repos.OrderRepository),
+		OrderService:    order.NewService(repos.OrderRepository, repos.EventRepository),
 		EventService:    events.NewEventService(l, repos.EventRepository, kaf),
 	}
 }

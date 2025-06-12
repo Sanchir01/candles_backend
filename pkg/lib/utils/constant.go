@@ -5,6 +5,7 @@ import "errors"
 var (
 	EventSavedCandle = "SavedCandle"
 	EventSavedColor  = "SavedColor"
+	EventSavedOrder  = "SavedOrder"
 )
 
 var (

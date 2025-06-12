@@ -81,6 +81,7 @@ func (e *EventService) StartCreateEvent(ctx context.Context, handlePeriod time.D
 		}
 	}()
 }
+
 func (e *EventService) SendMessage(event *EventDB, topic string) error {
 	const op = "services.event-sender.SendMessage"
 

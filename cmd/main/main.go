@@ -51,9 +51,16 @@ func main() {
 	env.Logger.Info("start server", slog.String("port", env.Config.Port))
 
 	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGTERM, syscall.SIGINT, os.Interrupt)
-	env.Services.EventService.StartCreateEvent(ctx, 5*time.Second, 10, env.Config.Kafka.Outbox.Topic)
+	env.Services.EventService.StartCreateEvent(ctx, 5*time.Second, 10, env.Config.Kafka.Outbox.Topic[0])
 	defer cancel()
-	defer env.KafkaProducer.Close()
+	defer func() {
+		for _, producer := range env.KafkaProducer {
+			if err := producer.Close(); err != nil {
+				env.Logger.Error("failed to close producer: %v", err)
+			}
+		}
+
+	}()
 
 	go func() {
 		if err := serve.Run(handlers.StartHttpServer()); err != nil {

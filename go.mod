@@ -30,7 +30,7 @@ require (
 )
 
 require (
-	github.com/Sanchir01/auth-proto v0.0.0-20250521013006-07ef143150f4
+	github.com/Sanchir01/auth-proto v0.0.0-20250612064348-fb29a910b0c0
 	github.com/prometheus/client_golang v1.22.0
 	github.com/redis/go-redis/v9 v9.8.0
 	github.com/segmentio/kafka-go v0.4.47

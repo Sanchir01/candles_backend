@@ -2,6 +2,7 @@ package order
 
 import (
 	"context"
+	"github.com/Sanchir01/candles_backend/internal/feature/events"
 	"github.com/Sanchir01/candles_backend/internal/gql/model"
 	"github.com/Sanchir01/candles_backend/pkg/lib/utils"
 	"github.com/google/uuid"
@@ -9,12 +10,13 @@ import (
 )
 
 type Service struct {
-	repo *Repository
+	repo       *Repository
+	eventsrepo *events.Repository
 }
 
-func NewService(repo *Repository) *Service {
+func NewService(repo *Repository, eventsrepo *events.Repository) *Service {
 	return &Service{
-		repo,
+		repo, eventsrepo,
 	}
 }
 
@@ -49,7 +51,10 @@ func (s *Service) CreateOrder(
 	if err != nil {
 		return nil, err
 	}
-
+	_, err = s.eventsrepo.CreateEvent(ctx, utils.EventSavedOrder, orderID.String(), tx)
+	if err != nil {
+		return nil, err
+	}
 	uuids, err := s.repo.CreateOrderItem(ctx, orderID, productsId, quantity, price, tx)
 	if err != nil {
 		return nil, err

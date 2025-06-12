@@ -6,7 +6,6 @@ package resolver
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"github.com/Sanchir01/candles_backend/internal/feature/order"
 	"github.com/Sanchir01/candles_backend/internal/gql/model"
@@ -14,6 +13,7 @@ import (
 	responseErr "github.com/Sanchir01/candles_backend/pkg/lib/api/response"
 	"github.com/google/uuid"
 	pgx "github.com/jackc/pgx/v5"
+	"log/slog"
 )
 
 // CreateOrder is the resolver for the createOrder field.
@@ -23,6 +23,7 @@ func (r *orderMutationsResolver) CreateOrder(ctx context.Context, obj *model.Ord
 		return responseErr.NewInternalErrorProblem("не удалось получить профиль"), err
 	}
 	conn, err := r.env.DataBase.PrimaryDB.Acquire(ctx)
+	defer conn.Release()
 	if err != nil {
 		return responseErr.NewInternalErrorProblem("Database connection error"), nil
 	}
@@ -63,25 +64,19 @@ func (r *orderMutationsResolver) CreateOrder(ctx context.Context, obj *model.Ord
 	var productsWithQuantities []order.ProductWithQuantity
 	for i, p := range product {
 		productsWithQuantities = append(productsWithQuantities, order.ProductWithQuantity{
-			Title:    p,
+			Candle:   p,
 			Quantity: quantities[i],
 		})
 	}
-	jsondata, err := json.Marshal(productsWithQuantities)
-	if err != nil {
-		r.env.Logger.Warn("Failed to get all candles many ids: %v", err.Error())
-		return nil, err
-	}
-
-	if err := r.env.KafkaProducer.Produce("order.sendtg", jsondata); err != nil {
-		r.env.Logger.Warn("Failed to produce order.sendtg: %v", err.Error())
+	data := order.MapProductsToOrderRequest(productsWithQuantities)
+	if _, err := r.env.GRPCOrder.OrderPush(ctx, data); err != nil {
 		return nil, err
 	}
 	if err := tx.Commit(ctx); err != nil {
 		r.env.Logger.Warn("Failed to commit transaction: %v", err.Error())
 		return nil, err
 	}
-
+	slog.Error("Products with quantities: %v", productsWithQuantities)
 	return model.CreateOrderOk{
 		Ok: "success",
 	}, nil

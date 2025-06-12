@@ -29,7 +29,7 @@ type Kafka struct {
 
 type Producer struct {
 	Retries int      `yaml:"retries"`
-	Topic   string   `yaml:"topic"`
+	Topic   []string `yaml:"topic"`
 	Broke   []string `yaml:"brokers"`
 }
 type Redis struct {
@@ -65,7 +65,8 @@ type GRPCAuth struct {
 	Retries int           `yaml:"retries"`
 }
 type GRPCClients struct {
-	GRPCAuth GRPCAuth `yaml:"grpc_auth"`
+	GRPCAuth  GRPCAuth `yaml:"grpc_auth"`
+	GRPCOrder GRPCAuth `yaml:"grpc_order"`
 }
 type S3Store struct {
 	Key        string `yaml:"key"`

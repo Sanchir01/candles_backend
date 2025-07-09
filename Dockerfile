@@ -12,7 +12,7 @@ RUN go mod download
 
 COPY . .
 
-RUN make build
+RUN GOOS=linux GOARCH=amd64 go build -o ./.bin/main ./cmd/main/main.go
 
 
 FROM alpine:3.20 AS runner

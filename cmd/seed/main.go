@@ -47,24 +47,38 @@ func main() {
 		}
 	}()
 	colorId, err := env.Services.ColorService.CreateColor(ctx, gofakeit.Color())
+	categoryId, err := env.Services.CategoryService.CreateCategory(ctx, gofakeit.Word())
 	if err != nil {
 		slog.Error(err.Error())
 		return
 	}
-
 	for i := 0; i < 100; i++ {
-		categoryId, err := env.Services.CategoryService.CreateCategory(ctx, gofakeit.Word())
+
 		if err != nil {
 			slog.Error(err.Error())
 			return
 		}
-		candleId, err := generateFakeCandle(colorId, categoryId, tx)
+		candlesID, err := env.Services.CandlesService.CreateCandles(
+			ctx,
+			categoryId,
+			colorId,
+			faker.Name(),
+			faker.Word(),
+			nil,
+			100,
+			500,
+		)
+		if err != nil {
+			tx.Rollback(ctx)
+			return
+		}
+
 		if err != nil {
 			slog.Error(err.Error())
 			tx.Rollback(ctx)
 			return
 		}
-		slog.Warn("candle id", candleId)
+		slog.Warn("candle id", candlesID)
 	}
 	if err := tx.Commit(ctx); err != nil {
 		slog.Error(err.Error())

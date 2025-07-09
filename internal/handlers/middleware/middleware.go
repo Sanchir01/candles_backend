@@ -3,6 +3,8 @@ package customMiddleware
 import (
 	"context"
 	"errors"
+	"github.com/mssola/useragent"
+	"log"
 	"log/slog"
 	"net/http"
 	"time"
@@ -31,7 +33,7 @@ var requestCount = prometheus.NewCounterVec(
 
 var requesDuration = prometheus.NewHistogramVec(
 	prometheus.HistogramOpts{
-		Namespace: "duration",
+		Namespace: "mahakala-duration",
 		Name:      "http_request_duration_seconds",
 		Help:      "Duration of HTTP requests.",
 		Buckets:   prometheus.DefBuckets,
@@ -97,10 +99,22 @@ func AuthMiddleware(domain string) func(http.Handler) http.Handler {
 	}
 }
 
+func UserAgentMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		ua := useragent.New(r.Header.Get("User-Agent"))
+		os := ua.OS()
+		browserName, browserVersion := ua.Browser()
+
+		log.Printf("Request from OS: %s, Browser: %s %s\n", os, browserName, browserVersion)
+		slog.Warn("id address", r.RemoteAddr)
+		next.ServeHTTP(w, r)
+	})
+}
 func PrometheusMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
 		next.ServeHTTP(w, r)
+
 		duration := time.Since(start).Seconds()
 		requestCount.WithLabelValues(r.URL.Path, r.Method).Inc()
 		requesDuration.WithLabelValues(r.Method, r.URL.Path).Observe(duration)

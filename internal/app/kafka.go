@@ -28,7 +28,6 @@ func ensureTopicExists(brokers []string, topic string, partitions int, replicati
 	} else {
 		conn.SetWriteDeadline(time.Now().Add(10 * time.Second))
 	}
-	conn.SetWriteDeadline(time.Now().Add(10 * time.Second))
 
 	topicConfigs := []kafka.TopicConfig{
 		{

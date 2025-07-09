@@ -10,7 +10,7 @@ database:
 kafka:
   outbox:
     retries: 5
-    topic: ["order",'metrics']
+    topic: ["order", "metrics"]
     brokers:
       - "103.74.92.37:9092"
 
@@ -20,18 +20,18 @@ redis:
   retries: 5
   dbnumber: 0
 
-domain: "localhost"
+domain: "gqlserver.emgushovs.ru"
 
 prometheus:
   host: 0.0.0.0
-  port: 4001
+  port: 8081
   timeout: 4s
   debug: true
   idle_timeout: 60s
 
 http_server:
   host: 0.0.0.0
-  port: 5000
+  port: 8080
   timeout: 4s
   debug: true
   idle_timeout: 60s
@@ -42,6 +42,16 @@ grpc_clients:
     port: "44049"
     timeout: 360s
     retries: 5
+  grpc_order:
+    host: "order-bot.mahakala.emgushovs.ru"
+    port: "11011"
+    timeout: 360s
+    retries: 5
+
+pyroscope:
+  appname: "candles.backend"
+  host: "pyroscope"
+  port: "4040"
 
 s3store:
   url: "https://s3.timeweb.cloud"

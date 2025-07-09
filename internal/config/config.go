@@ -22,6 +22,12 @@ type Config struct {
 	S3Store     S3Store     `yaml:"s3store"`
 	Prometheus  Prometheus  `yaml:"prometheus"`
 	Kafka       Kafka       `yaml:"kafka"`
+	Pyroscope   Pyroscope   `yaml:"pyroscope"`
+}
+type Pyroscope struct {
+	Host    string `yaml:"host"`
+	Port    string `yaml:"port"`
+	AppName string `yaml:"appname"`
 }
 type Kafka struct {
 	Outbox Producer `yaml:"outbox"`

@@ -4,7 +4,7 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "5000:5000"
+      - "8080:8080"
     command: /main
     restart: always
     depends_on:
@@ -61,14 +61,30 @@ services:
     image: grafana/grafana:latest
     container_name: grafana
     ports:
-      - "3000:3000"
+      - "13000:3000"
     volumes:
+      - ./config/grafana.yaml:/etc/grafana/provisioning/datasources/datasources.yaml
       - grafana_data:/var/lib/grafana
     depends_on:
       - prometheus
-    environment:
-      - GF_SECURITY_ADMIN_USER=admin
-      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - loki
+  promtail:
+    image: grafana/promtail:latest
+    ports:
+      - "9080:9080"
+    volumes:
+      - ./config/promtail.yaml:/etc/promtail/config.yml
+    command: -config.file=/etc/promtail/config.yml
+    privileged: true
+
+  loki:
+    image: grafana/loki:latest
+    container_name: loki
+    ports:
+      - "3100:3100"
+    volumes:
+      - ./config/loki.yaml:/etc/loki/local-config.yaml
+
 volumes:
   app:
   pyroscope-data:

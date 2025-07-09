@@ -40,7 +40,7 @@ func New(
 	}
 }
 
-func (r *HttpRouter) StartHttpServer() http.Handler {
+func (r *HttpRouter) StartHttpServer(domain string) http.Handler {
 	defer func() {
 		if err := recover(); err != nil {
 			r.env.Logger.Error("panic error", err)
@@ -51,8 +51,9 @@ func (r *HttpRouter) StartHttpServer() http.Handler {
 		middleware.RequestID,
 		customMiddleware.PrometheusMiddleware,
 		customMiddleware.WithResponseWriter,
-		customMiddleware.AuthMiddleware("localhost"),
+		customMiddleware.AuthMiddleware(domain),
 		customMiddleware.RecoverMiddleware,
+		customMiddleware.UserAgentMiddleware,
 	)
 	r.chiRouter.Handle("/graphql", playground.ApolloSandboxHandler("Candles", "/"))
 	r.chiRouter.Handle("/", r.NewGraphQLHandler())

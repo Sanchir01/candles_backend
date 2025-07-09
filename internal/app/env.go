@@ -3,10 +3,11 @@ package app
 import (
 	"context"
 	"fmt"
-	grpclientauth "github.com/Sanchir01/candles_backend/internal/server/grpc/auth"
-	grpcclientorder "github.com/Sanchir01/candles_backend/internal/server/grpc/order"
 	"log"
 	"log/slog"
+
+	grpclientauth "github.com/Sanchir01/candles_backend/internal/server/grpc/auth"
+	grpcclientorder "github.com/Sanchir01/candles_backend/internal/server/grpc/order"
 
 	"github.com/Sanchir01/candles_backend/internal/config"
 )
@@ -28,7 +29,7 @@ func NewEnv() (*Env, error) {
 	fmt.Println(cfg)
 	lg := setupLogger(cfg.Env)
 	ctx := context.Background()
-	pgxdb, err := NewDataBases(cfg)
+	pgxdb, err := NewDataBases(cfg, lg)
 	if err != nil {
 		lg.Error("pgx error connect", err.Error())
 		return nil, err

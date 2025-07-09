@@ -4,9 +4,10 @@ database:
   host: localhost
   port: "5435"
   user: "postgres"
+  password: "postgres"
   dbname: "test"
   max_attempts: 5
-  
+
 kafka:
   outbox:
     retries: 5
@@ -21,10 +22,10 @@ redis:
   port: "6379"
   password: ""
   dbnumber: 0
-  
+
 pyroscope:
   appname: "candles.backend"
-  host: "pyroscope"
+  host: "localhost"
   port: "4040"
 domain: "localhost"
 

@@ -17,7 +17,12 @@ func PGXNew(cfg *config.Config, ctx context.Context) (*pgxpool.Pool, error) {
 	switch cfg.Env {
 	case "development":
 		dsn = fmt.Sprintf(
-			"postgresql://postgres:postgres@localhost:5435/test",
+			"postgresql://%s:%s@%s:%s/%s",
+			cfg.DB.User,
+			cfg.DB.Password,
+			cfg.DB.Host,
+			cfg.DB.Port,
+			cfg.DB.Database,
 		)
 	case "production":
 		dsn = fmt.Sprintf(
@@ -30,8 +35,6 @@ func PGXNew(cfg *config.Config, ctx context.Context) (*pgxpool.Pool, error) {
 	var err error
 
 	err = utils.DoWithTries(func() error {
-		ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
-		defer cancel()
 		var err error
 		pool, err = pgxpool.New(ctx, dsn)
 		if err != nil {

@@ -1,6 +1,7 @@
 package httphandlers
 
 import (
+	"fmt"
 	gqlhandler "github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/handler/extension"
 	"github.com/99designs/gqlgen/graphql/handler/lru"
@@ -59,6 +60,7 @@ func (r *HttpRouter) StartHttpServer(domain string) http.Handler {
 	r.chiRouter.Handle("/", r.NewGraphQLHandler())
 	r.chiRouter.Get("/hello", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("Hello, User!"))
+		fmt.Println("hello world endpoint finished")
 	})
 	return r.chiRouter
 }

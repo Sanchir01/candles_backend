@@ -5,8 +5,11 @@ services:
       dockerfile: Dockerfile
     ports:
       - "8080:8080"
+    container_name: "mahakala"
     command: /main
     restart: always
+    labels:
+      - project=mahakala
     depends_on:
       - zookeeper
       - kafka
@@ -68,11 +71,14 @@ services:
     depends_on:
       - prometheus
       - loki
+
   promtail:
     image: grafana/promtail:latest
     ports:
       - "9080:9080"
     volumes:
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /var/run/docker.sock:/var/run/docker.sock
       - ./config/promtail.yaml:/etc/promtail/config.yml
     command: -config.file=/etc/promtail/config.yml
     privileged: true
